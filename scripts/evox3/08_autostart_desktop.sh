@@ -9,7 +9,16 @@ require_cmd systemctl
 AUTOSTART_DIR="$HOME/.config/autostart"
 ensure_dir "$AUTOSTART_DIR"
 
-for unit in evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service; do
+# Docker compose first — API login needs Postgres after reboot.
+if [ ! -f "$HOME/.config/systemd/user/evox3-jinhua-docker.service" ]; then
+  if [ -d "$EVOX3_JINHUA_DIR" ] && command -v docker >/dev/null 2>&1; then
+    install_jinhua_docker_unit
+  else
+    warn "Unit missing: evox3-jinhua-docker.service (run 02 first)"
+  fi
+fi
+
+for unit in evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service; do
   if [ -f "$HOME/.config/systemd/user/$unit" ]; then
     systemctl --user enable "$unit"
     ok "Enabled $unit"
@@ -95,7 +104,7 @@ fi
 
 if [ -z "\$BROWSER" ] && [ -z "\$FLATPAK_APP" ]; then
   echo "No browser found (install Flatpak Chromium; apt chromium is broken on this node)" >&2
-  exit 0
+  exit 1
 fi
 
 # Kill stale API-docs (:8000) and UI (:5173) browser instances before relaunch.
@@ -112,28 +121,52 @@ if [ -n "\${WAYLAND_DISPLAY:-}" ]; then
   OZONE_ARGS+=(--ozone-platform=wayland)
 fi
 
+# Dedicated profile avoids Flatpak "Opening in existing browser session" (no URL in cmdline).
+KIOSK_PROFILE="/tmp/evox3-jinhua-kiosk-chromium"
+
 if [ -n "\$FLATPAK_APP" ]; then
-  # Flatpak Chromium: URL as final arg; --app= alone is unreliable across runtimes.
-  exec flatpak run "\$FLATPAK_APP" --kiosk --no-first-run --disable-session-crashed-bubble "\${OZONE_ARGS[@]}" "\$URL"
+  # Flatpak Chromium: URL as final arg; dedicated --user-data-dir keeps :5173 on cmdline.
+  flatpak kill "\$FLATPAK_APP" 2>/dev/null || true
+  sleep 1
+  exec flatpak run "\$FLATPAK_APP" \
+    --user-data-dir="\$KIOSK_PROFILE" \
+    --new-window \
+    --kiosk --no-first-run --disable-session-crashed-bubble \
+    "\${OZONE_ARGS[@]}" "\$URL"
 elif [ "\$BROWSER" = "firefox" ]; then
   exec "\$BROWSER" -kiosk "\$URL"
 else
-  exec "\$BROWSER" --kiosk --app="\$URL" --no-first-run --disable-session-crashed-bubble "\${OZONE_ARGS[@]}"
+  exec "\$BROWSER" --user-data-dir="\$KIOSK_PROFILE" --new-window --kiosk --app="\$URL" --no-first-run --disable-session-crashed-bubble "\${OZONE_ARGS[@]}"
 fi
 EOF
 chmod +x "$KIOSK_WRAPPER"
 
-DESKTOP_FILE="$AUTOSTART_DIR/evox3-jinhua-kiosk.desktop"
-cat > "$DESKTOP_FILE" <<EOF
+DESKTOP_BODY="$(cat <<EOF
 [Desktop Entry]
 Type=Application
-Name=EVO-X3 Jinhua Second Brain Kiosk
-Comment=Fullscreen Second Brain UI on login
+Name=${EVOX3_BRAND_NAME} Kiosk
+Comment=Fullscreen ${EVOX3_BRAND_NAME} UI on login
 Exec=${KIOSK_WRAPPER}
+Icon=web-browser
+Categories=Network;WebBrowser;
 X-GNOME-Autostart-enabled=true
 Terminal=false
 EOF
+)"
 
+DESKTOP_FILE="$AUTOSTART_DIR/evox3-jinhua-kiosk.desktop"
+printf '%s\n' "$DESKTOP_BODY" > "$DESKTOP_FILE"
 ok "Wrote $DESKTOP_FILE"
+
+# gtk-launch looks in applications/, not only autostart/.
+APPS_DIR="$HOME/.local/share/applications"
+ensure_dir "$APPS_DIR"
+APPS_DESKTOP="$APPS_DIR/evox3-jinhua-kiosk.desktop"
+printf '%s\n' "$DESKTOP_BODY" > "$APPS_DESKTOP"
+ok "Wrote $APPS_DESKTOP"
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database "$APPS_DIR" 2>/dev/null || true
+fi
+
 ok "Wrote $KIOSK_WRAPPER"
-ok "08_autostart_desktop.sh complete — kiosk starts on desktop login"
+ok "08_autostart_desktop.sh complete — ${EVOX3_BRAND_NAME} kiosk starts on desktop login"

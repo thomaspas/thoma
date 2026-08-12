@@ -23,6 +23,11 @@ EVOX3_PIP_INDEX_FALLBACK="${EVOX3_PIP_INDEX_FALLBACK:-https://mirrors.aliyun.com
 EVOX3_LOCAL_EMAIL="${EVOX3_LOCAL_EMAIL:-ye@evox3.local}"
 EVOX3_LOCAL_PASSWORD="${EVOX3_LOCAL_PASSWORD:-evox3-local-12}"
 EVOX3_LOCAL_DISPLAY_NAME="${EVOX3_LOCAL_DISPLAY_NAME:-Ye}"
+# Product brand on the kiosk UI (IncubativeSecondBrain patch).
+EVOX3_BRAND_NAME="${EVOX3_BRAND_NAME:-ANGELICA}"
+EVOX3_BRAND_TAGLINE="${EVOX3_BRAND_TAGLINE:-Local second brain}"
+EVOX3_BRAND_MARK="${EVOX3_BRAND_MARK:-AN}"
+EVOX3_BRAND_TITLE="${EVOX3_BRAND_TITLE:-${EVOX3_BRAND_NAME} · Local second brain}"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
@@ -99,6 +104,51 @@ ensure_dir() {
   mkdir -p "$1"
 }
 
+# Wait until TCP host:port accepts connections (uses bash /dev/tcp).
+wait_for_tcp() {
+  local host="$1"
+  local port="$2"
+  local timeout_sec="${3:-60}"
+  local i
+  for i in $(seq 1 "$timeout_sec"); do
+    if (echo >/dev/tcp/"$host"/"$port") >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+# Write + enable user unit that brings docker compose infra up on login/boot (linger).
+install_jinhua_docker_unit() {
+  local unit_dir unit_path
+  require_cmd docker
+  require_cmd systemctl
+  [ -d "$EVOX3_JINHUA_DIR" ] || die "Missing $EVOX3_JINHUA_DIR"
+  unit_dir="$(user_systemd_dir)"
+  unit_path="$unit_dir/evox3-jinhua-docker.service"
+  cat >"$unit_path" <<EOF
+[Unit]
+Description=EVO-X3 Jinhua docker compose (Postgres + Neo4j + MinIO)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=${EVOX3_JINHUA_DIR}
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=180
+
+[Install]
+WantedBy=default.target
+EOF
+  reload_user_systemd
+  systemctl --user enable --now evox3-jinhua-docker.service
+  ok "Enabled evox3-jinhua-docker.service (compose on boot/login)"
+}
+
 user_systemd_dir() {
   ensure_dir "$HOME/.config/systemd/user"
   printf '%s\n' "$HOME/.config/systemd/user"
@@ -134,10 +184,45 @@ pick_browser() {
   return 1
 }
 
+# Import DISPLAY/WAYLAND/DBUS from the logged-in GNOME session (SSH → local desktop).
+import_graphical_env_from_desktop_session() {
+  local pid entry key val uid sess display imported=0
+  uid="$(id -u)"
+  for pid in $(pgrep -u "$uid" -x gnome-shell 2>/dev/null) $(pgrep -u "$uid" gnome-session-b 2>/dev/null) $(pgrep -u "$uid" -x mutter 2>/dev/null); do
+    [ -n "$pid" ] || continue
+    [ -r "/proc/${pid}/environ" ] || continue
+    while IFS= read -r -d '' entry; do
+      key="${entry%%=*}"
+      val="${entry#*=}"
+      case "$key" in
+        DISPLAY|WAYLAND_DISPLAY|XDG_RUNTIME_DIR|DBUS_SESSION_BUS_ADDRESS|XAUTHORITY|XDG_SESSION_TYPE|XDG_CURRENT_DESKTOP)
+          export "$key=$val"
+          imported=1
+          ;;
+      esac
+    done < "/proc/${pid}/environ"
+  done
+  if command -v loginctl >/dev/null 2>&1; then
+    sess="$(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$USER" '$3==u {print $1; exit}')"
+    if [ -n "$sess" ]; then
+      display="$(loginctl show-session "$sess" -p Display --value 2>/dev/null || true)"
+      if [ -n "$display" ]; then
+        export DISPLAY="$display"
+        imported=1
+      fi
+    fi
+  fi
+  if [ "$imported" -eq 1 ] && [ -n "${THOMA_DEBUG_LOG:-}" ]; then
+    python3 -c "import json,time,os; open(os.environ.get('THOMA_DEBUG_LOG','/tmp/thoma-debug-f7f922.ndjson'),'a').write(json.dumps({'sessionId':'f7f922','hypothesisId':'H6','location':'_lib.sh:import_graphical','message':'imported desktop env','data':{'DISPLAY':os.environ.get('DISPLAY'),'WAYLAND':os.environ.get('WAYLAND_DISPLAY'),'XDG_RUNTIME_DIR':os.environ.get('XDG_RUNTIME_DIR')},'timestamp':int(time.time()*1000)})+'\n')" 2>/dev/null || true
+  fi
+  return 0
+}
+
 # Prepare env so Flatpak/Chromium can open on the LOCAL desktop from SSH.
 # Exports: XDG_RUNTIME_DIR, DBUS_SESSION_BUS_ADDRESS, WAYLAND_DISPLAY, DISPLAY, XAUTHORITY
 setup_local_graphical_env() {
   local uid runtime wl auth candidate
+  import_graphical_env_from_desktop_session
   uid="$(id -u)"
   runtime="${XDG_RUNTIME_DIR:-/run/user/${uid}}"
   export XDG_RUNTIME_DIR="$runtime"
@@ -174,25 +259,27 @@ setup_local_graphical_env() {
 
   if [ -z "${WAYLAND_DISPLAY:-}" ] && { [ -z "${XAUTHORITY:-}" ] || [ ! -f "${XAUTHORITY}" ]; }; then
     warn "No Wayland socket and no XAUTHORITY — GUI launch from this SSH session will likely fail"
-    warn "Run 10_relaunch_kiosk.sh from a terminal ON the EVO-X3 desktop, or ensure a logged-in graphical session"
+    warn "Retry: ./scripts/evox3/10_relaunch_kiosk.sh then ./scripts/evox3/21_remote_verify.sh"
   fi
 }
 
 # Flatpak Chromium: URL as final arg (--app= alone is unreliable).
+# Dedicated --user-data-dir avoids "Opening in existing browser session" (URL absent from cmdline).
 # Prefer Wayland ozone when WAYLAND_DISPLAY is set (EVO-X3 desktop is Wayland).
 kiosk_launch_cmd() {
   local url="$1"
   local c ozone=""
+  local profile="/tmp/evox3-jinhua-kiosk-chromium"
   if [ -n "${WAYLAND_DISPLAY:-}" ]; then
     ozone='--ozone-platform=wayland'
   fi
   if command -v flatpak >/dev/null 2>&1; then
     if flatpak info io.github.ungoogled_software.ungoogled_chromium >/dev/null 2>&1; then
-      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$ozone" "$url"
+      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --user-data-dir=%q --new-window --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$profile" "$ozone" "$url"
       return 0
     fi
     if flatpak info org.chromium.Chromium >/dev/null 2>&1; then
-      printf 'flatpak run org.chromium.Chromium --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$ozone" "$url"
+      printf 'flatpak run org.chromium.Chromium --user-data-dir=%q --new-window --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$profile" "$ozone" "$url"
       return 0
     fi
   fi
@@ -203,7 +290,42 @@ kiosk_launch_cmd() {
   if [ "$c" = "firefox" ]; then
     printf '%q -kiosk %q' "$c" "$url"
   else
-    printf '%q --kiosk --app=%q --no-first-run --disable-session-crashed-bubble %s' "$c" "$url" "$ozone"
+    printf '%q --user-data-dir=%q --new-window --kiosk --app=%q --no-first-run --disable-session-crashed-bubble %s' "$c" "$profile" "$url" "$ozone"
   fi
+}
+
+# True if any browser/kiosk-related process cmdline references the Vite web port.
+# Flatpak/bwrap often hide the URL from pgrep -af; scan /proc/*/cmdline.
+kiosk_references_web_port() {
+  local port="${EVOX3_WEB_PORT:-5173}"
+  local pid cmd
+  for pid in /proc/[0-9]*; do
+    [ -r "${pid}/cmdline" ] || continue
+    cmd="$(tr '\0' ' ' < "${pid}/cmdline" 2>/dev/null || true)"
+    case "$cmd" in
+      *ungoogled_chromium*|*org.chromium*|*chromium*|*firefox*|*evox3-jinhua-kiosk*|*flatpak*)
+        if printf '%s' "$cmd" | grep -qE ":${port}(/|\"|'|[[:space:]]|$)|127\.0\.0\.1:${port}"; then
+          return 0
+        fi
+        ;;
+    esac
+  done
+  return 1
+}
+
+wait_for_kiosk_web_port() {
+  local secs="${1:-45}"
+  local i
+  for i in $(seq 1 "$secs"); do
+    if kiosk_references_web_port; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+kiosk_proc_snapshot() {
+  pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox|evox3-jinhua-kiosk|flatpak' 2>/dev/null | head -n 40 || true
 }
 
