@@ -120,6 +120,7 @@ systemctl --user status evox3-bge-m3.service evox3-jinhua-api.service evox3-jinh
 
 - Δημιουργεί/κάνει login τον fixed local λογαριασμό (`EVOX3_LOCAL_*`).
 - Patch στο `apps/web/src/App.tsx` (+ `evox3AutoAuth.ts`) ώστε να μην εμφανίζεται ποτέ το `AuthScreen`.
+- Kiosk: **Sign out** κρύβεται / είναι no-op (`Kiosk · always signed in`) — αποφεύγει error μετά από logout.
 - Backup upstream: `apps/web/src/App.tsx.evox3-orig`.
 - Επαναφορά Register/Login:
   ```bash

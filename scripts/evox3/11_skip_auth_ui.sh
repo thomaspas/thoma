@@ -14,11 +14,13 @@ APP_BAK="$WEB_SRC/App.tsx.evox3-orig"
 AUTO_TS="$WEB_SRC/evox3AutoAuth.ts"
 MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-skip-auth"
 API_BASE="http://${EVOX3_API_HOST}:${EVOX3_API_PORT}"
+# Bump when App.tsx patch shape changes so re-runs refresh an older patch.
+EVOX3_SKIP_AUTH_VERSION="2"
 
 [ -d "$EVOX3_JINHUA_DIR" ] || die "Missing $EVOX3_JINHUA_DIR — run 02 first"
 [ -f "$APP_TSX" ] || die "Missing $APP_TSX — is the Jinhua web app present?"
 
-CRED_FINGERPRINT="$(printf '%s|%s|%s' "$EVOX3_LOCAL_EMAIL" "$EVOX3_LOCAL_PASSWORD" "$EVOX3_LOCAL_DISPLAY_NAME" | sha256sum | awk '{print $1}')"
+CRED_FINGERPRINT="$(printf '%s|%s|%s|%s' "$EVOX3_SKIP_AUTH_VERSION" "$EVOX3_LOCAL_EMAIL" "$EVOX3_LOCAL_PASSWORD" "$EVOX3_LOCAL_DISPLAY_NAME" | sha256sum | awk '{print $1}')"
 
 # ---------------------------------------------------------------------------
 # A. Ensure API is up, then register-or-login fixed local account
@@ -256,7 +258,7 @@ inject = '''
 insert_at = auth_fn.start()
 text = text[:insert_at] + inject + "\n  " + text[insert_at:]
 
-# Replace signOut to clear then allow effect to re-login (session=null triggers effect)
+# Kiosk: Sign out is a no-op (stays signed in as fixed local account).
 text2, n = re.subn(
     r'function signOut\(\) \{\s*'
     r'setAccessToken\(null\);\s*'
@@ -264,16 +266,25 @@ text2, n = re.subn(
     r'setSession\(null\);\s*'
     r'\}',
     'function signOut() {\n'
-    '    // EVOX3_SKIP_AUTH: clearing session retriggers ensureEvox3Session\n'
-    '    setAccessToken(null);\n'
-    '    localStorage.removeItem("sb:session");\n'
-    '    setSession(null);\n'
+    '    // EVOX3_SKIP_AUTH: kiosk stays signed in — ignore Sign out\n'
+    '    return;\n'
     '  }',
     text,
     count=1,
 )
 if n != 1:
     raise SystemExit("Could not patch signOut() in App.tsx")
+text = text2
+
+# Hide Sign out button (avoid confusing logout flash / errors on kiosk).
+text2, n = re.subn(
+    r'<button type="button" className="btn ghost sm" onClick=\{signOut\}>Sign out</button>',
+    '<span className="muted sm" title="EVOX3_SKIP_AUTH">Kiosk · always signed in</span>',
+    text,
+    count=1,
+)
+if n != 1:
+    raise SystemExit("Could not replace Sign out button in App.tsx")
 text = text2
 
 # Replace AuthScreen gate
@@ -310,6 +321,10 @@ if "ensureEvox3Session" not in text:
     raise SystemExit("Patch incomplete: ensureEvox3Session missing")
 if "onAuthenticated={authenticate}" in text:
     raise SystemExit("Patch incomplete: AuthScreen gate still present")
+if 'onClick={signOut}>Sign out</button>' in text:
+    raise SystemExit("Patch incomplete: Sign out button still present")
+if "Kiosk · always signed in" not in text:
+    raise SystemExit("Patch incomplete: kiosk label missing")
 
 app_path.write_text(text)
 print("APP_PATCHED")
