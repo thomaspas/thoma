@@ -133,6 +133,23 @@ systemctl --user status evox3-bge-m3.service evox3-jinhua-api.service evox3-jinh
 2. Confirm kiosk opens dashboard (no Register/Login) on **`:5173`**.
 3. Upload a small `.md` → Greek chat smoke → reboot για autostart.
 
+## Handoff — συνέχεια σε άλλη συνομιλία
+
+**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up στο EVO-X3 (llama `:11434`, bge `:8002`, API `:8000`, Vite `:5173`, Flatpak kiosk Wayland). Script `11` skip-auth applied + login `ye@evox3.local` OK. Λείπει ανθρώπινη επιβεβαίωση οθόνης + Greek chat + reboot autostart, μετά merge PR #1.
+
+**Branch / PR:** `cursor/jinhua-local-full-evox3-02ac` → https://github.com/thomaspas/thoma/pull/1
+
+**Resume paste:**
+```bash
+cd "$HOME/thoma" && git pull --ff-only
+./scripts/evox3/09_smoke_check.sh
+./scripts/evox3/10_relaunch_kiosk.sh
+# αν λείπει skip-auth:
+./scripts/evox3/11_skip_auth_ui.sh
+```
+
+**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`.
+
 ## Logs
 
 ```bash

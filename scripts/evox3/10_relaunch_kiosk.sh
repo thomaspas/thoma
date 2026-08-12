@@ -61,7 +61,7 @@ ENV_ARGS=(
 nohup env "${ENV_ARGS[@]}" "$KIOSK_WRAPPER" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
 sleep 3
 
-ok "Relaunched. Expect UI register/login at $URL (NOT :${EVOX3_API_PORT})"
+ok "Relaunched. Expect dashboard/chat at $URL (no Register/Login; NOT :${EVOX3_API_PORT})"
 printf 'Log tail:\n'
 tail -n 40 /tmp/evox3-jinhua-kiosk.log 2>/dev/null || true
 printf '\nProcesses:\n'
@@ -71,4 +71,5 @@ if ! pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox' >/dev/null 2>&
   warn "Diagnostic: ls -l \"\$XDG_RUNTIME_DIR\"/wayland-* \"\$XDG_RUNTIME_DIR\"/gdm/Xauthority 2>/dev/null; echo DISPLAY=\$DISPLAY"
 fi
 printf '\nIf you still see :%s in process args, paste this block back.\n' "$EVOX3_API_PORT"
+printf 'On screen: dashboard/chat (skip-auth). Then upload a .md and ask in Greek.\n'
 ok "10_relaunch_kiosk.sh complete"

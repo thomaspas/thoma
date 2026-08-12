@@ -77,14 +77,43 @@ except Exception:
   fi
 fi
 
+printf '\n=== skip-auth / local account ===\n'
+APP_TSX="$EVOX3_JINHUA_DIR/apps/web/src/App.tsx"
+AUTO_TS="$EVOX3_JINHUA_DIR/apps/web/src/evox3AutoAuth.ts"
+MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-skip-auth"
+if [ -f "$MARKER" ] && [ -f "$AUTO_TS" ] && grep -q 'EVOX3_SKIP_AUTH' "$APP_TSX" 2>/dev/null; then
+  ok "skip-auth patch present (App.tsx + evox3AutoAuth.ts)"
+  PASS=$((PASS + 1))
+else
+  warn "skip-auth patch missing — run ./scripts/evox3/11_skip_auth_ui.sh"
+  FAIL=$((FAIL + 1))
+fi
+
+LOGIN_BODY="$(python3 - <<PY
+import json
+print(json.dumps({"email": """${EVOX3_LOCAL_EMAIL}""", "password": """${EVOX3_LOCAL_PASSWORD}"""}))
+PY
+)"
+LOGIN_CODE="$(curl -sS -o /tmp/evox3-smoke-login.json -w '%{http_code}' --max-time 10 \
+  -X POST "http://${EVOX3_API_HOST}:${EVOX3_API_PORT}/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d "$LOGIN_BODY" || true)"
+if [ "$LOGIN_CODE" = "200" ]; then
+  ok "local account login OK (${EVOX3_LOCAL_EMAIL})"
+  PASS=$((PASS + 1))
+else
+  warn "local account login HTTP ${LOGIN_CODE} — run 11_skip_auth_ui.sh"
+  FAIL=$((FAIL + 1))
+fi
+
 printf '\n=== result: %s pass / %s fail ===\n' "$PASS" "$FAIL"
-printf '\nNext on EVO-X3 desktop:\n'
-printf '  1) Kiosk must open http://127.0.0.1:%s (NOT :8000 API docs)\n' "$EVOX3_WEB_PORT"
-printf '  2) No Register/Login — auto-session via 11_skip_auth_ui.sh\n'
-printf '  3) Upload a small .md note\n'
-printf '  4) Ask a Greek question in chat\n'
-printf '  5) Reboot once to confirm autostart (services + kiosk)\n'
-printf '\nRelaunch kiosk now (kills stale :8000 browsers):\n'
+printf '\nOperator checklist (human / on EVO-X3 desktop):\n'
+printf '  1) Kiosk http://127.0.0.1:%s shows dashboard (NOT Register/Login, NOT :8000)\n' "$EVOX3_WEB_PORT"
+printf '  2) Upload a small .md note\n'
+printf '  3) Ask a Greek question in chat\n'
+printf '  4) Reboot once; confirm systemd units + kiosk autostart\n'
+printf '  5) Then mark PR #1 ready / merge\n'
+printf '\nRelaunch kiosk now:\n'
 printf '  ./scripts/evox3/10_relaunch_kiosk.sh\n'
 
 if [ "$FAIL" -gt 0 ]; then
