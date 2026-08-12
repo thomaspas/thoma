@@ -22,8 +22,15 @@ if ! curl -fsS "http://127.0.0.1:${EVOX3_BGE_PORT}/health" >/dev/null 2>&1; then
   die "Embeddings server not healthy on :${EVOX3_BGE_PORT} — run 05_start_bge_m3_server.sh"
 fi
 
-log "Running alembic upgrade head"
-.venv/bin/python -m alembic upgrade head
+# Fresh installs must bootstrap baseline tables via SQLAlchemy metadata first.
+# Alembic revisions (0001+) only add columns to existing tables (see init_db()).
+log "Bootstrapping DB via secondbrain.db.session.init_db() (create_all + alembic)"
+.venv/bin/python - <<'PY'
+from secondbrain.db.session import init_db
+
+init_db()
+print("INIT_DB_OK")
+PY
 
 UNIT_DIR="$(user_systemd_dir)"
 UNIT_PATH="$UNIT_DIR/evox3-jinhua-api.service"

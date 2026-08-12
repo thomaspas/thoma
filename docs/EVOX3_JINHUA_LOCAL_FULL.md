@@ -54,7 +54,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 3. **03** — Γράφει `.env` LOCAL FULL (`LLM`→`:11434`, `EMBED`→`:8002`, `WORKER_DISPATCH=inline`, `RERANKER_PROVIDER=none`).
 4. **04** — venv + `pip install -e ".[dev,llm]"` (Tsinghua/Aliyun mirrors).
 5. **05** — Τοπικός OpenAI-compatible bge-m3 server + `evox3-bge-m3.service`.
-6. **06** — `alembic upgrade head` + `evox3-jinhua-api.service`.
+6. **06** — `init_db()` (SQLAlchemy `create_all` + Alembic) + `evox3-jinhua-api.service`.
 7. **07** — `npm install` / Vite `:5173` + Chromium `--kiosk`.
 8. **08** — Enable units + `~/.config/autostart` kiosk wrapper.
 
@@ -107,6 +107,16 @@ bash -lc 'export DISPLAY=:0; export XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority};
 ```
 
 Προϋπόθεση: κάποιος logged-in στο desktop του EVO-X3.
+
+## Troubleshooting
+
+### `NoSuchTableError: memories` during Alembic
+Cause: running bare `alembic upgrade head` on an empty DB. Jinhua expects `init_db()` first (`create_all` + then Alembic). Script `06` does this correctly — pull the latest `thoma` branch and re-run from `06`.
+
+```bash
+cd "$HOME/thoma" && git pull --ff-only
+"$HOME/thoma/scripts/evox3/06_migrate_and_start_api.sh"
+```
 
 ## Εκτός scope αυτού του pass
 
