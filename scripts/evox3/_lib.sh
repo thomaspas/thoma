@@ -66,3 +66,30 @@ pick_browser() {
   done
   return 1
 }
+
+# Prints a launch command line for kiosk (handles Flatpak Chromium).
+# Usage: eval "$(kiosk_launch_cmd URL)"
+kiosk_launch_cmd() {
+  local url="$1"
+  local c
+  if command -v flatpak >/dev/null 2>&1; then
+    if flatpak info io.github.ungoogled_software.ungoogled_chromium >/dev/null 2>&1; then
+      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --kiosk --app=%q --no-first-run' "$url"
+      return 0
+    fi
+    if flatpak info org.chromium.Chromium >/dev/null 2>&1; then
+      printf 'flatpak run org.chromium.Chromium --kiosk --app=%q --no-first-run' "$url"
+      return 0
+    fi
+  fi
+  c="$(pick_browser || true)"
+  if [ -z "$c" ]; then
+    return 1
+  fi
+  if [ "$c" = "firefox" ]; then
+    printf '%q -kiosk %q' "$c" "$url"
+  else
+    printf '%q --kiosk --app=%q --no-first-run --disable-session-crashed-bubble' "$c" "$url"
+  fi
+}
+

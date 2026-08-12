@@ -47,10 +47,25 @@ for c in chromium-browser chromium google-chrome google-chrome-stable firefox; d
     break
   fi
 done
-[ -n "\$BROWSER" ] || exit 0
+
+FLATPAK_APP=""
+if command -v flatpak >/dev/null 2>&1; then
+  if flatpak info io.github.ungoogled_software.ungoogled_chromium >/dev/null 2>&1; then
+    FLATPAK_APP="io.github.ungoogled_software.ungoogled_chromium"
+  elif flatpak info org.chromium.Chromium >/dev/null 2>&1; then
+    FLATPAK_APP="org.chromium.Chromium"
+  fi
+fi
+
+if [ -z "\$BROWSER" ] && [ -z "\$FLATPAK_APP" ]; then
+  echo "No browser found" >&2
+  exit 0
+fi
 
 pkill -f "kiosk.*${EVOX3_WEB_PORT}" 2>/dev/null || true
-if [ "\$BROWSER" = "firefox" ]; then
+if [ -n "\$FLATPAK_APP" ]; then
+  exec flatpak run "\$FLATPAK_APP" --kiosk --app="\$URL" --no-first-run
+elif [ "\$BROWSER" = "firefox" ]; then
   exec "\$BROWSER" -kiosk "\$URL"
 else
   exec "\$BROWSER" --kiosk --app="\$URL" --no-first-run --disable-session-crashed-bubble

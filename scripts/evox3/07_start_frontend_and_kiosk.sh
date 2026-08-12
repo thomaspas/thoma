@@ -64,25 +64,16 @@ URL="http://127.0.0.1:${EVOX3_WEB_PORT}"
 export DISPLAY="${DISPLAY:-:0}"
 export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
 
-BROWSER="$(pick_browser || true)"
-if [ -z "${BROWSER:-}" ]; then
-  warn "No Chromium/Chrome/Firefox found — frontend is up at $URL"
+LAUNCH_CMD="$(kiosk_launch_cmd "$URL" || true)"
+if [ -z "${LAUNCH_CMD:-}" ]; then
+  warn "No Chromium/Firefox/Flatpak browser found — open $URL manually"
   ok "07_start_frontend_and_kiosk.sh complete (kiosk skipped)"
   exit 0
 fi
 
-log "Launching kiosk with $BROWSER on DISPLAY=$DISPLAY"
+log "Launching kiosk: $LAUNCH_CMD"
 pkill -f "kiosk.*${EVOX3_WEB_PORT}" 2>/dev/null || true
-
-case "$BROWSER" in
-  firefox)
-    nohup "$BROWSER" -kiosk "$URL" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
-    ;;
-  *)
-    nohup "$BROWSER" --kiosk --app="$URL" --no-first-run --disable-session-crashed-bubble \
-      >/tmp/evox3-jinhua-kiosk.log 2>&1 &
-    ;;
-esac
+nohup bash -lc "$LAUNCH_CMD" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
 
 sleep 1
 ok "Kiosk launched (log: /tmp/evox3-jinhua-kiosk.log)"
