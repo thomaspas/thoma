@@ -146,13 +146,15 @@ chmod +x scripts/evox3/*.sh
 
 ## Handoff — συνέχεια σε άλλη συνομιλία
 
-**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up στο EVO-X3 (llama `:11434`, bge `:8002`, API `:8000`, Vite `:5173`, Flatpak kiosk Wayland). `12_operator_finish` / `09` smoke **10 pass / 0 fail** confirmed on machine. Skip-auth v2 (no AuthScreen, no Sign out — `Kiosk · always signed in`). Λείπει ανθρώπινη επιβεβαίωση: upload `.md` + Greek chat + reboot autostart, μετά **merge** PR #1 (already ready for review).
+**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up στο EVO-X3. PR #1 **merged** to `main`. Smoke **10 pass / 0 fail**. Skip-auth v2. Operator finish syncs **`main`**. Λείπει: upload `.md` + Greek chat + reboot autostart στην οθόνη.
 
-**Branch / PR:** `cursor/jinhua-local-full-evox3-02ac` → https://github.com/thomaspas/thoma/pull/1
+**Branch:** `main` → https://github.com/thomaspas/thoma
 
 **Resume paste:**
 ```bash
 cd "$HOME/thoma"
+git fetch origin main
+git checkout -B main origin/main
 ./scripts/evox3/12_operator_finish.sh
 ```
 

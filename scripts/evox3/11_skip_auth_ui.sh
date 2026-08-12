@@ -137,6 +137,7 @@ seed_or_login
 # ---------------------------------------------------------------------------
 # B. Patch frontend (idempotent)
 # ---------------------------------------------------------------------------
+NEED_PATCH=0
 if [ -f "$MARKER" ] && [ -f "$AUTO_TS" ] && grep -q 'EVOX3_SKIP_AUTH' "$APP_TSX" 2>/dev/null; then
   OLD_FP="$(tr -d '[:space:]' < "$MARKER" || true)"
   if [ "$OLD_FP" = "$CRED_FINGERPRINT" ]; then
@@ -146,6 +147,12 @@ if [ -f "$MARKER" ] && [ -f "$AUTO_TS" ] && grep -q 'EVOX3_SKIP_AUTH' "$APP_TSX"
     NEED_PATCH=1
   fi
 else
+  NEED_PATCH=1
+fi
+
+# Force refresh if Sign out button still present (pre-v2 patch).
+if grep -q 'onClick={signOut}>Sign out</button>' "$APP_TSX" 2>/dev/null; then
+  log "Sign out button still present — forcing skip-auth v2 refresh"
   NEED_PATCH=1
 fi
 

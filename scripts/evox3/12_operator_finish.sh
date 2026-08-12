@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Operator finish: sync PR branch, skip-auth, smoke, relaunch kiosk, human checklist.
+# Operator finish: sync main, skip-auth, smoke, relaunch kiosk, human checklist.
 # Run on EVO-X3 (not Cursor Cloud). ASCII only.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
 
 THOMA_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-BRANCH="cursor/jinhua-local-full-evox3-02ac"
+BRANCH="${EVOX3_THOMA_BRANCH:-main}"
 SAMPLE_MD="${EVOX3_AI_APPS}/evox3-greek-smoke.md"
 
 cd "$THOMA_ROOT"
@@ -15,13 +15,19 @@ log "=== 12_operator_finish: git sync ($BRANCH) ==="
 require_cmd git
 if [ -d "$THOMA_ROOT/.git" ]; then
   git fetch origin "$BRANCH"
-  current="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
-  if [ "$current" != "$BRANCH" ]; then
-    log "Checking out $BRANCH (was: ${current:-detached})"
-    git checkout "$BRANCH"
+  # Ensure local branch exists (clone may only have tracked a feature branch).
+  if ! git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    log "Creating local branch $BRANCH from origin/$BRANCH"
+    git checkout -B "$BRANCH" "origin/$BRANCH"
+  else
+    current="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+    if [ "$current" != "$BRANCH" ]; then
+      log "Checking out $BRANCH (was: ${current:-detached})"
+      git checkout "$BRANCH"
+    fi
+    git pull --ff-only origin "$BRANCH"
   fi
-  git pull --ff-only origin "$BRANCH"
-  ok "thoma @ $(git rev-parse --short HEAD) on $BRANCH"
+  ok "thoma @ $(git rev-parse --short HEAD) on $(git rev-parse --abbrev-ref HEAD)"
 else
   warn "Not a git checkout at $THOMA_ROOT — skip pull"
 fi
@@ -55,5 +61,5 @@ printf '  3) Ask in Greek chat, e.g.: Ποιος είναι ο kiosk χρήστ�
 printf '  4) Reboot once, then after desktop login:\n'
 printf '       systemctl --user is-active evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service\n'
 printf '       %s/scripts/evox3/09_smoke_check.sh\n' "$THOMA_ROOT"
-printf '  5) When 1-4 pass: merge PR #1 (already ready for review)\n'
-ok "12_operator_finish.sh complete — do steps 1-4 on screen, then merge"
+printf '  5) Done — LOCAL FULL operator checklist complete\n'
+ok "12_operator_finish.sh complete — do steps 1-4 on screen"
