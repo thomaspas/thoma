@@ -74,6 +74,7 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `21` | Remote verify (SSH operator — no screen visit) |
 | `22` | Operator context check (already on EVO-X3? skip nested ssh) |
 | `23` | Sync kiosk/verify patches Gaming-7 → EVO-X3 via scp |
+| `24` | React Flow fullscreen Graph nav (`GraphFlowWorkspace`) |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 
@@ -149,9 +150,11 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 1. ~~**Graph analytics** on Neo4j~~ — **DONE** ([PR #6](https://github.com/thomaspas/thoma/pull/6))
 2. ~~**MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`)~~ — **DONE** via `18_mcp_angelica.sh` + `18_demo_mcp.sh` ([PR #7](https://github.com/thomaspas/thoma/pull/7))
 3. ~~**Browser extension** capture~~ — **DONE** via `19_browser_extension.sh` + `extensions/angelica-capture/` + `19_demo_capture.sh`
-4. **React Flow 2D** visual graph + rich relation types + growth animations — **next**
-5. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
-6. “100% offline Ollama” is low priority here — LOCAL FULL already uses local llama-server + bge-m3
+4. ~~**React Flow 2D** visual graph (fullscreen Graph nav)~~ — **DONE** via `24_graph_ui_reactflow.sh` + `patches/graph_ui/` (see [`HANDOFF_GRAPH_UI.md`](HANDOFF_GRAPH_UI.md)); Overview 3D left as-is
+5. ~~Analytics-driven node styling (PageRank / communities / bridges)~~ — **DONE** in GraphFlowWorkspace v2 (`24` PATCH_VER=2)
+6. Rich relation types + growth animations — **next**
+6. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
+7. “100% offline Ollama” is low priority here — LOCAL FULL already uses local llama-server + bge-m3
 
 ## Agent rules for resume
 

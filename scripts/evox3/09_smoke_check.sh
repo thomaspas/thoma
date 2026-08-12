@@ -220,6 +220,24 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+printf '\n=== React Flow graph UI ===\n'
+GRAPH_UI_MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-graph-ui-reactflow"
+GRAPH_UI_WS="$EVOX3_JINHUA_DIR/apps/web/src/features/graph/GraphFlowWorkspace.tsx"
+GRAPH_UI_PKG="$EVOX3_JINHUA_DIR/apps/web/package.json"
+if [ -f "$GRAPH_UI_MARKER" ]; then
+  if [ -f "$GRAPH_UI_WS" ] \
+    && grep -q 'GraphFlowWorkspace' "$EVOX3_JINHUA_DIR/apps/web/src/App.tsx" 2>/dev/null \
+    && grep -q '@xyflow/react' "$GRAPH_UI_PKG" 2>/dev/null; then
+    ok "React Flow graph UI present (marker + workspace + @xyflow)"
+    PASS=$((PASS + 1))
+  else
+    warn "Graph UI marker present but incomplete — re-run ./scripts/evox3/24_graph_ui_reactflow.sh"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  log "React Flow graph UI not installed (optional) — run ./scripts/evox3/24_graph_ui_reactflow.sh"
+fi
+
 printf '\n=== browser extension (opt-in) ===\n'
 EXT_DIR="$SCRIPT_DIR/../../extensions/angelica-capture"
 EXT_BUILD="$EXT_DIR/build/chrome-mv3-prod"
