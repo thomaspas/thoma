@@ -55,6 +55,10 @@ EOF
 
 reload_user_systemd
 enable_linger_hint
+
+# Qwen thinking can stall ingest at status=parsing; patch before API start.
+bash "$SCRIPT_DIR/14_patch_openai_llm_local.sh" || warn "14 LLM patch skipped"
+
 systemctl --user enable --now evox3-jinhua-api.service
 
 log "Waiting for API docs on :${EVOX3_API_PORT}"
