@@ -125,11 +125,13 @@ EVOX3_API_PORT=8010 ./scripts/evox3/06_migrate_and_start_api.sh
 
 ```bash
 docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+# Postgres must be up — login 500 after reboot is usually :5432 refused
+(echo >/dev/tcp/127.0.0.1/5432) && echo postgres_ok
 curl -fsS http://127.0.0.1:11434/v1/models | head
 curl -fsS http://127.0.0.1:8002/health
 curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8000/docs
 curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5173
-systemctl --user status evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service --no-pager
+systemctl --user status evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service --no-pager
 ```
 
 Στο UI: **χωρίς Register/Login** (script `11` auto-login ως `ye@evox3.local`) → ανέβασε ένα μικρό `.md` → ρώτα στα ελληνικά.
@@ -165,11 +167,12 @@ chmod +x scripts/evox3/*.sh
 Μετά στην οθόνη:
 1. Confirm kiosk opens **dashboard/chat** (no Register/Login) on **`:5173`**.
 2. Upload `~/ai_apps/evox3-greek-smoke.md` → Greek chat smoke → reboot για autostart.
-3. Μετά reboot: `systemctl --user is-active evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service` + `./scripts/evox3/09_smoke_check.sh`.
+3. Μετά reboot: `systemctl --user is-active evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service` + `./scripts/evox3/09_smoke_check.sh`.
+4. Αν login HTTP 500 / `Connection refused` στο `:5432`: Postgres/docker δεν ήρθε πάνω — `./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh` (εγκαθιστά και `evox3-jinhua-docker.service` για τα επόμενα reboot).
 
 ## Handoff — συνέχεια σε άλλη συνομιλία
 
-**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up στο EVO-X3. PR #1 **merged** to `main`. Smoke **10 pass / 0 fail**. Skip-auth v2. Operator finish syncs **`main`**. Λείπει: upload `.md` + Greek chat + reboot autostart στην οθόνη.
+**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up. Greek chat smoke **PASS** (`citation_complete`, kiosk user `ye@evox3.local`). Μετά reboot: user units active αλλά **Postgres `:5432` Connection refused** → login HTTP 500. Fix: docker compose boot unit + smoke checks για 5432/7687.
 
 **Branch:** `main` → https://github.com/thomaspas/thoma
 

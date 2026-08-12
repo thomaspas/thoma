@@ -9,7 +9,16 @@ require_cmd systemctl
 AUTOSTART_DIR="$HOME/.config/autostart"
 ensure_dir "$AUTOSTART_DIR"
 
-for unit in evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service; do
+# Docker compose first — API login needs Postgres after reboot.
+if [ ! -f "$HOME/.config/systemd/user/evox3-jinhua-docker.service" ]; then
+  if [ -d "$EVOX3_JINHUA_DIR" ] && command -v docker >/dev/null 2>&1; then
+    install_jinhua_docker_unit
+  else
+    warn "Unit missing: evox3-jinhua-docker.service (run 02 first)"
+  fi
+fi
+
+for unit in evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service; do
   if [ -f "$HOME/.config/systemd/user/$unit" ]; then
     systemctl --user enable "$unit"
     ok "Enabled $unit"

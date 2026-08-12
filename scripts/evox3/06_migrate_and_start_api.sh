@@ -32,19 +32,33 @@ init_db()
 print("INIT_DB_OK")
 PY
 
+# Ensure compose infra unit exists (Postgres must be up before API is useful).
+if [ ! -f "$HOME/.config/systemd/user/evox3-jinhua-docker.service" ]; then
+  install_jinhua_docker_unit
+else
+  systemctl --user start evox3-jinhua-docker.service || warn "Could not start evox3-jinhua-docker.service"
+fi
+
+log "Waiting for Postgres on localhost:5432 before (re)starting API"
+if ! wait_for_tcp 127.0.0.1 5432 90; then
+  die "Postgres :5432 refused — run ./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh"
+fi
+
 UNIT_DIR="$(user_systemd_dir)"
 UNIT_PATH="$UNIT_DIR/evox3-jinhua-api.service"
 
 cat > "$UNIT_PATH" <<EOF
 [Unit]
 Description=EVO-X3 Jinhua SecondBrain API (uvicorn :${EVOX3_API_PORT})
-After=network-online.target docker.service
-Wants=network-online.target
+After=network-online.target evox3-jinhua-docker.service
+Wants=network-online.target evox3-jinhua-docker.service
 
 [Service]
 Type=simple
 WorkingDirectory=${EVOX3_JINHUA_DIR}
 EnvironmentFile=${EVOX3_JINHUA_DIR}/.env
+# Wait for Postgres — after reboot the API used to start while :5432 was still down.
+ExecStartPre=/bin/bash -c 'for i in \$(seq 1 90); do (echo >/dev/tcp/127.0.0.1/5432) >/dev/null 2>&1 && exit 0; sleep 1; done; echo "Postgres :5432 not ready" >&2; exit 1'
 ExecStart=${EVOX3_JINHUA_DIR}/.venv/bin/python -m uvicorn apps.api.main:app --host ${EVOX3_API_HOST} --port ${EVOX3_API_PORT}
 Restart=on-failure
 RestartSec=5

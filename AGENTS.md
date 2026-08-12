@@ -24,7 +24,12 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/run_all.sh
 ```
 
-Smoke checks and ports are documented in the runbook (`:11434` LLM, `:8002` bge-m3, `:8000` API, `:5173` UI).
+Smoke checks and ports are documented in the runbook (`:11434` LLM, `:8002` bge-m3, `:8000` API, `:5173` UI, Docker Postgres `:5432` / Neo4j `:7687`).
+
+### Gotchas
+
+- After reboot, login HTTP 500 with `Connection refused` on `:5432` means Docker compose (Postgres) did not come up. Run `02_ensure_jinhua_clone_and_docker.sh` (installs `evox3-jinhua-docker.service`). API docs can still be 200 while DB is down.
+- Cloud agent has no SSH to EVO-X3 — validate via user paste of script output.
 
 ### Lint / test / build (this repo)
 

@@ -25,6 +25,23 @@ check_http() {
 
 printf '\n=== EVO-X3 LOCAL FULL smoke ===\n'
 
+check_tcp() {
+  local name="$1"
+  local host="$2"
+  local port="$3"
+  if wait_for_tcp "$host" "$port" 2; then
+    ok "$name  tcp ${host}:${port} open"
+    PASS=$((PASS + 1))
+  else
+    warn "$name  tcp ${host}:${port} CLOSED — run ./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
+printf '\n=== docker infra (required after reboot) ===\n'
+check_tcp "Postgres" "127.0.0.1" "5432"
+check_tcp "Neo4j  " "127.0.0.1" "7687"
+
 check_http "LLM     " "${EVOX3_LLM_BASE_URL}/models"
 check_http "bge-m3  " "http://127.0.0.1:${EVOX3_BGE_PORT}/health"
 check_http "API docs" "http://${EVOX3_API_HOST}:${EVOX3_API_PORT}/docs"
@@ -32,11 +49,12 @@ check_http "Web UI  " "http://127.0.0.1:${EVOX3_WEB_PORT}/"
 
 if command -v systemctl >/dev/null 2>&1; then
   printf '\n=== systemd user units ===\n'
-  for unit in evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service; do
+  for unit in evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service; do
     if systemctl --user is-active --quiet "$unit" 2>/dev/null; then
       ok "$unit active"
       PASS=$((PASS + 1))
     else
+      # oneshot RemainAfterExit units report "active" when successful; inactive = not started
       warn "$unit NOT active"
       FAIL=$((FAIL + 1))
     fi
@@ -102,7 +120,15 @@ if [ "$LOGIN_CODE" = "200" ]; then
   ok "local account login OK (${EVOX3_LOCAL_EMAIL})"
   PASS=$((PASS + 1))
 else
-  warn "local account login HTTP ${LOGIN_CODE} — run 11_skip_auth_ui.sh"
+  warn "local account login HTTP ${LOGIN_CODE}"
+  if [ -f /tmp/evox3-smoke-login.json ]; then
+    warn "login body: $(tr '\n' ' ' </tmp/evox3-smoke-login.json | head -c 240)"
+  fi
+  if ! wait_for_tcp 127.0.0.1 5432 1; then
+    warn "Postgres :5432 is down — fix: ./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh"
+  else
+    warn "Postgres is up — try: ./scripts/evox3/11_skip_auth_ui.sh"
+  fi
   FAIL=$((FAIL + 1))
 fi
 

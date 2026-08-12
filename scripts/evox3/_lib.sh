@@ -99,6 +99,51 @@ ensure_dir() {
   mkdir -p "$1"
 }
 
+# Wait until TCP host:port accepts connections (uses bash /dev/tcp).
+wait_for_tcp() {
+  local host="$1"
+  local port="$2"
+  local timeout_sec="${3:-60}"
+  local i
+  for i in $(seq 1 "$timeout_sec"); do
+    if (echo >/dev/tcp/"$host"/"$port") >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+# Write + enable user unit that brings docker compose infra up on login/boot (linger).
+install_jinhua_docker_unit() {
+  local unit_dir unit_path
+  require_cmd docker
+  require_cmd systemctl
+  [ -d "$EVOX3_JINHUA_DIR" ] || die "Missing $EVOX3_JINHUA_DIR"
+  unit_dir="$(user_systemd_dir)"
+  unit_path="$unit_dir/evox3-jinhua-docker.service"
+  cat >"$unit_path" <<EOF
+[Unit]
+Description=EVO-X3 Jinhua docker compose (Postgres + Neo4j + MinIO)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=${EVOX3_JINHUA_DIR}
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=180
+
+[Install]
+WantedBy=default.target
+EOF
+  reload_user_systemd
+  systemctl --user enable --now evox3-jinhua-docker.service
+  ok "Enabled evox3-jinhua-docker.service (compose on boot/login)"
+}
+
 user_systemd_dir() {
   ensure_dir "$HOME/.config/systemd/user"
   printf '%s\n' "$HOME/.config/systemd/user"

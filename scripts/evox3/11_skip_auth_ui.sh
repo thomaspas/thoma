@@ -20,6 +20,15 @@ EVOX3_SKIP_AUTH_VERSION="2"
 [ -d "$EVOX3_JINHUA_DIR" ] || die "Missing $EVOX3_JINHUA_DIR — run 02 first"
 [ -f "$APP_TSX" ] || die "Missing $APP_TSX — is the Jinhua web app present?"
 
+# Login/register need Postgres. After reboot, compose may still be down.
+if ! wait_for_tcp 127.0.0.1 5432 2; then
+  warn "Postgres :5432 closed — starting docker compose via 02"
+  bash "$SCRIPT_DIR/02_ensure_jinhua_clone_and_docker.sh"
+fi
+if ! wait_for_tcp 127.0.0.1 5432 30; then
+  die "Postgres still down on :5432 — fix Docker first (docker compose ps)"
+fi
+
 CRED_FINGERPRINT="$(printf '%s|%s|%s|%s' "$EVOX3_SKIP_AUTH_VERSION" "$EVOX3_LOCAL_EMAIL" "$EVOX3_LOCAL_PASSWORD" "$EVOX3_LOCAL_DISPLAY_NAME" | sha256sum | awk '{print $1}')"
 
 # ---------------------------------------------------------------------------
