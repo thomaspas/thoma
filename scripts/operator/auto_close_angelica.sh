@@ -12,11 +12,21 @@ EVOX3_SSH="${EVOX3_SSH:-thomas-pashoulas@192.168.1.8}"
 EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"
+DEBUG_LOG="${DEBUG_LOG:-/home/thomas1821/Λήψεις/.cursor/debug-f7f922.log}"
+SCRIPT_REV="x-access-token-v1"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
 warn() { printf '[!] %s\n' "$*" >&2; }
 die() { printf '[x] %s\n' "$*" >&2; exit 1; }
+
+#region agent log
+_dbg() {
+  local hid="$1" loc="$2" msg="$3" data="${4:-{}}"
+  mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
+  python3 -c "import json,time; open('${DEBUG_LOG}','a').write(json.dumps({'sessionId':'f7f922','hypothesisId':'${hid}','location':'${loc}','message':'${msg}','data':${data},'timestamp':int(time.time()*1000),'runId':'post-fix'})+'\n')" 2>/dev/null || true
+}
+#endregion
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing command: $1"
@@ -38,6 +48,16 @@ ensure_gh_auth() {
     export GH_TOKEN="$GITHUB_TOKEN"
   fi
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — export a GitHub PAT (scope: repo)"
+  #region agent log
+  local looks_placeholder=false
+  if [ "${GH_TOKEN}" = 'ghp_...' ] || [ "${GH_TOKEN}" = 'ghp_ΤΟ_ΠΡΑΓΜΑΤΙΚΟ_ΣΟΥ' ]; then
+    looks_placeholder=true
+  fi
+  _dbg "H6" "ensure_gh_auth" "token_check" "{\"token_len\":${#GH_TOKEN},\"looks_placeholder\":${looks_placeholder},\"script_rev\":\"${SCRIPT_REV}\"}"
+  #endregion
+  if [ "${GH_TOKEN}" = 'ghp_...' ] || [ "${GH_TOKEN}" = 'ghp_ΤΟ_ΠΡΑΓΜΑΤΙΚΟ_ΣΟΥ' ]; then
+    die "GH_TOKEN is a documentation placeholder — paste your real PAT from github.com/settings/tokens"
+  fi
   # gh auth login --with-token FAILS when GH_TOKEN is already exported (exit 1, no stdin read).
   local gh_user
   if ! gh_user="$(gh api user -q .login 2>/tmp/gh-api.err)"; then
@@ -47,6 +67,9 @@ ensure_gh_auth() {
   fi
   ok "GitHub token OK (user: ${gh_user})"
   export GIT_TERMINAL_PROMPT=0
+  #region agent log
+  _dbg "H2" "ensure_gh_auth" "token_ok" "{\"user\":\"${gh_user}\"}"
+  #endregion
 }
 
 git_repo_slug() {
@@ -64,10 +87,23 @@ git_repo_slug() {
 
 git_push_with_token() {
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — cannot push"
-  local slug push_url
+  local slug push_url push_rc cred_helper
   slug="$(git_repo_slug)"
   push_url="https://x-access-token:${GH_TOKEN}@github.com/${slug}.git"
-  git push "$push_url" "HEAD:${BRANCH}"
+  cred_helper="$(git config --get credential.helper 2>/dev/null || true)"
+  #region agent log
+  _dbg "H1" "git_push_with_token" "before_push" "{\"slug\":\"${slug}\",\"branch\":\"${BRANCH}\",\"token_len\":${#GH_TOKEN},\"cred_helper_set\":$([ -n \"$cred_helper\" ] && echo true || echo false),\"push_host\":\"github.com\",\"script_rev\":\"${SCRIPT_REV}\"}"
+  #endregion
+  if ! git -c credential.helper= push "$push_url" "HEAD:${BRANCH}" 2>/tmp/git-push.err; then
+    push_rc=$?
+    #region agent log
+    _dbg "H3" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"stderr_tail\":\"$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ' | sed 's/"/\\"/g')\"}"
+    #endregion
+    return "$push_rc"
+  fi
+  #region agent log
+  _dbg "H3" "git_push_with_token" "push_ok" "{}"
+  #endregion
 }
 
 git_push_branch() {
@@ -77,7 +113,10 @@ git_push_branch() {
   ahead="$(git rev-list --count "origin/$BRANCH..HEAD" 2>/dev/null || echo 0)"
   if [ "${ahead:-0}" -gt 0 ]; then
     log "Pushing $ahead commit(s) to origin/$BRANCH"
-    if ! git_push_with_token 2>/tmp/git-push.err; then
+    #region agent log
+    _dbg "H4" "git_push_branch" "ahead" "{\"ahead\":${ahead},\"script_rev\":\"${SCRIPT_REV}\"}"
+    #endregion
+    if ! git_push_with_token; then
       tail -10 /tmp/git-push.err >&2 || true
       die "git push failed — check GH_TOKEN repo scope"
     fi
@@ -217,7 +256,10 @@ merge_pr() {
 }
 
 main() {
-  log "=== ANGELICA auto close (GH_TOKEN) ==="
+  log "=== ANGELICA auto close (GH_TOKEN) [${SCRIPT_REV}] ==="
+  #region agent log
+  _dbg "H5" "main" "start" "{\"script_rev\":\"${SCRIPT_REV}\"}"
+  #endregion
   require_cmd git
   require_cmd ssh
   require_cmd python3
