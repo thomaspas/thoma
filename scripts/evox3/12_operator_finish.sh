@@ -6,8 +6,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/_lib.sh"
 
 THOMA_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-BRANCH="${EVOX3_THOMA_BRANCH:-main}"
 SAMPLE_MD="${EVOX3_AI_APPS}/evox3-greek-smoke.md"
+
+# Default git branch: explicit env > land stack (until merged to main) > main.
+# Staying on stale origin/main drops scripts 16-20 and causes 10-pass smoke regressions.
+resolve_finish_branch() {
+  if [ -n "${EVOX3_THOMA_BRANCH:-}" ]; then
+    printf '%s\n' "$EVOX3_THOMA_BRANCH"
+    return 0
+  fi
+  if git -C "$THOMA_ROOT" rev-parse --verify refs/remotes/origin/cursor/land-angelica-stack-8dd2 >/dev/null 2>&1; then
+    printf '%s\n' "cursor/land-angelica-stack-8dd2"
+    return 0
+  fi
+  printf '%s\n' "main"
+}
+
+BRANCH="$(resolve_finish_branch)"
 
 cd "$THOMA_ROOT"
 
@@ -69,7 +84,7 @@ printf '     NOT Register/Login, NOT API JSON on :%s\n' "$EVOX3_API_PORT"
 printf '  2) Upload: %s\n' "$SAMPLE_MD"
 printf '  3) Ask in Greek chat, e.g.: Ποιος είναι ο kiosk χρήστης στο EVO-X3;\n'
 printf '  4) Reboot once, then after desktop login:\n'
-printf '       systemctl --user is-active evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service\n'
+printf '       systemctl --user is-active evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service\n'
 printf '       %s/scripts/evox3/09_smoke_check.sh\n' "$THOMA_ROOT"
 printf '  5) Done — LOCAL FULL operator checklist complete\n'
 ok "12_operator_finish.sh complete — do steps 1-4 on screen"
