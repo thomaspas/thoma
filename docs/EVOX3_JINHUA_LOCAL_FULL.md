@@ -153,7 +153,8 @@ chmod +x scripts/evox3/*.sh
 **Resume paste:**
 ```bash
 cd "$HOME/thoma"
-git fetch origin main
+# if origin/main missing (common after feature-branch-only clone):
+git fetch origin '+refs/heads/main:refs/remotes/origin/main'
 git checkout -B main origin/main
 ./scripts/evox3/12_operator_finish.sh
 ```

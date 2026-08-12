@@ -14,19 +14,17 @@ cd "$THOMA_ROOT"
 log "=== 12_operator_finish: git sync ($BRANCH) ==="
 require_cmd git
 if [ -d "$THOMA_ROOT/.git" ]; then
-  git fetch origin "$BRANCH"
-  # Ensure local branch exists (clone may only have tracked a feature branch).
-  if ! git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-    log "Creating local branch $BRANCH from origin/$BRANCH"
-    git checkout -B "$BRANCH" "origin/$BRANCH"
-  else
-    current="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
-    if [ "$current" != "$BRANCH" ]; then
-      log "Checking out $BRANCH (was: ${current:-detached})"
-      git checkout "$BRANCH"
-    fi
-    git pull --ff-only origin "$BRANCH"
+  # Explicit refspec: plain `git fetch origin main` may only update FETCH_HEAD
+  # (no refs/remotes/origin/main) on clones that never tracked main.
+  git fetch origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+  if ! git rev-parse --verify "refs/remotes/origin/${BRANCH}" >/dev/null 2>&1; then
+    die "Could not fetch origin/${BRANCH} — check network / remote"
   fi
+  current="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  if [ "$current" != "$BRANCH" ]; then
+    log "Checking out $BRANCH (was: ${current:-detached})"
+  fi
+  git checkout -B "$BRANCH" "origin/${BRANCH}"
   ok "thoma @ $(git rev-parse --short HEAD) on $(git rev-parse --abbrev-ref HEAD)"
 else
   warn "Not a git checkout at $THOMA_ROOT — skip pull"
