@@ -65,6 +65,7 @@ replacements = {
     "EMBEDDING_DIMENSIONS=": "EMBEDDING_DIMENSIONS=0",
     "RERANKER_PROVIDER=": "RERANKER_PROVIDER=none",
     "WORKER_DISPATCH=": "WORKER_DISPATCH=inline",
+    "REVIEW_ENABLED=": "REVIEW_ENABLED=false",
     "GRAPH_ENABLED=": "GRAPH_ENABLED=true",
     "MEMORY_GRAPH_ENABLED=": "MEMORY_GRAPH_ENABLED=false",
     "MCP_ENABLED=": "MCP_ENABLED=false",
@@ -93,7 +94,7 @@ path.write_text("\\n".join(out) + "\\n")
 print("ENV_OK")
 print(f"LLM -> ${EVOX3_LLM_BASE_URL} model=${EVOX3_LLM_MODEL}")
 print(f"EMBED -> ${EVOX3_EMBED_BASE_URL} model=${EVOX3_EMBED_MODEL}")
-print("RERANKER_PROVIDER=none WORKER_DISPATCH=inline")
+print("RERANKER_PROVIDER=none WORKER_DISPATCH=inline REVIEW_ENABLED=false")
 PY
 
 ok "03_write_local_env.sh complete — $ENV_PATH"

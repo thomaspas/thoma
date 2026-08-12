@@ -17,3 +17,9 @@ Already installed? Finish / resume:
 ```bash
 ./scripts/evox3/12_operator_finish.sh
 ```
+
+Remote ingest + Greek chat (SSH):
+
+```bash
+./scripts/evox3/13_remote_go_live.sh
+```
