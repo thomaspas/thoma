@@ -124,13 +124,23 @@ tail -n 50 /tmp/evox3-jinhua-kiosk.log
 
 ## Kiosk από SSH (οθόνη EVO-X3)
 
-Το GUI ανοίγει στην τοπική οθόνη του EVO-X3, όχι στο remote terminal:
+Το GUI ανοίγει στην τοπική οθόνη του EVO-X3. Αν τρέχεις από SSH, το script δένει `WAYLAND_DISPLAY` / `XDG_RUNTIME_DIR` / `XAUTHORITY` στο logged-in desktop session:
 
 ```bash
-bash -lc 'export DISPLAY=:0; export XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}; ~/ai_apps/bin/evox3-jinhua-kiosk.sh'
+./scripts/evox3/10_relaunch_kiosk.sh
 ```
 
 Προϋπόθεση: κάποιος logged-in στο desktop του EVO-X3.
+
+Αν δεις `Missing X server or $DISPLAY`:
+1. Επιβεβαίωσε graphical session: `ls /run/user/$(id -u)/wayland-*`
+2. Ξανατρέξε από **τοπικό terminal στην οθόνη** (όχι μόνο SSH), ή
+3. Πάστα diagnostic:
+   ```bash
+   echo "UID=$(id -u) XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+   ls -l /run/user/$(id -u)/wayland-* /run/user/$(id -u)/bus /run/user/$(id -u)/gdm/Xauthority 2>&1 | head
+   loginctl show-session "$(loginctl | awk -v u="$USER" '$3==u {print $1; exit}')" -p Type -p Display -p Remote 2>&1
+   ```
 
 ## Troubleshooting
 

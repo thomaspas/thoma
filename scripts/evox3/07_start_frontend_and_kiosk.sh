@@ -61,8 +61,7 @@ done
 [ "$READY" -eq 1 ] || die "Frontend did not become ready on :${EVOX3_WEB_PORT}"
 
 URL="http://127.0.0.1:${EVOX3_WEB_PORT}"
-export DISPLAY="${DISPLAY:-:0}"
-export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+setup_local_graphical_env
 
 LAUNCH_CMD="$(kiosk_launch_cmd "$URL" || true)"
 if [ -z "${LAUNCH_CMD:-}" ]; then
@@ -78,7 +77,16 @@ pkill -f 'org.chromium.Chromium' 2>/dev/null || true
 pkill -f "chromium.*127.0.0.1:${EVOX3_API_PORT}" 2>/dev/null || true
 pkill -f "chromium.*127.0.0.1:${EVOX3_WEB_PORT}" 2>/dev/null || true
 sleep 1
-nohup bash -lc "$LAUNCH_CMD" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
+# Preserve graphical env; avoid bash -lc which drops DISPLAY/WAYLAND.
+nohup env \
+  LANG=en_US.UTF-8 \
+  LC_ALL=en_US.UTF-8 \
+  DISPLAY="${DISPLAY:-:0}" \
+  WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
+  XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
+  XAUTHORITY="${XAUTHORITY:-}" \
+  bash -c "$LAUNCH_CMD" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
 
 sleep 1
 ok "Kiosk launched (log: /tmp/evox3-jinhua-kiosk.log)"

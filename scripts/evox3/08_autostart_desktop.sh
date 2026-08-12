@@ -33,9 +33,38 @@ cat > "$KIOSK_WRAPPER" <<EOF
 set -euo pipefail
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-export DISPLAY="\${DISPLAY:-:0}"
-export XAUTHORITY="\${XAUTHORITY:-\$HOME/.Xauthority}"
 URL="${KIOSK_URL}"
+
+# Attach to the LOCAL graphical session (works from SSH when desktop user is logged in).
+UID_NUM="\$(id -u)"
+export XDG_RUNTIME_DIR="\${XDG_RUNTIME_DIR:-/run/user/\${UID_NUM}}"
+if [ -z "\${DBUS_SESSION_BUS_ADDRESS:-}" ] && [ -S "\${XDG_RUNTIME_DIR}/bus" ]; then
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=\${XDG_RUNTIME_DIR}/bus"
+fi
+if [ -z "\${WAYLAND_DISPLAY:-}" ]; then
+  for wl in wayland-0 wayland-1; do
+    if [ -S "\${XDG_RUNTIME_DIR}/\${wl}" ]; then
+      export WAYLAND_DISPLAY="\$wl"
+      break
+    fi
+  done
+fi
+export DISPLAY="\${DISPLAY:-:0}"
+if [ -z "\${XAUTHORITY:-}" ] || [ ! -f "\${XAUTHORITY}" ]; then
+  for candidate in \
+    "\$HOME/.Xauthority" \
+    "\${XDG_RUNTIME_DIR}/gdm/Xauthority" \
+    "\${XDG_RUNTIME_DIR}"/.mutter-Xwaylandauth.*
+  do
+    if [ -f "\$candidate" ]; then
+      export XAUTHORITY="\$candidate"
+      break
+    fi
+  done
+fi
+
+echo "[*] EVO-X3 kiosk target: \$URL" >&2
+echo "[*] DISPLAY=\${DISPLAY} WAYLAND_DISPLAY=\${WAYLAND_DISPLAY:-none} XAUTHORITY=\${XAUTHORITY:-none}" >&2
 
 # Wait for frontend (services may still be starting after login).
 for _ in \$(seq 1 120); do
@@ -44,8 +73,6 @@ for _ in \$(seq 1 120); do
   fi
   sleep 1
 done
-
-echo "[*] EVO-X3 kiosk target: \$URL" >&2
 
 # Prefer Flatpak Chromium when present (apt chromium is often blocked on EVO-X3).
 BROWSER=""
@@ -80,13 +107,18 @@ pkill -f 'chrome.*127.0.0.1:${EVOX3_API_PORT}' 2>/dev/null || true
 pkill -f 'chrome.*127.0.0.1:${EVOX3_WEB_PORT}' 2>/dev/null || true
 sleep 1
 
+OZONE_ARGS=()
+if [ -n "\${WAYLAND_DISPLAY:-}" ]; then
+  OZONE_ARGS+=(--ozone-platform=wayland)
+fi
+
 if [ -n "\$FLATPAK_APP" ]; then
-  # Flatpak Chromium: pass URL as final arg; --app= alone is unreliable across runtimes.
-  exec flatpak run "\$FLATPAK_APP" --kiosk --no-first-run --disable-session-crashed-bubble "\$URL"
+  # Flatpak Chromium: URL as final arg; --app= alone is unreliable across runtimes.
+  exec flatpak run "\$FLATPAK_APP" --kiosk --no-first-run --disable-session-crashed-bubble "\${OZONE_ARGS[@]}" "\$URL"
 elif [ "\$BROWSER" = "firefox" ]; then
   exec "\$BROWSER" -kiosk "\$URL"
 else
-  exec "\$BROWSER" --kiosk --app="\$URL" --no-first-run --disable-session-crashed-bubble
+  exec "\$BROWSER" --kiosk --app="\$URL" --no-first-run --disable-session-crashed-bubble "\${OZONE_ARGS[@]}"
 fi
 EOF
 chmod +x "$KIOSK_WRAPPER"

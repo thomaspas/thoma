@@ -22,6 +22,8 @@ for _ in $(seq 1 60); do
 done
 [ "$READY" -eq 1 ] || die "Frontend not ready on :${EVOX3_WEB_PORT} — start evox3-jinhua-web.service first"
 
+setup_local_graphical_env
+
 # Kill ANY leftover Second Brain / API-docs browser tabs (previous sessions used :8000).
 log "Stopping stale Chromium/Firefox kiosk processes"
 pkill -f 'io.github.ungoogled_software.ungoogled_chromium' 2>/dev/null || true
@@ -32,9 +34,6 @@ pkill -f 'chrome.*127.0.0.1:8000' 2>/dev/null || true
 pkill -f 'chrome.*127.0.0.1:5173' 2>/dev/null || true
 pkill -f 'evox3-jinhua-kiosk' 2>/dev/null || true
 sleep 1
-
-export DISPLAY="${DISPLAY:-:0}"
-export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
 
 KIOSK_WRAPPER="$HOME/ai_apps/bin/evox3-jinhua-kiosk.sh"
 [ -x "$KIOSK_WRAPPER" ] || die "Missing $KIOSK_WRAPPER"
@@ -49,13 +48,27 @@ fi
 
 log "Launching kiosk wrapper -> $URL"
 : > /tmp/evox3-jinhua-kiosk.log
-nohup bash -lc "$KIOSK_WRAPPER" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
-sleep 2
+# Do NOT use bash -lc here — login shells drop DISPLAY/WAYLAND from SSH sessions.
+ENV_ARGS=(
+  LANG=en_US.UTF-8
+  LC_ALL=en_US.UTF-8
+  DISPLAY="${DISPLAY:-:0}"
+  XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR}"
+)
+[ -n "${WAYLAND_DISPLAY:-}" ] && ENV_ARGS+=(WAYLAND_DISPLAY="$WAYLAND_DISPLAY")
+[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && ENV_ARGS+=(DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS")
+[ -n "${XAUTHORITY:-}" ] && ENV_ARGS+=(XAUTHORITY="$XAUTHORITY")
+nohup env "${ENV_ARGS[@]}" "$KIOSK_WRAPPER" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
+sleep 3
 
 ok "Relaunched. Expect UI register/login at $URL (NOT :${EVOX3_API_PORT})"
 printf 'Log tail:\n'
-tail -n 20 /tmp/evox3-jinhua-kiosk.log 2>/dev/null || true
+tail -n 40 /tmp/evox3-jinhua-kiosk.log 2>/dev/null || true
 printf '\nProcesses:\n'
 pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox|evox3-jinhua-kiosk' | head -n 15 || true
+if ! pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox' >/dev/null 2>&1; then
+  warn "No browser process — if log shows Missing X server, open a local desktop terminal and re-run this script"
+  warn "Diagnostic: ls -l \"\$XDG_RUNTIME_DIR\"/wayland-* \"\$XDG_RUNTIME_DIR\"/gdm/Xauthority 2>/dev/null; echo DISPLAY=\$DISPLAY"
+fi
 printf '\nIf you still see :%s in process args, paste this block back.\n' "$EVOX3_API_PORT"
 ok "10_relaunch_kiosk.sh complete"

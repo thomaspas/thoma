@@ -130,17 +130,65 @@ pick_browser() {
   return 1
 }
 
+# Prepare env so Flatpak/Chromium can open on the LOCAL desktop from SSH.
+# Exports: XDG_RUNTIME_DIR, DBUS_SESSION_BUS_ADDRESS, WAYLAND_DISPLAY, DISPLAY, XAUTHORITY
+setup_local_graphical_env() {
+  local uid runtime wl auth candidate
+  uid="$(id -u)"
+  runtime="${XDG_RUNTIME_DIR:-/run/user/${uid}}"
+  export XDG_RUNTIME_DIR="$runtime"
+
+  if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && [ -S "${runtime}/bus" ]; then
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=${runtime}/bus"
+  fi
+
+  if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    for wl in wayland-0 wayland-1; do
+      if [ -S "${runtime}/${wl}" ]; then
+        export WAYLAND_DISPLAY="$wl"
+        break
+      fi
+    done
+  fi
+
+  export DISPLAY="${DISPLAY:-:0}"
+
+  if [ -z "${XAUTHORITY:-}" ] || [ ! -f "${XAUTHORITY}" ]; then
+    for candidate in \
+      "${HOME}/.Xauthority" \
+      "${runtime}/gdm/Xauthority" \
+      "${runtime}/.mutter-Xwaylandauth."*
+    do
+      if [ -f "$candidate" ]; then
+        export XAUTHORITY="$candidate"
+        break
+      fi
+    done
+  fi
+
+  log "Graphical env: DISPLAY=${DISPLAY:-?} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-none} XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR} XAUTHORITY=${XAUTHORITY:-none}"
+
+  if [ -z "${WAYLAND_DISPLAY:-}" ] && { [ -z "${XAUTHORITY:-}" ] || [ ! -f "${XAUTHORITY}" ]; }; then
+    warn "No Wayland socket and no XAUTHORITY — GUI launch from this SSH session will likely fail"
+    warn "Run 10_relaunch_kiosk.sh from a terminal ON the EVO-X3 desktop, or ensure a logged-in graphical session"
+  fi
+}
+
 # Flatpak Chromium: URL as final arg (--app= alone is unreliable).
+# Prefer Wayland ozone when WAYLAND_DISPLAY is set (EVO-X3 desktop is Wayland).
 kiosk_launch_cmd() {
   local url="$1"
-  local c
+  local c ozone=""
+  if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+    ozone='--ozone-platform=wayland'
+  fi
   if command -v flatpak >/dev/null 2>&1; then
     if flatpak info io.github.ungoogled_software.ungoogled_chromium >/dev/null 2>&1; then
-      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --kiosk --no-first-run --disable-session-crashed-bubble %q' "$url"
+      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$ozone" "$url"
       return 0
     fi
     if flatpak info org.chromium.Chromium >/dev/null 2>&1; then
-      printf 'flatpak run org.chromium.Chromium --kiosk --no-first-run --disable-session-crashed-bubble %q' "$url"
+      printf 'flatpak run org.chromium.Chromium --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$ozone" "$url"
       return 0
     fi
   fi
@@ -151,7 +199,7 @@ kiosk_launch_cmd() {
   if [ "$c" = "firefox" ]; then
     printf '%q -kiosk %q' "$c" "$url"
   else
-    printf '%q --kiosk --app=%q --no-first-run --disable-session-crashed-bubble' "$c" "$url"
+    printf '%q --kiosk --app=%q --no-first-run --disable-session-crashed-bubble %s' "$c" "$url" "$ozone"
   fi
 }
 
