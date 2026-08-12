@@ -80,7 +80,7 @@ fi
 printf '\n=== result: %s pass / %s fail ===\n' "$PASS" "$FAIL"
 printf '\nNext on EVO-X3 desktop:\n'
 printf '  1) Kiosk must open http://127.0.0.1:%s (NOT :8000 API docs)\n' "$EVOX3_WEB_PORT"
-printf '  2) Register the first account\n'
+printf '  2) No Register/Login — auto-session via 11_skip_auth_ui.sh\n'
 printf '  3) Upload a small .md note\n'
 printf '  4) Ask a Greek question in chat\n'
 printf '  5) Reboot once to confirm autostart (services + kiosk)\n'

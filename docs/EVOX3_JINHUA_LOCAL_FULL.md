@@ -43,7 +43,9 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/06_migrate_and_start_api.sh
 ./scripts/evox3/07_start_frontend_and_kiosk.sh
 ./scripts/evox3/08_autostart_desktop.sh
+./scripts/evox3/11_skip_auth_ui.sh          # auto-seed + skip AuthScreen
 ./scripts/evox3/09_smoke_check.sh
+./scripts/evox3/10_relaunch_kiosk.sh
 ```
 
 Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
@@ -59,6 +61,8 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 7. **07** — `npm install` / Vite `:5173` + Chromium/Flatpak `--kiosk`.
 8. **08** — Enable units + `~/.config/autostart` kiosk wrapper (Flatpak preferred).
 9. **09** — Smoke check (ports + units + LLM_MODEL alignment) + next steps.
+10. **10** — Kill stale browsers + relaunch kiosk on `:5173` (Wayland-aware).
+11. **11** — Auto-seed fixed local user + patch UI to **skip AuthScreen** (no Register/Login).
 
 ## Overrides (env)
 
@@ -71,6 +75,9 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 | `EVOX3_API_PORT` | `8000` |
 | `EVOX3_WEB_PORT` | `5173` |
 | `EVOX3_BGE_PORT` | `8002` |
+| `EVOX3_LOCAL_EMAIL` | `ye@evox3.local` |
+| `EVOX3_LOCAL_PASSWORD` | `evox3-local-12` |
+| `EVOX3_LOCAL_DISPLAY_NAME` | `Ye` |
 
 Παράδειγμα άλλου API port αν το `:8000` είναι πιασμένο:
 
@@ -95,23 +102,36 @@ curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5173
 systemctl --user status evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service --no-pager
 ```
 
-Στο UI: κάνε register τον πρώτο λογαριασμό → ανέβασε ένα μικρό `.md` → ρώτα στα ελληνικά.
+Στο UI: **χωρίς Register/Login** (script `11` auto-login ως `ye@evox3.local`) → ανέβασε ένα μικρό `.md` → ρώτα στα ελληνικά.
+
+## Skip AuthScreen (auto-seed)
+
+```bash
+./scripts/evox3/11_skip_auth_ui.sh
+./scripts/evox3/10_relaunch_kiosk.sh
+```
+
+- Δημιουργεί/κάνει login τον fixed local λογαριασμό (`EVOX3_LOCAL_*`).
+- Patch στο `apps/web/src/App.tsx` (+ `evox3AutoAuth.ts`) ώστε να μην εμφανίζεται ποτέ το `AuthScreen`.
+- Backup upstream: `apps/web/src/App.tsx.evox3-orig`.
+- Επαναφορά Register/Login:
+  ```bash
+  cp ~/ai_apps/IncubativeSecondBrain/apps/web/src/App.tsx.evox3-orig \
+     ~/ai_apps/IncubativeSecondBrain/apps/web/src/App.tsx
+  systemctl --user restart evox3-jinhua-web.service
+  ```
 
 ## Συνέχεια μετά το πρώτο boot (operator checklist)
 
-1. Pull + sync env/model + rewrite kiosk wrapper:
+1. Pull + skip-auth + kiosk:
    ```bash
    cd "$HOME/thoma" && git pull --ff-only
-   ./scripts/evox3/03_write_local_env.sh
-   systemctl --user restart evox3-jinhua-api.service
-   ./scripts/evox3/08_autostart_desktop.sh
+   ./scripts/evox3/11_skip_auth_ui.sh
+   ./scripts/evox3/10_relaunch_kiosk.sh
    ./scripts/evox3/09_smoke_check.sh
    ```
-2. Άνοιξε kiosk στο **`:5173`** (όχι `:8000`) — σκοτώνει παλιά Chromium tabs:
-   ```bash
-   ./scripts/evox3/10_relaunch_kiosk.sh
-   ```
-3. Register → Greek chat smoke → reboot για autostart.
+2. Confirm kiosk opens dashboard (no Register/Login) on **`:5173`**.
+3. Upload a small `.md` → Greek chat smoke → reboot για autostart.
 
 ## Logs
 

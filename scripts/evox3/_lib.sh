@@ -19,6 +19,10 @@ EVOX3_WEB_PORT="${EVOX3_WEB_PORT:-5173}"
 EVOX3_BGE_PORT="${EVOX3_BGE_PORT:-8002}"
 EVOX3_PIP_INDEX="${EVOX3_PIP_INDEX:-https://pypi.tuna.tsinghua.edu.cn/simple}"
 EVOX3_PIP_INDEX_FALLBACK="${EVOX3_PIP_INDEX_FALLBACK:-https://mirrors.aliyun.com/pypi/simple}"
+# Fixed local kiosk account (auto-seed + skip AuthScreen). Local-only.
+EVOX3_LOCAL_EMAIL="${EVOX3_LOCAL_EMAIL:-ye@evox3.local}"
+EVOX3_LOCAL_PASSWORD="${EVOX3_LOCAL_PASSWORD:-evox3-local-12}"
+EVOX3_LOCAL_DISPLAY_NAME="${EVOX3_LOCAL_DISPLAY_NAME:-Ye}"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
