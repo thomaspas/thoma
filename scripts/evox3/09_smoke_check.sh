@@ -112,7 +112,7 @@ printf '  1) Kiosk http://127.0.0.1:%s shows dashboard (NOT Register/Login, NOT 
 printf '  2) Upload a small .md note\n'
 printf '  3) Ask a Greek question in chat\n'
 printf '  4) Reboot once; confirm systemd units + kiosk autostart\n'
-printf '  5) Then mark PR #1 ready / merge\n'
+printf '  5) Done — LOCAL FULL operator checklist complete\n'
 printf '\nRelaunch kiosk now:\n'
 printf '  ./scripts/evox3/10_relaunch_kiosk.sh\n'
 
