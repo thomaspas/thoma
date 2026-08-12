@@ -2,7 +2,7 @@
 
 Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded the kiosk as **ANGELICA**. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status:** DONE — LOCAL FULL + ANGELICA (2026-08-12).
+**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics (2026-08-12).
 
 ## Cloud agents (timeline)
 
@@ -12,6 +12,7 @@ Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded
 | 2 | Πρότζεκτ συνέχεια | [bc-c26090aa…](https://cursor.com/agents/bc-c26090aa-6493-4788-8087-72e7e82bad0a) | Flatpak kiosk, Wayland SSH, skip-auth plan |
 | 3 | Project continuation status | [bc-433887f8…](https://cursor.com/agents/bc-433887f8-f959-4252-84f0-1b2168336287) | Operator finish, ingest hang, Greek chat go-live |
 | 4 | Debugging project συνέχεια | [bc-ade6d950…](https://cursor.com/agents/bc-ade6d950-16c6-4e77-9fb3-d8daabb96263) | Post-reboot Postgres 500, docker boot unit, ANGELICA brand |
+| 5 | Συνέχεια έργου | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | Graph analytics `17`, demo script, NEXT #1 closeout |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
 
@@ -31,6 +32,7 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `15` | Ingest diagnose + optional sync re-ingest |
 | `16` | Brand UI **ANGELICA** (title, sidebar, Greek footer prompts) |
 | `17` | Neo4j graph analytics APIs (stdlib: orphans, PageRank, Louvain, bridges, shortest path) |
+| `17_demo` | Login + hit `/graph/analytics/*` without fragile TOKEN paste |
 
 Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md).
 
@@ -52,6 +54,8 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 - Greek chat go-live: document `e9c50037-…` → `indexed`; answer cited kiosk user from note.
 - After docker-boot fix: smoke **13 pass / 0 fail**, login OK.
 - After `16_brand_angelica.sh`: smoke **14 pass / 0 fail**, `ANGELICA brand present`; kiosk relaunched on `:5173`.
+- After `17_graph_analytics.sh`: smoke **16 pass / 0 fail**; `GET /graph/analytics/summary` HTTP 200.
+- After `17_demo_analytics.sh`: summary **7 entities / 4 edges**; orphans/pagerank/communities/bridges all HTTP 200.
 
 ## Pull requests
 
@@ -62,8 +66,9 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 | [#3](https://github.com/thomaspas/thoma/pull/3) | Remote go-live / ingest / no-think | MERGED |
 | [#4](https://github.com/thomaspas/thoma/pull/4) | Docker boot / Postgres smoke | Superseded by #5 |
 | [#5](https://github.com/thomaspas/thoma/pull/5) | ANGELICA brand (+ includes #4 commits) | Ready for merge to `main` |
+| [#6](https://github.com/thomaspas/thoma/pull/6) | Neo4j graph analytics + demo script | Verified on EVO-X3; ready for review |
 
-Working branch on machine: `cursor/angelica-brand-kiosk-6263`.
+Working branch on machine: `cursor/neo4j-graph-analytics-bd38` (includes ANGELICA stack from #5).
 
 ## Ports / units (quick ref)
 
@@ -75,19 +80,20 @@ Working branch on machine: `cursor/angelica-brand-kiosk-6263`.
 
 ```bash
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/angelica-brand-kiosk-6263:refs/remotes/origin/cursor/angelica-brand-kiosk-6263'
-git checkout -B cursor/angelica-brand-kiosk-6263 origin/cursor/angelica-brand-kiosk-6263
+git fetch origin '+refs/heads/cursor/neo4j-graph-analytics-bd38:refs/remotes/origin/cursor/neo4j-graph-analytics-bd38'
+git checkout -B cursor/neo4j-graph-analytics-bd38 origin/cursor/neo4j-graph-analytics-bd38
 ./scripts/evox3/09_smoke_check.sh
+./scripts/evox3/17_demo_analytics.sh
 ```
 
-Expect **14 pass / 0 fail**, sidebar title **ANGELICA**. Optional: `sudo reboot` then re-run `09`.
+Expect smoke **16 pass / 0 fail**, sidebar title **ANGELICA**, analytics demo all HTTP 200. Optional: `sudo reboot` then re-run `09`.
 
 ## NEXT
 
 Ordered follow-ups from the upgrade brief (adapt gradually):
 
-1. **Graph analytics** on Neo4j (Louvain, PageRank, orphans, bridges, shortest path) — **IN PROGRESS** via `17_graph_analytics.sh` (branch `cursor/neo4j-graph-analytics-bd38`)
-2. **MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`)
+1. ~~**Graph analytics** on Neo4j (Louvain, PageRank, orphans, bridges, shortest path)~~ — **DONE** via `17_graph_analytics.sh` + `17_demo_analytics.sh` ([PR #6](https://github.com/thomaspas/thoma/pull/6))
+2. **MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`) — **next**
 3. **Browser extension** capture (Plasmo / project-nexus style)
 4. **React Flow 2D** visual graph + rich relation types + growth animations
 5. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy

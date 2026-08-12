@@ -76,6 +76,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 15. **15** — Diagnose stuck ingest; optional sync re-ingest.
 16. **16** — Brand kiosk as **ANGELICA** (title, sidebar logo, Greek footer prompts).
 17. **17** — Neo4j graph analytics APIs (orphans, PageRank, Louvain, bridges, shortest path). Opt-in; not in `run_all`.
+18. **17_demo** — Login + demo all `/graph/analytics/*` endpoints (no TOKEN paste).
 
 ## Overrides (env)
 
@@ -121,7 +122,7 @@ After `REVIEW_ENABLED` / LLM patch change: ensure API restarted (`14` does this;
 
 ## Graph analytics (Neo4j)
 
-Opt-in patch — stdlib algorithms on a user-scoped Neo4j export (no GDS / networkx).
+Opt-in patch — stdlib algorithms on a user-scoped Neo4j export (no GDS / networkx). **Verified on EVO-X3** (smoke 16/0; demo summary 7 entities / 4 edges).
 
 ```bash
 ./scripts/evox3/17_graph_analytics.sh
@@ -129,12 +130,7 @@ Opt-in patch — stdlib algorithms on a user-scoped Neo4j export (no GDS / netwo
 ./scripts/evox3/17_demo_analytics.sh  # login + hit analytics endpoints (no TOKEN paste)
 ```
 
-Αν το SSH terminal κολλάει `^[[200~` στο paste (σπάει `export`/`TOKEN=`):
-
-```bash
-printf '\e[?2004l'   # disable bracketed paste for this session
-# prefer the demo script above instead of hand-rolled TOKEN= curls
-```
+Prefer `17_demo_analytics.sh` over hand-rolled `TOKEN=` curls — SSH bracketed paste can break login.
 
 Restore upstream graph router/schemas: `*.evox3-graph-orig` + remove `secondbrain/graph/analytics.py` + marker `.evox3-graph-analytics`.
 

@@ -2,7 +2,7 @@
 
 Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **ANGELICA**.
 
-**Status: DONE** on EVO-X3 (smoke 14/0, Greek chat, docker boot, ANGELICA UI).
+**Status: DONE** on EVO-X3 (smoke 16/0, Greek chat, docker boot, ANGELICA UI, Neo4j graph analytics).
 
 - Runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
 - Session chronicle (all chats + NEXT roadmap): [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
