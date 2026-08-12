@@ -181,24 +181,26 @@ chmod +x scripts/evox3/*.sh
 3. Μετά reboot: `systemctl --user is-active evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service` + `./scripts/evox3/09_smoke_check.sh`.
 4. Αν login HTTP 500 / `Connection refused` στο `:5432`: Postgres/docker δεν ήρθε πάνω — `./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh` (εγκαθιστά και `evox3-jinhua-docker.service` για τα επόμενα reboot).
 
-## Handoff — συνέχεια σε άλλη συνομιλία
+## Handoff — κατάσταση
 
-**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up. Greek chat **PASS**. Docker boot unit + smoke 13/0 after Postgres recovery. Next: apply **ANGELICA** brand via `16_brand_angelica.sh` (sidebar/title/footer).
+**DONE — LOCAL FULL / ANGELICA** (2026-08-12).
 
-**Branch:** `cursor/angelica-brand-kiosk-6263` (includes docker-boot fix) → https://github.com/thomaspas/thoma
+Πλήρες χρονικό συνομιλιών + evidence + parked NEXT:
+[`docs/SESSION_CHRONICLE_ANGELICA.md`](SESSION_CHRONICLE_ANGELICA.md)
 
-**Resume paste:**
+**Branch:** `cursor/angelica-brand-kiosk-6263` → PR [#5](https://github.com/thomaspas/thoma/pull/5) (includes docker-boot fix). Merge to `main` when ready.
+
+**Final smoke:**
 ```bash
 cd "$HOME/thoma"
 git fetch origin '+refs/heads/cursor/angelica-brand-kiosk-6263:refs/remotes/origin/cursor/angelica-brand-kiosk-6263'
 git checkout -B cursor/angelica-brand-kiosk-6263 origin/cursor/angelica-brand-kiosk-6263
-./scripts/evox3/16_brand_angelica.sh
-./scripts/evox3/08_autostart_desktop.sh
-./scripts/evox3/10_relaunch_kiosk.sh
 ./scripts/evox3/09_smoke_check.sh
 ```
 
-**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`.
+Expect **14 pass / 0 fail**, sidebar **ANGELICA**. Optional reboot + re-run `09`.
+
+**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`. Νέα features: διάβασε κεφάλαιο **NEXT** στο chronicle (analytics → MCP → extension).
 
 ## Logs
 

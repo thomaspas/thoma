@@ -7,7 +7,10 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 ### What lives here
 
 - [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — operator runbook
+- [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
 - [`scripts/evox3/`](scripts/evox3/) — steps `01`–`16` + `run_all.sh` + `bge_m3_server.py` (`12` finish, `13` remote go-live, `14` LLM no-think, `15` ingest diagnose, `16` ANGELICA brand)
+
+**Status:** LOCAL FULL + ANGELICA kiosk branding is **DONE** on EVO-X3. Next feature wave is parked in the chronicle (graph analytics → MCP → extension).
 
 ### Cloud agent constraints
 
