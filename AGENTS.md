@@ -10,7 +10,7 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
 - [`scripts/evox3/`](scripts/evox3/) — steps `01`–`18` + demos + `run_all.sh` + `bge_m3_server.py` (`17` graph analytics, `18` MCP server)
 
-**Status:** LOCAL FULL + ANGELICA + graph analytics **DONE** on EVO-X3. NEXT #2 MCP server **in progress** (`18_mcp_angelica.sh`).
+**Status:** LOCAL FULL + ANGELICA + graph analytics + MCP server **DONE** on EVO-X3. Next wave: **browser extension** (chronicle NEXT #3).
 
 ### Cloud agent constraints
 

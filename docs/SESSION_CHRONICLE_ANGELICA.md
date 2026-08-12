@@ -2,7 +2,7 @@
 
 Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded the kiosk as **ANGELICA**. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics (2026-08-12).
+**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics + MCP server (2026-08-12).
 
 ## Cloud agents (timeline)
 
@@ -59,6 +59,7 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 - After `16_brand_angelica.sh`: smoke **14 pass / 0 fail**, `ANGELICA brand present`; kiosk relaunched on `:5173`.
 - After `17_graph_analytics.sh`: smoke **16 pass / 0 fail**; `GET /graph/analytics/summary` HTTP 200.
 - After `17_demo_analytics.sh`: summary **7 entities / 4 edges**; orphans/pagerank/communities/bridges all HTTP 200.
+- After `18_mcp_angelica.sh` + `18_demo_mcp.sh`: remember/recall/connect/analyze OK; smoke **18 pass / 0 fail**.
 
 ## Pull requests
 
@@ -70,8 +71,9 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 | [#4](https://github.com/thomaspas/thoma/pull/4) | Docker boot / Postgres smoke | Superseded by #5 |
 | [#5](https://github.com/thomaspas/thoma/pull/5) | ANGELICA brand (+ includes #4 commits) | Ready for merge to `main` |
 | [#6](https://github.com/thomaspas/thoma/pull/6) | Neo4j graph analytics + demo script | Verified on EVO-X3; ready for review |
+| [#7](https://github.com/thomaspas/thoma/pull/7) | ANGELICA stdio MCP server | Verified on EVO-X3; ready for review |
 
-Working branch on machine: `cursor/neo4j-graph-analytics-bd38` (includes ANGELICA stack from #5).
+Working branch on machine: `cursor/mcp-angelica-server-bd38`.
 
 ## Ports / units (quick ref)
 
@@ -83,21 +85,21 @@ Working branch on machine: `cursor/neo4j-graph-analytics-bd38` (includes ANGELIC
 
 ```bash
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/neo4j-graph-analytics-bd38:refs/remotes/origin/cursor/neo4j-graph-analytics-bd38'
-git checkout -B cursor/neo4j-graph-analytics-bd38 origin/cursor/neo4j-graph-analytics-bd38
+git fetch origin '+refs/heads/cursor/mcp-angelica-server-bd38:refs/remotes/origin/cursor/mcp-angelica-server-bd38'
+git checkout -B cursor/mcp-angelica-server-bd38 origin/cursor/mcp-angelica-server-bd38
 ./scripts/evox3/09_smoke_check.sh
-./scripts/evox3/17_demo_analytics.sh
+./scripts/evox3/18_demo_mcp.sh
 ```
 
-Expect smoke **16 pass / 0 fail**, sidebar title **ANGELICA**, analytics demo all HTTP 200. Optional: `sudo reboot` then re-run `09`.
+Expect smoke **18 pass / 0 fail**, MCP demo all OK. Optional: `sudo reboot` then re-run `09`.
 
 ## NEXT
 
 Ordered follow-ups from the upgrade brief (adapt gradually):
 
-1. ~~**Graph analytics** on Neo4j (Louvain, PageRank, orphans, bridges, shortest path)~~ — **DONE** via `17_graph_analytics.sh` + `17_demo_analytics.sh` ([PR #6](https://github.com/thomaspas/thoma/pull/6))
-2. **MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`) — **IN PROGRESS** via `18_mcp_angelica.sh` (branch `cursor/mcp-angelica-server-bd38`)
-3. **Browser extension** capture (Plasmo / project-nexus style)
+1. ~~**Graph analytics** on Neo4j~~ — **DONE** ([PR #6](https://github.com/thomaspas/thoma/pull/6))
+2. ~~**MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`)~~ — **DONE** via `18_mcp_angelica.sh` + `18_demo_mcp.sh` ([PR #7](https://github.com/thomaspas/thoma/pull/7))
+3. **Browser extension** capture (Plasmo / project-nexus style) — **next**
 4. **React Flow 2D** visual graph + rich relation types + growth animations
 5. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
 6. “100% offline Ollama” is low priority here — LOCAL FULL already uses local llama-server + bge-m3
