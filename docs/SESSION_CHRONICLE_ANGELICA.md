@@ -31,6 +31,16 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 - `21_remote_verify.sh`: **5 pass / 1 fail** — only `browser process missing :5173`
 - HTML `:5173`: ANGELICA, no Login/AuthScreen; Pi-hole ruled out (local HTTP OK)
 
+**Saved state snapshot (Gaming-7, 2026-08-12 later):**
+
+- `origin/cursor/land-angelica-stack-8dd2` is still behind local Gaming-7 work
+- Local commits not pushed yet:
+  - `05dc51a` — kiosk SSH fix + handoff docs
+  - `6885ba3` — add `scripts/operator/auto_close_angelica.sh`
+- There are also newer **uncommitted** local edits in `scripts/operator/auto_close_angelica.sh` from GH_TOKEN/debug iteration
+- `auto_close_angelica.sh` now validates `GH_TOKEN` with `gh api user` instead of `gh auth login --with-token` when the token is already exported
+- Main operational blocker remains: valid GitHub token run on Gaming-7, then EVO-X3 remote verify
+
 **Patches (local Gaming-7 clone, pending sync to EVO-X3):**
 
 - `_lib.sh` — `import_graphical_env_from_desktop_session()`, `kiosk_references_web_port()` via `/proc`
@@ -40,7 +50,7 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 - `22_operator_context_check.sh` — warn if already on EVO-X3 (no nested ssh)
 - `23_sync_verify_fix_to_evox3.sh` — scp Gaming-7 → EVO-X3
 
-**Next:** sync scripts → `08` + `21_remote_verify.sh` → expect `REMOTE VERIFY OK`.
+**Next:** from Gaming-7 run `scripts/operator/auto_close_angelica.sh` with a valid `GH_TOKEN`; if push succeeds, continue to EVO-X3 remote verify and then close PR #8.
 
 ## What was built (`thoma`)
 
