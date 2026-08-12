@@ -84,8 +84,8 @@ printf '  2) Register the first account\n'
 printf '  3) Upload a small .md note\n'
 printf '  4) Ask a Greek question in chat\n'
 printf '  5) Reboot once to confirm autostart (services + kiosk)\n'
-printf '\nRelaunch kiosk now:\n'
-printf '  bash -lc '\''export DISPLAY=:0 XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}; ~/ai_apps/bin/evox3-jinhua-kiosk.sh'\''\n'
+printf '\nRelaunch kiosk now (kills stale :8000 browsers):\n'
+printf '  ./scripts/evox3/10_relaunch_kiosk.sh\n'
 
 if [ "$FAIL" -gt 0 ]; then
   exit 1

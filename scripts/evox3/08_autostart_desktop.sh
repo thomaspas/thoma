@@ -23,6 +23,11 @@ enable_linger_hint
 KIOSK_WRAPPER="$HOME/ai_apps/bin/evox3-jinhua-kiosk.sh"
 ensure_dir "$(dirname "$KIOSK_WRAPPER")"
 
+KIOSK_URL="http://127.0.0.1:${EVOX3_WEB_PORT}"
+if [ "$EVOX3_WEB_PORT" = "$EVOX3_API_PORT" ]; then
+  die "EVOX3_WEB_PORT cannot equal EVOX3_API_PORT (${EVOX3_API_PORT})"
+fi
+
 cat > "$KIOSK_WRAPPER" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
@@ -30,7 +35,7 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export DISPLAY="\${DISPLAY:-:0}"
 export XAUTHORITY="\${XAUTHORITY:-\$HOME/.Xauthority}"
-URL="http://127.0.0.1:${EVOX3_WEB_PORT}"
+URL="${KIOSK_URL}"
 
 # Wait for frontend (services may still be starting after login).
 for _ in \$(seq 1 120); do
@@ -39,6 +44,8 @@ for _ in \$(seq 1 120); do
   fi
   sleep 1
 done
+
+echo "[*] EVO-X3 kiosk target: \$URL" >&2
 
 # Prefer Flatpak Chromium when present (apt chromium is often blocked on EVO-X3).
 BROWSER=""
@@ -60,13 +67,22 @@ if [ -z "\$FLATPAK_APP" ]; then
 fi
 
 if [ -z "\$BROWSER" ] && [ -z "\$FLATPAK_APP" ]; then
-  echo "No browser found" >&2
+  echo "No browser found (install Flatpak Chromium; apt chromium is broken on this node)" >&2
   exit 0
 fi
 
-pkill -f "kiosk.*${EVOX3_WEB_PORT}" 2>/dev/null || true
+# Kill stale API-docs (:8000) and UI (:5173) browser instances before relaunch.
+pkill -f 'io.github.ungoogled_software.ungoogled_chromium' 2>/dev/null || true
+pkill -f 'org.chromium.Chromium' 2>/dev/null || true
+pkill -f 'chromium.*127.0.0.1:${EVOX3_API_PORT}' 2>/dev/null || true
+pkill -f 'chromium.*127.0.0.1:${EVOX3_WEB_PORT}' 2>/dev/null || true
+pkill -f 'chrome.*127.0.0.1:${EVOX3_API_PORT}' 2>/dev/null || true
+pkill -f 'chrome.*127.0.0.1:${EVOX3_WEB_PORT}' 2>/dev/null || true
+sleep 1
+
 if [ -n "\$FLATPAK_APP" ]; then
-  exec flatpak run "\$FLATPAK_APP" --kiosk --app="\$URL" --no-first-run
+  # Flatpak Chromium: pass URL as final arg; --app= alone is unreliable across runtimes.
+  exec flatpak run "\$FLATPAK_APP" --kiosk --no-first-run --disable-session-crashed-bubble "\$URL"
 elif [ "\$BROWSER" = "firefox" ]; then
   exec "\$BROWSER" -kiosk "\$URL"
 else

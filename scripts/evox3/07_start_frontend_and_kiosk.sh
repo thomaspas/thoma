@@ -72,9 +72,14 @@ if [ -z "${LAUNCH_CMD:-}" ]; then
 fi
 
 log "Launching kiosk: $LAUNCH_CMD"
-pkill -f "kiosk.*${EVOX3_WEB_PORT}" 2>/dev/null || true
+# Kill stale :8000 API-docs browsers and previous UI instances.
+pkill -f 'io.github.ungoogled_software.ungoogled_chromium' 2>/dev/null || true
+pkill -f 'org.chromium.Chromium' 2>/dev/null || true
+pkill -f "chromium.*127.0.0.1:${EVOX3_API_PORT}" 2>/dev/null || true
+pkill -f "chromium.*127.0.0.1:${EVOX3_WEB_PORT}" 2>/dev/null || true
+sleep 1
 nohup bash -lc "$LAUNCH_CMD" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
 
 sleep 1
 ok "Kiosk launched (log: /tmp/evox3-jinhua-kiosk.log)"
-ok "07_start_frontend_and_kiosk.sh complete — $URL"
+ok "07_start_frontend_and_kiosk.sh complete — $URL (NOT :${EVOX3_API_PORT})"

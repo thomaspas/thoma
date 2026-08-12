@@ -107,9 +107,9 @@ systemctl --user status evox3-bge-m3.service evox3-jinhua-api.service evox3-jinh
    ./scripts/evox3/08_autostart_desktop.sh
    ./scripts/evox3/09_smoke_check.sh
    ```
-2. Άνοιξε kiosk στο **`:5173`** (όχι `:8000`):
+2. Άνοιξε kiosk στο **`:5173`** (όχι `:8000`) — σκοτώνει παλιά Chromium tabs:
    ```bash
-   bash -lc 'export DISPLAY=:0 XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}; ~/ai_apps/bin/evox3-jinhua-kiosk.sh'
+   ./scripts/evox3/10_relaunch_kiosk.sh
    ```
 3. Register → Greek chat smoke → reboot για autostart.
 
@@ -153,7 +153,14 @@ systemctl --user restart evox3-jinhua-api.service
 ```
 
 ### Kiosk shows API docs instead of UI
-Cause: browser pointed at `:8000`. Kiosk must use `http://127.0.0.1:5173`. Re-run `08` and launch the wrapper above.
+Cause: stale Flatpak Chromium still pointed at `:8000`, or old `~/ai_apps/bin/evox3-jinhua-kiosk.sh`. Apt chromium is unavailable on this node (PackageKit masked / broken packages) — use Flatpak only.
+
+```bash
+cd "$HOME/thoma" && git pull --ff-only
+./scripts/evox3/10_relaunch_kiosk.sh
+# process args must show :5173, never :8000
+pgrep -af 'chromium|ungoogled' | head
+```
 
 ## Εκτός scope αυτού του pass
 
