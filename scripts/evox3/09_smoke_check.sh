@@ -185,6 +185,27 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+printf '\n=== MCP ANGELICA server ===\n'
+MCP_MARKER="$EVOX3_JINHUA_DIR/.evox3-mcp-angelica"
+MCP_SERVER="$EVOX3_JINHUA_DIR/scripts/angelica_mcp_server.py"
+MCP_CLIENT="$EVOX3_JINHUA_DIR/scripts/angelica_api_client.py"
+VENV_PY="$EVOX3_JINHUA_DIR/.venv/bin/python"
+if [ -f "$MCP_MARKER" ] && [ -f "$MCP_SERVER" ] && [ -f "$MCP_CLIENT" ] \
+  && grep -q 'EVOX3_MCP_ANGELICA' "$MCP_SERVER" 2>/dev/null; then
+  ok "MCP ANGELICA server installed"
+  PASS=$((PASS + 1))
+else
+  warn "MCP ANGELICA server missing — run ./scripts/evox3/18_mcp_angelica.sh"
+  FAIL=$((FAIL + 1))
+fi
+if [ -x "$VENV_PY" ] && "$VENV_PY" -c 'from mcp.server.fastmcp import FastMCP' 2>/dev/null; then
+  ok "Jinhua venv FastMCP import OK"
+  PASS=$((PASS + 1))
+else
+  warn "Jinhua venv missing FastMCP — run ./scripts/evox3/18_mcp_angelica.sh"
+  FAIL=$((FAIL + 1))
+fi
+
 printf '\n=== %s brand ===\n' "$EVOX3_BRAND_NAME"
 BRAND_MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-brand-angelica"
 SIDEBAR_TSX="$EVOX3_JINHUA_DIR/apps/web/src/components/AppSidebar.tsx"

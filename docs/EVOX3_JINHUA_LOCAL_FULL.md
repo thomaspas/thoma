@@ -77,6 +77,8 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 16. **16** — Brand kiosk as **ANGELICA** (title, sidebar logo, Greek footer prompts).
 17. **17** — Neo4j graph analytics APIs (orphans, PageRank, Louvain, bridges, shortest path). Opt-in; not in `run_all`.
 18. **17_demo** — Login + demo all `/graph/analytics/*` endpoints (no TOKEN paste).
+19. **18** — ANGELICA stdio MCP server (remember / recall / connect / analyze). Opt-in.
+20. **18_demo** — Demo MCP tool flows without Cursor.
 
 ## Overrides (env)
 
@@ -131,6 +133,21 @@ Opt-in patch — stdlib algorithms on a user-scoped Neo4j export (no GDS / netwo
 ```
 
 Prefer `17_demo_analytics.sh` over hand-rolled `TOKEN=` curls — SSH bracketed paste can break login.
+
+## MCP server (ANGELICA)
+
+Stdio MCP server for Cursor / Claude Desktop — tools call the local FastAPI (separate from Jinhua coordinator `MCP_ENABLED=false`).
+
+```bash
+./scripts/evox3/18_mcp_angelica.sh
+./scripts/evox3/18_demo_mcp.sh
+```
+
+- `analyze` tool requires graph analytics: run `17` first.
+- Cursor config template: [`docs/mcp_cursor_angelica.json.example`](mcp_cursor_angelica.json.example)
+- After `18` on EVO-X3: machine-specific snippet at `docs/mcp_cursor_angelica.generated.json`
+
+Restore: remove `$EVOX3_JINHUA_DIR/scripts/angelica_mcp_*.py` and marker `.evox3-mcp-angelica`.
 
 Restore upstream graph router/schemas: `*.evox3-graph-orig` + remove `secondbrain/graph/analytics.py` + marker `.evox3-graph-analytics`.
 

@@ -1,0 +1,14 @@
+{
+  "_comment": "Template for Cursor MCP settings. Run 18_mcp_angelica.sh on EVO-X3 to generate docs/mcp_cursor_angelica.generated.json with expanded paths.",
+  "mcpServers": {
+    "angelica": {
+      "command": "$HOME/ai_apps/IncubativeSecondBrain/.venv/bin/python",
+      "args": ["$HOME/ai_apps/IncubativeSecondBrain/scripts/angelica_mcp_server.py"],
+      "env": {
+        "ANGELICA_API_URL": "http://127.0.0.1:8000",
+        "ANGELICA_EMAIL": "ye@evox3.local",
+        "ANGELICA_PASSWORD": "evox3-local-12"
+      }
+    }
+  }
+}

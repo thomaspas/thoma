@@ -47,3 +47,12 @@ Neo4j graph analytics (opt-in):
 ./scripts/evox3/09_smoke_check.sh
 ./scripts/evox3/17_demo_analytics.sh
 ```
+
+ANGELICA MCP server (opt-in):
+
+```bash
+./scripts/evox3/18_mcp_angelica.sh
+./scripts/evox3/18_demo_mcp.sh
+```
+
+Cursor config: [docs/mcp_cursor_angelica.json.example](docs/mcp_cursor_angelica.json.example)

@@ -13,6 +13,7 @@ Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded
 | 3 | Project continuation status | [bc-433887f8…](https://cursor.com/agents/bc-433887f8-f959-4252-84f0-1b2168336287) | Operator finish, ingest hang, Greek chat go-live |
 | 4 | Debugging project συνέχεια | [bc-ade6d950…](https://cursor.com/agents/bc-ade6d950-16c6-4e77-9fb3-d8daabb96263) | Post-reboot Postgres 500, docker boot unit, ANGELICA brand |
 | 5 | Συνέχεια έργου | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | Graph analytics `17`, demo script, NEXT #1 closeout |
+| 6 | MCP ANGELICA server | (this wave) | stdio MCP `18` remember/recall/connect/analyze |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
 
@@ -33,6 +34,8 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `16` | Brand UI **ANGELICA** (title, sidebar, Greek footer prompts) |
 | `17` | Neo4j graph analytics APIs (stdlib: orphans, PageRank, Louvain, bridges, shortest path) |
 | `17_demo` | Login + hit `/graph/analytics/*` without fragile TOKEN paste |
+| `18` | ANGELICA stdio MCP server (`remember` / `recall` / `connect` / `analyze`) |
+| `18_demo` | Demo MCP tools without Cursor |
 
 Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md).
 
@@ -93,7 +96,7 @@ Expect smoke **16 pass / 0 fail**, sidebar title **ANGELICA**, analytics demo al
 Ordered follow-ups from the upgrade brief (adapt gradually):
 
 1. ~~**Graph analytics** on Neo4j (Louvain, PageRank, orphans, bridges, shortest path)~~ — **DONE** via `17_graph_analytics.sh` + `17_demo_analytics.sh` ([PR #6](https://github.com/thomaspas/thoma/pull/6))
-2. **MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`) — **next**
+2. **MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`) — **IN PROGRESS** via `18_mcp_angelica.sh` (branch `cursor/mcp-angelica-server-bd38`)
 3. **Browser extension** capture (Plasmo / project-nexus style)
 4. **React Flow 2D** visual graph + rich relation types + growth animations
 5. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
