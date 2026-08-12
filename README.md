@@ -45,4 +45,5 @@ Neo4j graph analytics (opt-in):
 ```bash
 ./scripts/evox3/17_graph_analytics.sh
 ./scripts/evox3/09_smoke_check.sh
+./scripts/evox3/17_demo_analytics.sh
 ```
