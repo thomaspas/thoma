@@ -21,11 +21,20 @@ if [ -d "$THOMA_ROOT/.git" ]; then
     die "Could not fetch origin/${BRANCH} — check network / remote"
   fi
   current="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  switched=0
   if [ "$current" != "$BRANCH" ]; then
     log "Checking out $BRANCH (was: ${current:-detached})"
+    switched=1
   fi
   git checkout -B "$BRANCH" "origin/${BRANCH}"
   ok "thoma @ $(git rev-parse --short HEAD) on $(git rev-parse --abbrev-ref HEAD)"
+  # After switching branches, re-exec so 09/10/11 come from the checked-out tree
+  # (avoids running newer 12 then older sibling scripts from previous branch).
+  if [ "$switched" = "1" ] && [ "${EVOX3_FINISH_REEXEC:-0}" != "1" ]; then
+    log "Re-exec 12_operator_finish.sh from $BRANCH"
+    export EVOX3_FINISH_REEXEC=1
+    exec bash "$SCRIPT_DIR/12_operator_finish.sh"
+  fi
 else
   warn "Not a git checkout at $THOMA_ROOT — skip pull"
 fi
