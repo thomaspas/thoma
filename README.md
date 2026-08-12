@@ -2,11 +2,13 @@
 
 Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **ANGELICA**.
 
-**Status: DONE** on EVO-X3 (smoke 18/0, Greek chat, docker boot, ANGELICA UI, graph analytics, MCP server).
+**Status: DONE** on EVO-X3 (smoke 18/0, Greek chat, docker boot, ANGELICA UI, graph analytics, MCP server, browser extension).
 
 - Runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
 - Session chronicle (all chats + NEXT roadmap): [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
+- Browser extension: [docs/ANGELICA_BROWSER_EXTENSION.md](docs/ANGELICA_BROWSER_EXTENSION.md)
 - Scripts: [scripts/evox3/](scripts/evox3/)
+- Extension source: [extensions/angelica-capture/](extensions/angelica-capture/)
 
 On the EVO-X3 machine:
 
@@ -53,6 +55,13 @@ ANGELICA MCP server (opt-in):
 ```bash
 ./scripts/evox3/18_mcp_angelica.sh
 ./scripts/evox3/18_demo_mcp.sh
+```
+
+Browser extension capture (opt-in):
+
+```bash
+./scripts/evox3/19_browser_extension.sh
+./scripts/evox3/19_demo_capture.sh
 ```
 
 Cursor config: [docs/mcp_cursor_angelica.json.example](docs/mcp_cursor_angelica.json.example)

@@ -79,6 +79,9 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 18. **17_demo** — Login + demo all `/graph/analytics/*` endpoints (no TOKEN paste).
 19. **18** — ANGELICA stdio MCP server (remember / recall / connect / analyze). Opt-in.
 20. **18_demo** — Demo MCP tool flows without Cursor.
+21. **19** — Stage ANGELICA Capture browser extension (MV3) + optional CORS patch (`20`).
+22. **19_demo** — curl-only upload smoke (simulated extension capture).
+23. **20** — Patch FastAPI CORS for `chrome-extension://` origins (idempotent).
 
 ## Overrides (env)
 
@@ -151,6 +154,19 @@ Restore: remove `$EVOX3_JINHUA_DIR/scripts/angelica_mcp_*.py` and marker `.evox3
 
 Restore upstream graph router/schemas: `*.evox3-graph-orig` + remove `secondbrain/graph/analytics.py` + marker `.evox3-graph-analytics`.
 
+## Browser extension (ANGELICA Capture)
+
+MV3 Chromium extension — capture page or selection → `POST /documents/upload`. Full guide: [`ANGELICA_BROWSER_EXTENSION.md`](ANGELICA_BROWSER_EXTENSION.md).
+
+```bash
+./scripts/evox3/19_browser_extension.sh
+./scripts/evox3/19_demo_capture.sh   # curl-only upload smoke (no browser)
+```
+
+- Load unpacked from `extensions/angelica-capture/build/chrome-mv3-prod` in Chromium (not kiosk).
+- Default API: `http://127.0.0.1:8000`, account `ye@evox3.local`.
+- `20_patch_cors_extension.sh` runs automatically from `19` (skip with `EVOX3_SKIP_CORS_PATCH=1`).
+
 Παράδειγμα άλλου API port αν το `:8000` είναι πιασμένο:
 
 ```bash
@@ -216,24 +232,30 @@ chmod +x scripts/evox3/*.sh
 
 ## Handoff — κατάσταση
 
-**DONE — LOCAL FULL / ANGELICA** (2026-08-12).
+**DONE — LOCAL FULL / ANGELICA / analytics / MCP / browser extension** (2026-08-12).
 
-Πλήρες χρονικό συνομιλιών + evidence + parked NEXT:
+Πλήρες χρονικό συνομιλιών + evidence + NEXT roadmap:
 [`docs/SESSION_CHRONICLE_ANGELICA.md`](SESSION_CHRONICLE_ANGELICA.md)
 
-**Branch:** `cursor/angelica-brand-kiosk-6263` → PR [#5](https://github.com/thomaspas/thoma/pull/5) (includes docker-boot fix). Merge to `main` when ready.
+**Branch:** `main` → https://github.com/thomaspas/thoma
 
-**Final smoke:**
+**Resume paste (EVO-X3):**
 ```bash
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/angelica-brand-kiosk-6263:refs/remotes/origin/cursor/angelica-brand-kiosk-6263'
-git checkout -B cursor/angelica-brand-kiosk-6263 origin/cursor/angelica-brand-kiosk-6263
-./scripts/evox3/09_smoke_check.sh
+git fetch origin '+refs/heads/main:refs/remotes/origin/main'
+git checkout -B main origin/main
+chmod +x scripts/evox3/*.sh
+./scripts/evox3/12_operator_finish.sh
+./scripts/evox3/09_smoke_check.sh          # expect 18 pass / 0 fail (19 pass if extension built)
+./scripts/evox3/13_remote_go_live.sh       # upload + Greek chat (SSH)
+./scripts/evox3/18_demo_mcp.sh             # optional MCP demo
+./scripts/evox3/19_browser_extension.sh    # optional extension
+./scripts/evox3/19_demo_capture.sh         # optional curl capture smoke
 ```
 
-Expect **14 pass / 0 fail**, sidebar **ANGELICA**. Optional reboot + re-run `09`.
+Optional reboot smoke: `sudo reboot` then re-run `09`.
 
-**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`. Νέα features: διάβασε κεφάλαιο **NEXT** στο chronicle (analytics → MCP → extension).
+**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`. Νέα features: διάβασε κεφάλαιο **NEXT** στο chronicle (React Flow → extension done).
 
 ## Logs
 

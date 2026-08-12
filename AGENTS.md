@@ -8,15 +8,17 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 
 - [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — operator runbook
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
-- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`18` + demos + `run_all.sh` + `bge_m3_server.py` (`17` graph analytics, `18` MCP server)
+- [`docs/ANGELICA_BROWSER_EXTENSION.md`](docs/ANGELICA_BROWSER_EXTENSION.md) — MV3 capture extension guide
+- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`20` + demos + `run_all.sh` + `bge_m3_server.py`
+- [`extensions/angelica-capture/`](extensions/angelica-capture/) — ANGELICA Capture browser extension (MV3, no npm build)
 
-**Status:** LOCAL FULL + ANGELICA + graph analytics + MCP server **DONE** on EVO-X3. Next wave: **browser extension** (chronicle NEXT #3).
+**Status:** LOCAL FULL + ANGELICA + graph analytics + MCP + browser extension **DONE** on EVO-X3. Next wave: **React Flow 2D graph** (chronicle NEXT #4).
 
 ### Cloud agent constraints
 
 - There are **no cloud services** to start in this workspace.
 - Do **not** expect `package.json` / app runtime under `/workspace` for the Second Brain itself; the Jinhua clone lives on EVO-X3 at `~/ai_apps/IncubativeSecondBrain`.
-- Do not invent a second app stack here. Changes should stay in docs/scripts unless the user asks otherwise.
+- Extension source lives in `extensions/`; app patches in `scripts/evox3/patches/`.
 - Product name on the kiosk is **ANGELICA** (`16_brand_angelica.sh`).
 
 ### How the user runs it (on EVO-X3)
@@ -33,8 +35,10 @@ Smoke checks and ports are documented in the runbook (`:11434` LLM, `:8002` bge-
 - After reboot, login HTTP 500 with `Connection refused` on `:5432` means Docker compose (Postgres) did not come up. Run `02_ensure_jinhua_clone_and_docker.sh` (installs `evox3-jinhua-docker.service`). API docs can still be 200 while DB is down.
 - Cloud agent has no SSH to EVO-X3 — validate via user paste of script output.
 - Brand patches live on the EVO-X3 clone (`*.evox3-brand-orig`); re-run `16` after upstream web updates.
+- Browser extension uses a **separate** Chromium profile (Load unpacked), not the kiosk.
 
 ### Lint / test / build (this repo)
 
 - Shell scripts: `bash -n scripts/evox3/*.sh`
+- Extension: `./scripts/evox3/19_browser_extension.sh` (no npm; copies MV3 source to `build/`)
 - No automated test suite yet for these operator scripts.

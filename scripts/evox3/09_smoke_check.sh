@@ -220,6 +220,23 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+printf '\n=== browser extension (opt-in) ===\n'
+EXT_DIR="$SCRIPT_DIR/../../extensions/angelica-capture"
+EXT_BUILD="$EXT_DIR/build/chrome-mv3-prod"
+EXT_MANIFEST="$EXT_BUILD/manifest.json"
+EXT_MARKER="$EXT_DIR/.evox3-built"
+if [ -f "$EXT_MARKER" ]; then
+  if [ -f "$EXT_MANIFEST" ]; then
+    ok "ANGELICA Capture extension build present"
+    PASS=$((PASS + 1))
+  else
+    warn "Extension marker present but build missing — re-run ./scripts/evox3/19_browser_extension.sh"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  log "ANGELICA Capture extension not installed (optional) — run ./scripts/evox3/19_browser_extension.sh"
+fi
+
 printf '\n=== result: %s pass / %s fail ===\n' "$PASS" "$FAIL"
 printf '\nOperator checklist (human / on EVO-X3 desktop):\n'
 printf '  1) Kiosk http://127.0.0.1:%s shows %s dashboard (NOT Register/Login, NOT :8000)\n' \
