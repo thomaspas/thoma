@@ -13,7 +13,7 @@ EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"
 DEBUG_LOG="${DEBUG_LOG:-/home/thomas1821/Λήψεις/.cursor/debug-f7f922.log}"
-SCRIPT_REV="x-access-token-v3"
+SCRIPT_REV="x-access-token-v4"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
@@ -22,7 +22,8 @@ die() { printf '[x] %s\n' "$*" >&2; exit 1; }
 
 #region agent log
 _dbg() {
-  local hid="$1" loc="$2" msg="$3" data="${4:-{}}"
+  local hid="$1" loc="$2" msg="$3" data="$4"
+  [ -n "$data" ] || data='{}'
   local line
   mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
   line="$(
@@ -178,7 +179,7 @@ git_push_branch() {
     if ! git_push_with_token; then
       tail -10 /tmp/git-push.err >&2 || true
       if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
-        die "git push failed — old credential path detected; confirm script shows [x-access-token-v3] and GH_TOKEN is a real PAT"
+        die "git push failed — old credential path detected; confirm script shows [x-access-token-v4] and GH_TOKEN is a real PAT"
       fi
       die "git push failed — check GH_TOKEN repo scope"
     fi
