@@ -15,8 +15,32 @@ Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded
 | 5 | Συνέχεια έργου | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | Graph analytics `17`, demo script, NEXT #1 closeout |
 | 6 | MCP ANGELICA server | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | stdio MCP `18` remember/recall/connect/analyze |
 | 7 | ANGELICA merge + extension | (this wave) | Land stack to `main`; MV3 capture `19` + CORS `20` |
+| 8 | Remote verify kiosk SSH | (local Cursor 2026-08-12) | `21_remote_verify` + PR [#8](https://github.com/thomaspas/thoma/pull/8); kiosk `:5173` from SSH |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
+
+## Session 2026-08-12 — remote verify kiosk SSH
+
+**Branch:** `cursor/land-angelica-stack-8dd2` · [PR #8](https://github.com/thomaspas/thoma/pull/8)
+
+**Operator setup:** Gaming-7 (`thomas1821-Z170X-Gaming-7`) → SSH → EVO-X3 (`thomas-pashoulas@192.168.1.8`). Handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
+
+**Runtime evidence (EVO-X3, user paste):**
+
+- `09_smoke_check.sh`: **18 pass / 0 fail** (stack healthy)
+- `21_remote_verify.sh`: **5 pass / 1 fail** — only `browser process missing :5173`
+- HTML `:5173`: ANGELICA, no Login/AuthScreen; Pi-hole ruled out (local HTTP OK)
+
+**Patches (local Gaming-7 clone, pending sync to EVO-X3):**
+
+- `_lib.sh` — `import_graphical_env_from_desktop_session()`, `kiosk_references_web_port()` via `/proc`
+- `10_relaunch_kiosk.sh` — `systemd-run` + `gtk-launch` fallback; sleep 5
+- `21_remote_verify.sh` — auto-relaunch `10` + wait 45s
+- `08_autostart_desktop.sh` — wrapper `exit 1` if no browser
+- `22_operator_context_check.sh` — warn if already on EVO-X3 (no nested ssh)
+- `23_sync_verify_fix_to_evox3.sh` — scp Gaming-7 → EVO-X3
+
+**Next:** sync scripts → `08` + `21_remote_verify.sh` → expect `REMOTE VERIFY OK`.
 
 ## What was built (`thoma`)
 
@@ -41,10 +65,12 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `19_demo` | curl-only capture upload smoke |
 | `20` | Patch FastAPI CORS for `chrome-extension://` origins |
 | `21` | Remote verify (SSH operator — no screen visit) |
+| `22` | Operator context check (already on EVO-X3? skip nested ssh) |
+| `23` | Sync kiosk/verify patches Gaming-7 → EVO-X3 via scp |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 
-Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
+Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Latest handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
 
 App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain)).
 
@@ -57,6 +83,7 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 5. **Greek chat without citations** — fixed after ingest `indexed`; reply cited `ye@evox3.local`, `evidence_status: citation_complete`.
 6. **Post-reboot login HTTP 500** — Postgres `:5432` Connection refused; `evox3-jinhua-docker.service` + API `ExecStartPre` wait for 5432.
 7. **Single-branch clone / missing `origin/main`** — explicit fetch refspec in `12`.
+8. **Remote verify kiosk fail from SSH** — import DISPLAY/WAYLAND from gnome-shell; `/proc` cmdline scan; auto-relaunch in `21`; `systemd-run`/`gtk-launch` in `10` (2026-08-12).
 
 ## Verification evidence (EVO-X3)
 
@@ -80,8 +107,9 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 | [#5](https://github.com/thomaspas/thoma/pull/5) | ANGELICA brand (+ docker boot) | Superseded by land PR |
 | [#6](https://github.com/thomaspas/thoma/pull/6) | Neo4j graph analytics + demo | Superseded by land PR |
 | [#7](https://github.com/thomaspas/thoma/pull/7) | ANGELICA stdio MCP server | Superseded by land PR |
+| [#8](https://github.com/thomaspas/thoma/pull/8) | Remote SSH operator + `21_remote_verify` + kiosk SSH fixes | OPEN |
 
-Working branch: `main` (after land PR merge).
+Working branch: `cursor/land-angelica-stack-8dd2` (PR #8); `main` after land merge.
 
 ## Ports / units (quick ref)
 

@@ -184,10 +184,45 @@ pick_browser() {
   return 1
 }
 
+# Import DISPLAY/WAYLAND/DBUS from the logged-in GNOME session (SSH → local desktop).
+import_graphical_env_from_desktop_session() {
+  local pid entry key val uid sess display imported=0
+  uid="$(id -u)"
+  for pid in $(pgrep -u "$uid" -x gnome-shell 2>/dev/null) $(pgrep -u "$uid" gnome-session-b 2>/dev/null) $(pgrep -u "$uid" -x mutter 2>/dev/null); do
+    [ -n "$pid" ] || continue
+    [ -r "/proc/${pid}/environ" ] || continue
+    while IFS= read -r -d '' entry; do
+      key="${entry%%=*}"
+      val="${entry#*=}"
+      case "$key" in
+        DISPLAY|WAYLAND_DISPLAY|XDG_RUNTIME_DIR|DBUS_SESSION_BUS_ADDRESS|XAUTHORITY|XDG_SESSION_TYPE|XDG_CURRENT_DESKTOP)
+          export "$key=$val"
+          imported=1
+          ;;
+      esac
+    done < "/proc/${pid}/environ"
+  done
+  if command -v loginctl >/dev/null 2>&1; then
+    sess="$(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$USER" '$3==u {print $1; exit}')"
+    if [ -n "$sess" ]; then
+      display="$(loginctl show-session "$sess" -p Display --value 2>/dev/null || true)"
+      if [ -n "$display" ]; then
+        export DISPLAY="$display"
+        imported=1
+      fi
+    fi
+  fi
+  if [ "$imported" -eq 1 ] && [ -n "${THOMA_DEBUG_LOG:-}" ]; then
+    python3 -c "import json,time,os; open(os.environ.get('THOMA_DEBUG_LOG','/tmp/thoma-debug-f7f922.ndjson'),'a').write(json.dumps({'sessionId':'f7f922','hypothesisId':'H6','location':'_lib.sh:import_graphical','message':'imported desktop env','data':{'DISPLAY':os.environ.get('DISPLAY'),'WAYLAND':os.environ.get('WAYLAND_DISPLAY'),'XDG_RUNTIME_DIR':os.environ.get('XDG_RUNTIME_DIR')},'timestamp':int(time.time()*1000)})+'\n')" 2>/dev/null || true
+  fi
+  return 0
+}
+
 # Prepare env so Flatpak/Chromium can open on the LOCAL desktop from SSH.
 # Exports: XDG_RUNTIME_DIR, DBUS_SESSION_BUS_ADDRESS, WAYLAND_DISPLAY, DISPLAY, XAUTHORITY
 setup_local_graphical_env() {
   local uid runtime wl auth candidate
+  import_graphical_env_from_desktop_session
   uid="$(id -u)"
   runtime="${XDG_RUNTIME_DIR:-/run/user/${uid}}"
   export XDG_RUNTIME_DIR="$runtime"
@@ -255,5 +290,40 @@ kiosk_launch_cmd() {
   else
     printf '%q --kiosk --app=%q --no-first-run --disable-session-crashed-bubble %s' "$c" "$url" "$ozone"
   fi
+}
+
+# True if any browser/kiosk-related process cmdline references the Vite web port.
+# Flatpak/bwrap often hide the URL from pgrep -af; scan /proc/*/cmdline.
+kiosk_references_web_port() {
+  local port="${EVOX3_WEB_PORT:-5173}"
+  local pid cmd
+  for pid in /proc/[0-9]*; do
+    [ -r "${pid}/cmdline" ] || continue
+    cmd="$(tr '\0' ' ' < "${pid}/cmdline" 2>/dev/null || true)"
+    case "$cmd" in
+      *ungoogled_chromium*|*org.chromium*|*chromium*|*firefox*|*evox3-jinhua-kiosk*|*flatpak*)
+        if printf '%s' "$cmd" | grep -qE ":${port}(/|\"|'|[[:space:]]|$)|127\.0\.0\.1:${port}"; then
+          return 0
+        fi
+        ;;
+    esac
+  done
+  return 1
+}
+
+wait_for_kiosk_web_port() {
+  local secs="${1:-45}"
+  local i
+  for i in $(seq 1 "$secs"); do
+    if kiosk_references_web_port; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+kiosk_proc_snapshot() {
+  pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox|evox3-jinhua-kiosk|flatpak' 2>/dev/null | head -n 40 || true
 }
 

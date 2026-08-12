@@ -31,6 +31,21 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/21_remote_verify.sh
 ```
 
+### Ήδη είσαι στον EVO-X3; (συχνό λάθος)
+
+Αν το prompt είναι `thomas-pashoulas@thomas-pashoulas-EVO-X3` **μην** κάνεις `ssh thomas-pashoulas@192.168.1.8` — είναι SSH στον εαυτό σου (nested session). Τρέξε απευθείας:
+
+```bash
+cd "$HOME/thoma"
+git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
+git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
+chmod +x scripts/evox3/*.sh
+./scripts/evox3/22_operator_context_check.sh
+./scripts/evox3/21_remote_verify.sh
+```
+
+`ssh-copy-id` από **Gaming-7** → EVO-X3, **όχι** από EVO-X3 → `192.168.1.8` (ίδιο μηχάνημα).
+
 Πλήρες chat demo (αργό — Qwen 27B):
 
 ```bash

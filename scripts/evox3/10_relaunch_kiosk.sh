@@ -59,14 +59,33 @@ ENV_ARGS=(
 [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && ENV_ARGS+=(DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS")
 [ -n "${XAUTHORITY:-}" ] && ENV_ARGS+=(XAUTHORITY="$XAUTHORITY")
 nohup env "${ENV_ARGS[@]}" "$KIOSK_WRAPPER" >/tmp/evox3-jinhua-kiosk.log 2>&1 &
-sleep 3
+sleep 5
+
+if ! kiosk_references_web_port && command -v systemd-run >/dev/null 2>&1; then
+  log "First launch missed :${EVOX3_WEB_PORT} — retry via systemd-run --user in graphical session"
+  systemd-run --user --collect --setenv=DISPLAY="${DISPLAY:-:0}" \
+    --setenv=WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
+    --setenv=XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR}" \
+    --setenv=DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
+    --setenv=XAUTHORITY="${XAUTHORITY:-}" \
+    -- "$KIOSK_WRAPPER" >>/tmp/evox3-jinhua-kiosk.log 2>&1 || true
+  sleep 5
+fi
+
+if ! kiosk_references_web_port && command -v gtk-launch >/dev/null 2>&1 && [ -f "$HOME/.config/autostart/evox3-jinhua-kiosk.desktop" ]; then
+  log "Retry via gtk-launch evox3-jinhua-kiosk (GNOME autostart desktop entry)"
+  env "${ENV_ARGS[@]}" gtk-launch evox3-jinhua-kiosk >>/tmp/evox3-jinhua-kiosk.log 2>&1 &
+  sleep 5
+fi
 
 ok "Relaunched. Expect dashboard/chat at $URL (no Register/Login; NOT :${EVOX3_API_PORT})"
 printf 'Log tail:\n'
 tail -n 40 /tmp/evox3-jinhua-kiosk.log 2>/dev/null || true
 printf '\nProcesses:\n'
-pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox|evox3-jinhua-kiosk' | head -n 15 || true
-if ! pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox' >/dev/null 2>&1; then
+kiosk_proc_snapshot | head -n 15 || true
+if kiosk_references_web_port; then
+  ok "Kiosk browser references :${EVOX3_WEB_PORT}"
+elif ! pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox' >/dev/null 2>&1; then
   warn "No browser process — retry from SSH: ./scripts/evox3/10_relaunch_kiosk.sh"
   warn "Then: ./scripts/evox3/21_remote_verify.sh"
   warn "Diagnostic: ls -l \"\$XDG_RUNTIME_DIR\"/wayland-* \"\$XDG_RUNTIME_DIR\"/gdm/Xauthority 2>/dev/null; echo DISPLAY=\$DISPLAY"

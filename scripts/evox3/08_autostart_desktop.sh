@@ -104,7 +104,7 @@ fi
 
 if [ -z "\$BROWSER" ] && [ -z "\$FLATPAK_APP" ]; then
   echo "No browser found (install Flatpak Chromium; apt chromium is broken on this node)" >&2
-  exit 0
+  exit 1
 fi
 
 # Kill stale API-docs (:8000) and UI (:5173) browser instances before relaunch.
