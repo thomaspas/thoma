@@ -2,7 +2,7 @@
 
 Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded the kiosk as **ANGELICA**. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics + MCP server + browser extension (2026-08-12).
+**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics + MCP server + browser extension + React Flow Graph nav (2026-08-12).
 
 ## Cloud agents (timeline)
 
@@ -152,9 +152,9 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 3. ~~**Browser extension** capture~~ — **DONE** via `19_browser_extension.sh` + `extensions/angelica-capture/` + `19_demo_capture.sh`
 4. ~~**React Flow 2D** visual graph (fullscreen Graph nav)~~ — **DONE** via `24_graph_ui_reactflow.sh` + `patches/graph_ui/` (see [`HANDOFF_GRAPH_UI.md`](HANDOFF_GRAPH_UI.md)); Overview 3D left as-is
 5. ~~Analytics-driven node styling (PageRank / communities / bridges)~~ — **DONE** in GraphFlowWorkspace v2 (`24` PATCH_VER=2)
-6. Rich relation types + growth animations — **next**
-6. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
-7. “100% offline Ollama” is low priority here — LOCAL FULL already uses local llama-server + bge-m3
+6. ~~Rich relation types + growth animations~~ — **DONE** in GraphFlowWorkspace v3 (`24` PATCH_VER=3)
+7. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
+8. “100% offline Ollama” is low priority here — LOCAL FULL already uses local llama-server + bge-m3
 
 ## Agent rules for resume
 

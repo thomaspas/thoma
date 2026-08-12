@@ -1,8 +1,14 @@
 # HANDOFF — React Flow Graph UI
 
-**BLUF:** Full-bleed **Graph** nav (React Flow / `@xyflow/react`) is live on EVO-X3 ANGELICA. Overview 3D panel unchanged. Fable LLM unchanged. **v2** styles nodes from `/graph/analytics/pagerank|communities|bridges`.
+**BLUF:** Full-bleed **Graph** nav (React Flow / `@xyflow/react`) is live on EVO-X3 ANGELICA. Overview 3D panel unchanged. Fable LLM unchanged. **v3** = analytics styling + rich relation colors + enter/growth animations.
 
-## Apply / verify (EVO-X3)
+## Re-verify one-liner (EVO-X3)
+
+```bash
+export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$PATH" && cd ~/thoma && ./scripts/evox3/21_remote_verify.sh
+```
+
+## Apply / refresh (EVO-X3)
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$PATH" && cd ~/thoma && ./scripts/evox3/24_graph_ui_reactflow.sh && ./scripts/evox3/10_relaunch_kiosk.sh && ./scripts/evox3/21_remote_verify.sh
@@ -22,7 +28,7 @@ export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$PATH" && cd ~/thoma && ./scr
 ## Sync Gaming-7 → EVO
 
 ```bash
-rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/24_graph_ui_reactflow.sh thomas-pashoulas@192.168.1.8:~/thoma/scripts/evox3/ && rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/patches/graph_ui/ thomas-pashoulas@192.168.1.8:~/thoma/scripts/evox3/patches/graph_ui/
+rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/24_graph_ui_reactflow.sh ~/thoma/scripts/evox3/09_smoke_check.sh thomas-pashoulas@192.168.1.8:~/thoma/scripts/evox3/ && rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/patches/graph_ui/ thomas-pashoulas@192.168.1.8:~/thoma/scripts/evox3/patches/graph_ui/
 ```
 
 ## Constraints
@@ -30,3 +36,4 @@ rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scri
 - No Warden/NEBULA
 - Do not change `LLM_MODEL` / Fable GGUF
 - Operator: SSH only; Graph tab is the visual check (no physical visit required for verify scripts)
+- Chronicle NEXT #4: [`SESSION_CHRONICLE_ANGELICA.md`](SESSION_CHRONICLE_ANGELICA.md)
