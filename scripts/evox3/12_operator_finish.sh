@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Operator finish: sync PR branch, skip-auth, smoke, relaunch kiosk, human checklist.
+# Operator finish: sync main, skip-auth, smoke, relaunch kiosk, human checklist.
 # Run on EVO-X3 (not Cursor Cloud). ASCII only.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
 
 THOMA_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-BRANCH="cursor/jinhua-local-full-evox3-02ac"
+BRANCH="${EVOX3_THOMA_BRANCH:-main}"
 SAMPLE_MD="${EVOX3_AI_APPS}/evox3-greek-smoke.md"
 
 cd "$THOMA_ROOT"
@@ -14,14 +14,27 @@ cd "$THOMA_ROOT"
 log "=== 12_operator_finish: git sync ($BRANCH) ==="
 require_cmd git
 if [ -d "$THOMA_ROOT/.git" ]; then
-  git fetch origin "$BRANCH"
+  # Explicit refspec: plain `git fetch origin main` may only update FETCH_HEAD
+  # (no refs/remotes/origin/main) on clones that never tracked main.
+  git fetch origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+  if ! git rev-parse --verify "refs/remotes/origin/${BRANCH}" >/dev/null 2>&1; then
+    die "Could not fetch origin/${BRANCH} — check network / remote"
+  fi
   current="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  switched=0
   if [ "$current" != "$BRANCH" ]; then
     log "Checking out $BRANCH (was: ${current:-detached})"
-    git checkout "$BRANCH"
+    switched=1
   fi
-  git pull --ff-only origin "$BRANCH"
-  ok "thoma @ $(git rev-parse --short HEAD) on $BRANCH"
+  git checkout -B "$BRANCH" "origin/${BRANCH}"
+  ok "thoma @ $(git rev-parse --short HEAD) on $(git rev-parse --abbrev-ref HEAD)"
+  # After switching branches, re-exec so 09/10/11 come from the checked-out tree
+  # (avoids running newer 12 then older sibling scripts from previous branch).
+  if [ "$switched" = "1" ] && [ "${EVOX3_FINISH_REEXEC:-0}" != "1" ]; then
+    log "Re-exec 12_operator_finish.sh from $BRANCH"
+    export EVOX3_FINISH_REEXEC=1
+    exec bash "$SCRIPT_DIR/12_operator_finish.sh"
+  fi
 else
   warn "Not a git checkout at $THOMA_ROOT — skip pull"
 fi
@@ -55,5 +68,5 @@ printf '  3) Ask in Greek chat, e.g.: Ποιος είναι ο kiosk χρήστ�
 printf '  4) Reboot once, then after desktop login:\n'
 printf '       systemctl --user is-active evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service\n'
 printf '       %s/scripts/evox3/09_smoke_check.sh\n' "$THOMA_ROOT"
-printf '  5) When 1-4 pass: merge PR #1 (already ready for review)\n'
-ok "12_operator_finish.sh complete — do steps 1-4 on screen, then merge"
+printf '  5) Done — LOCAL FULL operator checklist complete\n'
+ok "12_operator_finish.sh complete — do steps 1-4 on screen"
