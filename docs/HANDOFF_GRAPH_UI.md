@@ -1,6 +1,6 @@
 # HANDOFF — React Flow Graph UI
 
-**BLUF:** Full-bleed **Graph** nav (React Flow / `@xyflow/react`) is live on EVO-X3 ANGELICA. Overview 3D panel unchanged. Fable LLM unchanged.
+**BLUF:** Full-bleed **Graph** nav (React Flow / `@xyflow/react`) is live on EVO-X3 ANGELICA. Overview 3D panel unchanged. Fable LLM unchanged. **v2** styles nodes from `/graph/analytics/pagerank|communities|bridges`.
 
 ## Apply / verify (EVO-X3)
 
