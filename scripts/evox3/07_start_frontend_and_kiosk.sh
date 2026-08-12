@@ -17,9 +17,17 @@ cd "$WEB_DIR"
 log "npm install"
 npm install
 
+NPM_BIN="$(command -v npm)"
+# Resolve to real path when possible (nvm/fnm shims can break systemd 203/EXEC).
+if command -v readlink >/dev/null 2>&1; then
+  NPM_BIN="$(readlink -f "$NPM_BIN" 2>/dev/null || printf '%s' "$NPM_BIN")"
+fi
+log "npm binary for systemd: $NPM_BIN"
+
 UNIT_DIR="$(user_systemd_dir)"
 UNIT_PATH="$UNIT_DIR/evox3-jinhua-web.service"
 
+# Use bash -lc so nvm/fnm PATH works; avoid bare ExecStart=/usr/bin/npm (203/EXEC).
 cat > "$UNIT_PATH" <<EOF
 [Unit]
 Description=EVO-X3 Jinhua SecondBrain Vite frontend (:${EVOX3_WEB_PORT})
@@ -29,7 +37,8 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=${WEB_DIR}
-ExecStart=$(command -v npm) run dev -- --host 127.0.0.1 --port ${EVOX3_WEB_PORT}
+Environment=PATH=${PATH}
+ExecStart=/bin/bash -lc 'cd "${WEB_DIR}" && exec "${NPM_BIN}" run dev -- --host 127.0.0.1 --port ${EVOX3_WEB_PORT}'
 Restart=on-failure
 RestartSec=5
 
