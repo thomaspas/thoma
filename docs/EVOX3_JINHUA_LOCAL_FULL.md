@@ -86,6 +86,20 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 | `EVOX3_LOCAL_PASSWORD` | `evox3-local-12` |
 | `EVOX3_LOCAL_DISPLAY_NAME` | `Ye` |
 
+`03_write_local_env.sh` also forces `REVIEW_ENABLED=false` so ingest does not stop at human review on the kiosk.
+
+## Remote go-live (SSH): ingest + Greek chat
+
+Document status stays **`parsing`** while the local LLM drafts cards (slow on Qwen 27B). Do **not** start `/assistant/chat` until status is `indexed` — concurrent chat competes for the single llama slot.
+
+```bash
+./scripts/evox3/13_remote_go_live.sh
+# or resume an existing upload:
+./scripts/evox3/13_remote_go_live.sh e9c50037-767c-45d9-9212-1dc8d2a42643
+```
+
+After `REVIEW_ENABLED` change: re-run `03_write_local_env.sh` then `systemctl --user restart evox3-jinhua-api.service`.
+
 Παράδειγμα άλλου API port αν το `:8000` είναι πιασμένο:
 
 ```bash

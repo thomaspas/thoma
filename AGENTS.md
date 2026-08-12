@@ -7,7 +7,8 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 ### What lives here
 
 - [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — operator runbook
-- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`12` + `run_all.sh` + `bge_m3_server.py` (`12_operator_finish.sh` = sync + smoke + kiosk)
+- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`13` + `run_all.sh` + `bge_m3_server.py` (`12` = sync+smoke+kiosk; `13` = remote ingest+Greek chat)
+
 
 ### Cloud agent constraints
 
