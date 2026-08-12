@@ -28,7 +28,7 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 **Runtime evidence (EVO-X3, user paste):**
 
 - `09_smoke_check.sh`: **18 pass / 0 fail** (stack healthy)
-- `21_remote_verify.sh`: **5 pass / 1 fail** — only `browser process missing :5173`
+- `21_remote_verify.sh`: **6 pass / 0 fail** -- `REMOTE VERIFY OK` (kiosk `:5173` via SSH relaunch)
 - HTML `:5173`: ANGELICA, no Login/AuthScreen; Pi-hole ruled out (local HTTP OK)
 
 **Saved state snapshot (Gaming-7, 2026-08-12 later):**
@@ -38,7 +38,7 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 - `auto_close_angelica.sh` now validates `GH_TOKEN` with `gh api user` and uses one canonical `x-access-token` HTTPS push path
 - The remaining blocker is operator-side on Gaming-7: run the cleaned `auto_close_angelica.sh` with a real PAT that has `repo` scope, then let it continue to EVO-X3 verify and PR #8 merge
 
-**Patches (local Gaming-7 clone, pending sync to EVO-X3):**
+**Patches (pushed + verified on EVO-X3):**
 
 - `_lib.sh` — `import_graphical_env_from_desktop_session()`, `kiosk_references_web_port()` via `/proc`
 - `10_relaunch_kiosk.sh` — `systemd-run` + `gtk-launch` fallback; sleep 5
@@ -47,7 +47,7 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 - `22_operator_context_check.sh` — warn if already on EVO-X3 (no nested ssh)
 - `23_sync_verify_fix_to_evox3.sh` — scp Gaming-7 → EVO-X3
 
-**Next:** from Gaming-7 run `scripts/operator/auto_close_angelica.sh` with a valid `GH_TOKEN`; if push succeeds, continue to EVO-X3 remote verify and then close PR #8.
+**Resolved (auto_close):** `21_remote_verify.sh` **6 pass / 0 fail** -- `REMOTE VERIFY OK`; bug #8 closed; PR #8 merged.
 
 ## What was built (`thoma`)
 
@@ -114,7 +114,7 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 | [#5](https://github.com/thomaspas/thoma/pull/5) | ANGELICA brand (+ docker boot) | Superseded by land PR |
 | [#6](https://github.com/thomaspas/thoma/pull/6) | Neo4j graph analytics + demo | Superseded by land PR |
 | [#7](https://github.com/thomaspas/thoma/pull/7) | ANGELICA stdio MCP server | Superseded by land PR |
-| [#8](https://github.com/thomaspas/thoma/pull/8) | Remote SSH operator + `21_remote_verify` + kiosk SSH fixes | OPEN |
+| [#8](https://github.com/thomaspas/thoma/pull/8) | Remote SSH operator + `21_remote_verify` + kiosk SSH fixes | MERGED |
 
 Working branch: `cursor/land-angelica-stack-8dd2` (PR #8); `main` after land merge.
 
