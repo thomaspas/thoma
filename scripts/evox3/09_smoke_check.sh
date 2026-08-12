@@ -142,6 +142,49 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+printf '\n=== graph analytics ===\n'
+GRAPH_MARKER="$EVOX3_JINHUA_DIR/.evox3-graph-analytics"
+ANALYTICS_PY="$EVOX3_JINHUA_DIR/secondbrain/graph/analytics.py"
+if [ -f "$GRAPH_MARKER" ] && [ -f "$ANALYTICS_PY" ] \
+  && grep -q 'EVOX3_GRAPH_ANALYTICS' "$ANALYTICS_PY" 2>/dev/null; then
+  ok "graph analytics patch present"
+  PASS=$((PASS + 1))
+else
+  warn "graph analytics patch missing — run ./scripts/evox3/17_graph_analytics.sh"
+  FAIL=$((FAIL + 1))
+fi
+if [ "$LOGIN_CODE" = "200" ] && [ -f /tmp/evox3-smoke-login.json ]; then
+  ACCESS_TOKEN="$(python3 - <<'PY'
+import json
+try:
+    print(json.load(open("/tmp/evox3-smoke-login.json")).get("access_token") or "")
+except Exception:
+    print("")
+PY
+)"
+  if [ -n "$ACCESS_TOKEN" ]; then
+    SUM_CODE="$(curl -sS -o /tmp/evox3-smoke-graph-summary.json -w '%{http_code}' --max-time 15 \
+      -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+      "http://${EVOX3_API_HOST}:${EVOX3_API_PORT}/graph/analytics/summary" || true)"
+    if [ "$SUM_CODE" = "200" ]; then
+      ok "graph analytics summary HTTP 200"
+      PASS=$((PASS + 1))
+    else
+      warn "graph analytics summary HTTP ${SUM_CODE} — run ./scripts/evox3/17_graph_analytics.sh"
+      if [ -f /tmp/evox3-smoke-graph-summary.json ]; then
+        warn "summary body: $(tr '\n' ' ' </tmp/evox3-smoke-graph-summary.json | head -c 240)"
+      fi
+      FAIL=$((FAIL + 1))
+    fi
+  else
+    warn "no access_token in login response — skip analytics summary HTTP check"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  warn "skip analytics summary HTTP check (login failed)"
+  FAIL=$((FAIL + 1))
+fi
+
 printf '\n=== %s brand ===\n' "$EVOX3_BRAND_NAME"
 BRAND_MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-brand-angelica"
 SIDEBAR_TSX="$EVOX3_JINHUA_DIR/apps/web/src/components/AppSidebar.tsx"

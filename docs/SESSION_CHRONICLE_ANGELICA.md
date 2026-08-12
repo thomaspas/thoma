@@ -30,6 +30,7 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `14` | Local LLM `/no_think` + timeouts (Qwen thinking hang) |
 | `15` | Ingest diagnose + optional sync re-ingest |
 | `16` | Brand UI **ANGELICA** (title, sidebar, Greek footer prompts) |
+| `17` | Neo4j graph analytics APIs (stdlib: orphans, PageRank, Louvain, bridges, shortest path) |
 
 Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md).
 
@@ -81,11 +82,11 @@ git checkout -B cursor/angelica-brand-kiosk-6263 origin/cursor/angelica-brand-ki
 
 Expect **14 pass / 0 fail**, sidebar title **ANGELICA**. Optional: `sudo reboot` then re-run `09`.
 
-## NEXT (parked — do not start in this closeout)
+## NEXT
 
 Ordered follow-ups from the upgrade brief (adapt gradually):
 
-1. **Graph analytics** on Neo4j (Louvain, PageRank, orphans, bridges, shortest path)
+1. **Graph analytics** on Neo4j (Louvain, PageRank, orphans, bridges, shortest path) — **IN PROGRESS** via `17_graph_analytics.sh` (branch `cursor/neo4j-graph-analytics-bd38`)
 2. **MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`)
 3. **Browser extension** capture (Plasmo / project-nexus style)
 4. **React Flow 2D** visual graph + rich relation types + growth animations

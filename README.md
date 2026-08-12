@@ -39,3 +39,10 @@ Remote ingest + Greek chat (SSH):
 ```bash
 ./scripts/evox3/13_remote_go_live.sh
 ```
+
+Neo4j graph analytics (opt-in):
+
+```bash
+./scripts/evox3/17_graph_analytics.sh
+./scripts/evox3/09_smoke_check.sh
+```

@@ -75,6 +75,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 14. **14** — Patch local OpenAI LLM client (`/no_think`, timeouts).
 15. **15** — Diagnose stuck ingest; optional sync re-ingest.
 16. **16** — Brand kiosk as **ANGELICA** (title, sidebar logo, Greek footer prompts).
+17. **17** — Neo4j graph analytics APIs (orphans, PageRank, Louvain, bridges, shortest path). Opt-in; not in `run_all`.
 
 ## Overrides (env)
 
@@ -117,6 +118,34 @@ EVOX3_FORCE_SYNC_INGEST=1 ./scripts/evox3/15_diagnose_ingest.sh <document_id>
 ```
 
 After `REVIEW_ENABLED` / LLM patch change: ensure API restarted (`14` does this; or `systemctl --user restart evox3-jinhua-api.service`).
+
+## Graph analytics (Neo4j)
+
+Opt-in patch — stdlib algorithms on a user-scoped Neo4j export (no GDS / networkx).
+
+```bash
+./scripts/evox3/17_graph_analytics.sh
+./scripts/evox3/09_smoke_check.sh   # expects analytics patch + summary HTTP 200
+```
+
+Παραδείγματα (μετά login):
+
+```bash
+TOKEN="$(curl -fsS -X POST http://127.0.0.1:8000/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ye@evox3.local","password":"evox3-local-12"}' \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')"
+
+curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/summary
+curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/orphans
+curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/pagerank
+curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/communities
+curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/bridges
+curl -fsS -H "Authorization: Bearer $TOKEN" \
+  'http://127.0.0.1:8000/graph/analytics/shortest-path?source_id=ID1&target_id=ID2'
+```
+
+Restore upstream graph router/schemas: `*.evox3-graph-orig` + remove `secondbrain/graph/analytics.py` + marker `.evox3-graph-analytics`.
 
 Παράδειγμα άλλου API port αν το `:8000` είναι πιασμένο:
 
