@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run LOCAL FULL setup steps 01..08 in order on EVO-X3.
+# Run LOCAL FULL setup steps 01..11 in order on EVO-X3.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
