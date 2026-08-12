@@ -102,6 +102,7 @@ App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSeco
 - After `17_demo_analytics.sh`: summary **7 entities / 4 edges**; orphans/pagerank/communities/bridges all HTTP 200.
 - After `18_mcp_angelica.sh` + `18_demo_mcp.sh`: remember/recall/connect/analyze OK; smoke **18 pass / 0 fail**.
 - After `19_browser_extension.sh` + `19_demo_capture.sh`: extension staged; curl upload OK (EVO-X3 pending manual Load unpacked).
+- **2026-08-12 live:** PR #8 merged; EVO on `main` @ `416fb4b`; smoke **18/0**; `21_remote_verify` **REMOTE VERIFY OK**; kiosk Flatpak Chromium → `:5173`.
 
 ## Pull requests
 

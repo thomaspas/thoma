@@ -13,7 +13,7 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 - [`scripts/evox3/`](scripts/evox3/) — steps `01`–`21` + demos + `run_all.sh` + `bge_m3_server.py`
 - [`extensions/angelica-capture/`](extensions/angelica-capture/) — ANGELICA Capture browser extension (MV3, no npm build)
 
-**Status:** LOCAL FULL + ANGELICA + graph analytics + MCP + browser extension **DONE** on EVO-X3. Next wave: **React Flow 2D graph** (chronicle NEXT #4).
+**Status:** LIVE on EVO-X3 — LOCAL FULL + ANGELICA + graph analytics + MCP + remote SSH verify (PR #8 merged). Next wave: Greek E2E paste if needed, then **React Flow 2D graph** (chronicle NEXT #4).
 
 ### Remote operator (Thomas)
 

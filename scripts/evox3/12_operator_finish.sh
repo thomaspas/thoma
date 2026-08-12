@@ -8,15 +8,10 @@ source "$SCRIPT_DIR/_lib.sh"
 THOMA_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SAMPLE_MD="${EVOX3_AI_APPS}/evox3-greek-smoke.md"
 
-# Default git branch: explicit env > land stack (until merged to main) > main.
-# Staying on stale origin/main drops scripts 16-20 and causes 10-pass smoke regressions.
+# Default git branch: explicit env > main (land stack merged via PR #8).
 resolve_finish_branch() {
   if [ -n "${EVOX3_THOMA_BRANCH:-}" ]; then
     printf '%s\n' "$EVOX3_THOMA_BRANCH"
-    return 0
-  fi
-  if git -C "$THOMA_ROOT" rev-parse --verify refs/remotes/origin/cursor/land-angelica-stack-8dd2 >/dev/null 2>&1; then
-    printf '%s\n' "cursor/land-angelica-stack-8dd2"
     return 0
   fi
   printf '%s\n' "main"
