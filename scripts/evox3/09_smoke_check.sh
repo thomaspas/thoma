@@ -45,6 +45,16 @@ check_tcp "Neo4j  " "127.0.0.1" "7687"
 check_http "LLM     " "${EVOX3_LLM_BASE_URL}/models"
 check_http "bge-m3  " "http://127.0.0.1:${EVOX3_BGE_PORT}/health"
 check_http "API docs" "http://${EVOX3_API_HOST}:${EVOX3_API_PORT}/docs"
+# Vite may still be cold-starting after 11/16 restart — wait briefly before fail.
+if ! curl -fsS --max-time 2 "http://127.0.0.1:${EVOX3_WEB_PORT}/" >/dev/null 2>&1; then
+  log "Web UI not ready yet — waiting up to 60s on :${EVOX3_WEB_PORT}"
+  for _ in $(seq 1 60); do
+    if curl -fsS --max-time 2 "http://127.0.0.1:${EVOX3_WEB_PORT}/" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+fi
 check_http "Web UI  " "http://127.0.0.1:${EVOX3_WEB_PORT}/"
 
 if command -v systemctl >/dev/null 2>&1; then

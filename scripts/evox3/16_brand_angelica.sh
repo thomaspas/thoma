@@ -149,11 +149,31 @@ EOF
   ok "Wrote brand marker $MARKER"
 fi
 
-if systemctl --user is-active --quiet evox3-jinhua-web.service 2>/dev/null; then
-  systemctl --user restart evox3-jinhua-web.service
-  ok "Restarted evox3-jinhua-web.service"
+# Restart only when files changed. Always wait for :5173 so immediate 09 smoke
+# does not race Vite cold-start (seen as Web UI HTTP 000).
+if [ "$NEED_PATCH" = "1" ]; then
+  if systemctl --user is-active --quiet evox3-jinhua-web.service 2>/dev/null; then
+    log "Restarting evox3-jinhua-web.service"
+    systemctl --user restart evox3-jinhua-web.service
+    log "Waiting for frontend http://127.0.0.1:${EVOX3_WEB_PORT}"
+    READY=0
+    for _ in $(seq 1 90); do
+      if curl -fsS "http://127.0.0.1:${EVOX3_WEB_PORT}" >/dev/null 2>&1; then
+        READY=1
+        break
+      fi
+      sleep 1
+    done
+    if [ "$READY" -eq 1 ]; then
+      ok "Frontend ready on :${EVOX3_WEB_PORT}"
+    else
+      warn "Frontend not ready yet — check journalctl --user -u evox3-jinhua-web"
+    fi
+  else
+    warn "evox3-jinhua-web.service not active — start via 07 if needed"
+  fi
 else
-  warn "evox3-jinhua-web.service not active — start via 07 if needed"
+  log "No brand file changes — skip web restart"
 fi
 
 ok "16_brand_angelica.sh complete — UI brand ${EVOX3_BRAND_NAME}"
