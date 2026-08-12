@@ -98,7 +98,16 @@ Document status stays **`parsing`** while the local LLM drafts cards (slow on Qw
 ./scripts/evox3/13_remote_go_live.sh e9c50037-767c-45d9-9212-1dc8d2a42643
 ```
 
-After `REVIEW_ENABLED` change: re-run `03_write_local_env.sh` then `systemctl --user restart evox3-jinhua-api.service`.
+If status stays **`parsing`** for minutes (Qwen thinking / hung llama slot):
+
+```bash
+./scripts/evox3/14_patch_openai_llm_local.sh   # timeout + /no_think
+./scripts/evox3/15_diagnose_ingest.sh <document_id>
+# foreground re-ingest with traceback:
+EVOX3_FORCE_SYNC_INGEST=1 ./scripts/evox3/15_diagnose_ingest.sh <document_id>
+```
+
+After `REVIEW_ENABLED` / LLM patch change: ensure API restarted (`14` does this; or `systemctl --user restart evox3-jinhua-api.service`).
 
 Παράδειγμα άλλου API port αν το `:8000` είναι πιασμένο:
 

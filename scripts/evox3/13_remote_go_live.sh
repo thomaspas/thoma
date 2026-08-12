@@ -8,6 +8,9 @@ source "$SCRIPT_DIR/_lib.sh"
 require_cmd curl
 require_cmd python3
 
+# Prefer local Qwen without long thinking traces (ingest otherwise sticks at parsing).
+bash "$SCRIPT_DIR/14_patch_openai_llm_local.sh" || warn "14_patch_openai_llm_local.sh failed — continuing"
+
 API="http://${EVOX3_API_HOST}:${EVOX3_API_PORT}"
 SAMPLE_MD="${EVOX3_AI_APPS}/evox3-greek-smoke.md"
 DOC_ID="${1:-}"
