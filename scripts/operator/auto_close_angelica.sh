@@ -12,43 +12,11 @@ EVOX3_SSH="${EVOX3_SSH:-thomas-pashoulas@192.168.1.8}"
 EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"
-DEBUG_LOG="${DEBUG_LOG:-/home/thomas1821/Λήψεις/.cursor/debug-f7f922.log}"
-SCRIPT_REV="x-access-token-v4"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
 warn() { printf '[!] %s\n' "$*" >&2; }
 die() { printf '[x] %s\n' "$*" >&2; exit 1; }
-
-#region agent log
-_dbg() {
-  local hid="$1" loc="$2" msg="$3" data="$4"
-  [ -n "$data" ] || data='{}'
-  local line
-  mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
-  line="$(
-    DBG_HID="$hid" DBG_LOC="$loc" DBG_MSG="$msg" DBG_DATA="$data" python3 <<'PY' 2>/dev/null || true
-import json, os, time
-try:
-    data = json.loads(os.environ.get("DBG_DATA") or "{}")
-except json.JSONDecodeError:
-    data = {"raw": os.environ.get("DBG_DATA", "")}
-print(json.dumps({
-    "sessionId": "f7f922",
-    "hypothesisId": os.environ["DBG_HID"],
-    "location": os.environ["DBG_LOC"],
-    "message": os.environ["DBG_MSG"],
-    "data": data,
-    "timestamp": int(time.time() * 1000),
-    "runId": "post-fix",
-}))
-PY
-  )"
-  [ -n "$line" ] || return 0
-  printf '%s\n' "$line" >> "$DEBUG_LOG" 2>/dev/null || true
-  printf '%s\n' "$line" >> /tmp/angelica-debug-f7f922.log 2>/dev/null || true
-}
-#endregion
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing command: $1"
@@ -70,17 +38,9 @@ ensure_gh_auth() {
     export GH_TOKEN="$GITHUB_TOKEN"
   fi
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — export a GitHub PAT (scope: repo)"
-  #region agent log
-  local looks_placeholder=false
-  if [ "${GH_TOKEN}" = 'ghp_...' ] || [ "${GH_TOKEN}" = 'ghp_ΤΟ_ΠΡΑΓΜΑΤΙΚΟ_ΣΟΥ' ] || [[ "${GH_TOKEN}" == *'...'* ]] || [ "${#GH_TOKEN}" -lt 20 ]; then
-    looks_placeholder=true
-  fi
-  _dbg "H6" "ensure_gh_auth" "token_check" "{\"token_len\":${#GH_TOKEN},\"looks_placeholder\":${looks_placeholder},\"script_rev\":\"${SCRIPT_REV}\"}"
-  #endregion
-  if [ "$looks_placeholder" = true ]; then
+  if [[ "${GH_TOKEN}" == *'...'* ]] || [ "${#GH_TOKEN}" -lt 20 ]; then
     die "GH_TOKEN looks invalid or is a docs placeholder — create PAT at github.com/settings/tokens (scope: repo)"
   fi
-  # gh auth login --with-token FAILS when GH_TOKEN is already exported (exit 1, no stdin read).
   local gh_user
   if ! gh_user="$(gh api user -q .login 2>/tmp/gh-api.err)"; then
     warn "GH_TOKEN rejected by GitHub API:"
@@ -89,9 +49,6 @@ ensure_gh_auth() {
   fi
   ok "GitHub token OK (user: ${gh_user})"
   export GIT_TERMINAL_PROMPT=0
-  #region agent log
-  _dbg "H2" "ensure_gh_auth" "token_ok" "{\"user\":\"${gh_user}\"}"
-  #endregion
 }
 
 git_repo_slug() {
@@ -107,63 +64,14 @@ git_repo_slug() {
   printf '%s' "$remote_url"
 }
 
-setup_git_via_gh() {
-  local token="$GH_TOKEN"
-  # gh auth login --with-token fails when GH_TOKEN is already exported.
-  unset GH_TOKEN
-  if ! printf '%s\n' "$token" | gh auth login --with-token 2>/tmp/gh-login.err; then
-    export GH_TOKEN="$token"
-    warn "gh auth login --with-token failed:"
-    tail -5 /tmp/gh-login.err >&2 || true
-    return 1
-  fi
-  export GH_TOKEN="$token"
-  gh auth setup-git
-  #region agent log
-  _dbg "H7" "setup_git_via_gh" "ok" "{}"
-  #endregion
-}
-
 git_push_with_token() {
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — cannot push"
-  local slug push_url push_rc cred_helper encoded_token
+  local slug push_url encoded_token
   slug="$(git_repo_slug)"
   encoded_token="$(python3 -c "import urllib.parse,os; print(urllib.parse.quote(os.environ['GH_TOKEN'], safe=''))")"
   push_url="https://x-access-token:${encoded_token}@github.com/${slug}.git"
-  cred_helper="$(git config --get credential.helper 2>/dev/null || true)"
   log "Authenticated push to github.com/${slug} (branch ${BRANCH})"
-  #region agent log
-  _dbg "H1" "git_push_with_token" "before_push" "{\"slug\":\"${slug}\",\"branch\":\"${BRANCH}\",\"token_len\":${#GH_TOKEN},\"cred_helper_set\":$( [ -n "$cred_helper" ] && printf true || printf false ),\"script_rev\":\"${SCRIPT_REV}\"}"
-  #endregion
-  if git -c credential.helper= push "$push_url" "HEAD:${BRANCH}" 2>/tmp/git-push.err; then
-    #region agent log
-    _dbg "H3" "git_push_with_token" "push_ok" "{\"method\":\"x-access-token\"}"
-    #endregion
-    return 0
-  fi
-  push_rc=$?
-  local stderr_tail
-  stderr_tail="$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ')"
-  #region agent log
-  _dbg "H3" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"x-access-token\",\"stderr_tail\":\"${stderr_tail//\"/\\\"}\"}"
-  #endregion
-  if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
-    warn "Push hit credential prompt — retrying via gh auth setup-git"
-  else
-    warn "x-access-token push failed — retrying via gh auth setup-git"
-  fi
-  if setup_git_via_gh && git -c credential.helper= push origin "$BRANCH" 2>/tmp/git-push.err; then
-    #region agent log
-    _dbg "H7" "git_push_with_token" "push_ok" "{\"method\":\"gh-setup-git\"}"
-    #endregion
-    return 0
-  fi
-  push_rc=$?
-  stderr_tail="$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ')"
-  #region agent log
-  _dbg "H7" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"gh-setup-git\",\"stderr_tail\":\"${stderr_tail//\"/\\\"}\"}"
-  #endregion
-  return "$push_rc"
+  git -c credential.helper= push "$push_url" "HEAD:${BRANCH}" 2>/tmp/git-push.err
 }
 
 git_push_branch() {
@@ -173,13 +81,10 @@ git_push_branch() {
   ahead="$(git rev-list --count "origin/$BRANCH..HEAD" 2>/dev/null || echo 0)"
   if [ "${ahead:-0}" -gt 0 ]; then
     log "Pushing $ahead commit(s) to origin/$BRANCH"
-    #region agent log
-    _dbg "H4" "git_push_branch" "ahead" "{\"ahead\":${ahead},\"script_rev\":\"${SCRIPT_REV}\"}"
-    #endregion
     if ! git_push_with_token; then
       tail -10 /tmp/git-push.err >&2 || true
       if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
-        die "git push failed — old credential path detected; confirm script shows [x-access-token-v4] and GH_TOKEN is a real PAT"
+        die "git push failed — credential prompt detected; confirm GH_TOKEN is real and retry from Gaming-7"
       fi
       die "git push failed — check GH_TOKEN repo scope"
     fi
@@ -319,10 +224,7 @@ merge_pr() {
 }
 
 main() {
-  log "=== ANGELICA auto close (GH_TOKEN) [${SCRIPT_REV}] ==="
-  #region agent log
-  _dbg "H5" "main" "start" "{\"script_rev\":\"${SCRIPT_REV}\"}"
-  #endregion
+  log "=== ANGELICA auto close (GH_TOKEN) ==="
   require_cmd git
   require_cmd ssh
   require_cmd python3

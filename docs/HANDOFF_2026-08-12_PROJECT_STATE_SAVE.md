@@ -18,8 +18,8 @@
 - MCP server and browser extension workstreams are done
 - `09_smoke_check.sh` last known result: **18 pass / 0 fail**
 - Remote HTML on `:5173` showed ANGELICA and no Login/AuthScreen
-- `auto_close_angelica.sh` validates `GH_TOKEN` via `gh api user` (not `gh auth login --with-token`)
-- `auto_close_angelica.sh` git push fixed to use `x-access-token` HTTPS URL (Bearer header does not work for git push)
+- `auto_close_angelica.sh` validates `GH_TOKEN` via `gh api user`
+- `auto_close_angelica.sh` now uses a single canonical HTTPS push path with `x-access-token`
 
 ## What is not done yet
 
@@ -34,8 +34,13 @@ Local commits ahead of `origin/cursor/land-angelica-stack-8dd2`:
 
 - `05dc51a` — `Fix kiosk relaunch from SSH for remote verify.`
 - `6885ba3` — `Add auto_close_angelica.sh operator automation script.`
-- `bf0c930` — `Save project state handoff + fix GH_TOKEN auth in auto_close`
-- *(pending)* — `fix(operator): git push via x-access-token when GH_TOKEN is set` (this handoff save)
+- `bf0c930` — `Save project state handoff + fix GH_TOKEN auth in auto_close.`
+- `3cc4b9c` — `fix(operator): git push via x-access-token when GH_TOKEN is set`
+- `20aca1f` — `fix(operator): harden GH_TOKEN push with credential bypass and debug logs`
+- `6d57755` — `fix(operator): add gh-setup-git fallback and stricter GH_TOKEN checks`
+- `fd28029` — `fix(operator): repair debug logger JSON boolean parsing`
+- `a764cff` — `fix(operator): avoid bash brace expansion in _dbg default arg`
+- *(next local commit)* — simplify `auto_close_angelica.sh` and align docs with the real operator flow
 
 ## Important files
 
@@ -64,7 +69,7 @@ Local commits ahead of `origin/cursor/land-angelica-stack-8dd2`:
 Run from Gaming-7:
 
 ```bash
-export GH_TOKEN='ghp_...'
+export GH_TOKEN='your_real_pat_from_github_settings_tokens'
 export PATH="$HOME/.local/bin:$PATH"
 cd ~/thoma
 ./scripts/operator/auto_close_angelica.sh
@@ -73,24 +78,12 @@ cd ~/thoma
 Expected responsibilities of the script:
 
 - validate `GH_TOKEN`
-- push the local branch to GitHub (via `x-access-token` URL)
+- push the local branch to GitHub
 - bootstrap SSH to EVO-X3 if needed
 - run EVO-X3 verify
 - on success, update chronicle and merge PR #8
 
-### Path B — manual push + script
-
-If push still fails, manual one-liner then re-run script:
-
-```bash
-export GH_TOKEN='ghp_...'
-export PATH="$HOME/.local/bin:$PATH"
-cd ~/thoma
-git push "https://x-access-token:${GH_TOKEN}@github.com/thomaspas/thoma.git" cursor/land-angelica-stack-8dd2
-./scripts/operator/auto_close_angelica.sh
-```
-
-### Path C — manual EVO-X3 verify
+### Path B — manual EVO-X3 verify
 
 If continuing manually on EVO-X3 after the branch is pushed:
 
@@ -114,7 +107,7 @@ tail -40 /tmp/evox3-jinhua-kiosk.log
 ./scripts/evox3/21_remote_verify.sh
 ```
 
-## Current blocker (resolved in script, pending operator run)
+## Current blocker
 
 **Previous failure (2026-08-12):**
 
@@ -124,11 +117,11 @@ tail -40 /tmp/evox3-jinhua-kiosk.log
 fatal: could not read Username for 'https://github.com': terminal prompts disabled
 ```
 
-**Root cause:** `GIT_CONFIG http.extraHeader: Authorization: Bearer` works for `gh api` but **not** for `git push` over HTTPS.
+**Root cause:** the original operator script authenticated `gh api`, but `git push` still fell back to an interactive HTTPS credential prompt. Later retries also mixed in placeholder tokens like `ghp_...`, which looked like real values but were not valid PATs.
 
-**Fix applied:** `git_push_with_token()` pushes via `https://x-access-token:${GH_TOKEN}@github.com/thomaspas/thoma.git`.
+**Fix applied:** `auto_close_angelica.sh` now keeps one canonical push flow: validate `GH_TOKEN` with `gh api user`, then push over HTTPS with `x-access-token`.
 
-**Next operator step:** run `auto_close_angelica.sh` from Gaming-7 with valid `GH_TOKEN`.
+**Next operator step:** run `auto_close_angelica.sh` from Gaming-7 with a real GitHub PAT that has `repo` scope.
 
 ## Copy-paste prompt for a new Cursor chat
 
@@ -144,11 +137,11 @@ State:
 - EVO-X3 stack: smoke 18/0 OK
 - Remote verify last: 5/1 (only kiosk :5173 browser process)
 - PR #8 open
-- Gaming-7: 4 commits ahead of origin (incl. git push fix)
-- GH_TOKEN validates OK; auto_close_angelica.sh should now push via x-access-token
+- Gaming-7: local branch is ahead of origin with operator-flow fixes and cleanup
+- The only remaining blocker is running the cleaned operator script with a real PAT from Gaming-7
 
 Goal (Gaming-7 only):
-export GH_TOKEN='ghp_...'
+export GH_TOKEN='your_real_pat_from_github_settings_tokens'
 export PATH="$HOME/.local/bin:$PATH"
 cd ~/thoma && ./scripts/operator/auto_close_angelica.sh
 

@@ -34,14 +34,9 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 **Saved state snapshot (Gaming-7, 2026-08-12 later):**
 
 - `origin/cursor/land-angelica-stack-8dd2` is still behind local Gaming-7 work
-- Local commits not pushed yet:
-  - `05dc51a` — kiosk SSH fix + handoff docs
-  - `6885ba3` — add `scripts/operator/auto_close_angelica.sh`
-  - `bf0c930` — GH_TOKEN validation fix (`gh api user`)
-  - *(pending push)* — git push via `x-access-token` URL in `auto_close_angelica.sh`
-- `auto_close_angelica.sh` validates `GH_TOKEN` with `gh api user` instead of `gh auth login --with-token` when the token is already exported
-- Git push blocker resolved: Bearer header replaced with `https://x-access-token:${GH_TOKEN}@github.com/...` push URL
-- Main operational blocker remains: run `auto_close_angelica.sh` on Gaming-7 with valid `GH_TOKEN`, then EVO-X3 remote verify
+- Local commits not pushed yet include the kiosk SSH fixes, handoff docs, and several operator-script iterations after the original `git push` failure
+- `auto_close_angelica.sh` now validates `GH_TOKEN` with `gh api user` and uses one canonical `x-access-token` HTTPS push path
+- The remaining blocker is operator-side on Gaming-7: run the cleaned `auto_close_angelica.sh` with a real PAT that has `repo` scope, then let it continue to EVO-X3 verify and PR #8 merge
 
 **Patches (local Gaming-7 clone, pending sync to EVO-X3):**
 

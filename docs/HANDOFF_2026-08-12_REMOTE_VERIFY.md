@@ -1,11 +1,13 @@
 # HANDOFF — 2026-08-12 Remote verify / kiosk SSH
 
-**BLUF:** Stack is live (smoke **18/0**). Only gap: Chromium kiosk not on `:5173` when verifying from SSH. Patches committed locally on `cursor/land-angelica-stack-8dd2` (**ahead of origin** — run push below) — **push from Gaming-7**, then `git pull` on EVO-X3 and run `21_remote_verify.sh`.
+**BLUF:** Stack is live (smoke **18/0**). Only gap previously seen on EVO-X3 was Chromium kiosk not on `:5173` during SSH verify. The current blocker is on **Gaming-7**: push the local branch to GitHub with a real `GH_TOKEN`, then pull on EVO-X3 and run `21_remote_verify.sh`.
 
 ### Gaming-7 — push (required before EVO-X3 pull)
 
 ```bash
-cd ~/thoma && git push origin cursor/land-angelica-stack-8dd2
+export GH_TOKEN='your_real_pat_from_github_settings_tokens'
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/thoma && ./scripts/operator/auto_close_angelica.sh
 ```
 
 ## Machines
@@ -50,11 +52,12 @@ See also: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md), [`SESSION_CHRONICL
 | `scripts/evox3/08_autostart_desktop.sh` | wrapper `exit 1` if no browser |
 | `scripts/evox3/22_operator_context_check.sh` | operator context warnings |
 | `scripts/evox3/23_sync_verify_fix_to_evox3.sh` | scp helper Gaming-7 → EVO-X3 |
+| `scripts/operator/auto_close_angelica.sh` | operator push + SSH verify + merge flow |
 | `docs/REMOTE_OPERATOR_SSH.md` | "already on EVO-X3" section |
 
 ## Sync Gaming-7 → EVO-X3
 
-From **Gaming-7** (if SSH key to EVO-X3 works):
+From **Gaming-7** the preferred path is the operator script above. If you need to sync the kiosk fixes manually instead:
 
 ```bash
 chmod +x ~/thoma/scripts/evox3/23_sync_verify_fix_to_evox3.sh
