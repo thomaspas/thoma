@@ -43,6 +43,7 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/06_migrate_and_start_api.sh
 ./scripts/evox3/07_start_frontend_and_kiosk.sh
 ./scripts/evox3/08_autostart_desktop.sh
+./scripts/evox3/09_smoke_check.sh
 ```
 
 Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
@@ -51,12 +52,13 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 
 1. **01** — Σταματά legacy `second-brain.service` (απελευθερώνει `:8000`).
 2. **02** — Clone Jinhua + `docker compose up -d`.
-3. **03** — Γράφει `.env` LOCAL FULL (`LLM`→`:11434`, `EMBED`→`:8002`, `WORKER_DISPATCH=inline`, `RERANKER_PROVIDER=none`).
+3. **03** — Γράφει `.env` LOCAL FULL (`LLM`→`:11434`, `EMBED`→`:8002`, `WORKER_DISPATCH=inline`, `RERANKER_PROVIDER=none`). Auto-detect `LLM_MODEL` από `llama-server /v1/models` (κρατά existing μη-placeholder τιμή).
 4. **04** — venv + `pip install -e ".[dev,llm]"` (Tsinghua/Aliyun mirrors).
 5. **05** — Τοπικός OpenAI-compatible bge-m3 server + `evox3-bge-m3.service`.
 6. **06** — `init_db()` (SQLAlchemy `create_all` + Alembic) + `evox3-jinhua-api.service`.
-7. **07** — `npm install` / Vite `:5173` + Chromium `--kiosk`.
-8. **08** — Enable units + `~/.config/autostart` kiosk wrapper.
+7. **07** — `npm install` / Vite `:5173` + Chromium/Flatpak `--kiosk`.
+8. **08** — Enable units + `~/.config/autostart` kiosk wrapper (Flatpak preferred).
+9. **09** — Smoke check (ports + units + LLM_MODEL alignment) + next steps.
 
 ## Overrides (env)
 
@@ -65,7 +67,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 | `EVOX3_JINHUA_DIR` | `$HOME/ai_apps/IncubativeSecondBrain` |
 | `EVOX3_LLM_BASE_URL` | `http://127.0.0.1:11434/v1` |
 | `EVOX3_EMBED_BASE_URL` | `http://127.0.0.1:8002/v1` |
-| `EVOX3_LLM_MODEL` | `qwen` |
+| `EVOX3_LLM_MODEL` | `auto` (probe `:11434/v1/models`) |
 | `EVOX3_API_PORT` | `8000` |
 | `EVOX3_WEB_PORT` | `5173` |
 | `EVOX3_BGE_PORT` | `8002` |
@@ -79,6 +81,12 @@ EVOX3_API_PORT=8010 ./scripts/evox3/06_migrate_and_start_api.sh
 ## Έλεγχοι (smoke)
 
 ```bash
+./scripts/evox3/09_smoke_check.sh
+```
+
+Ή χειροκίνητα:
+
+```bash
 docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 curl -fsS http://127.0.0.1:11434/v1/models | head
 curl -fsS http://127.0.0.1:8002/health
@@ -88,6 +96,22 @@ systemctl --user status evox3-bge-m3.service evox3-jinhua-api.service evox3-jinh
 ```
 
 Στο UI: κάνε register τον πρώτο λογαριασμό → ανέβασε ένα μικρό `.md` → ρώτα στα ελληνικά.
+
+## Συνέχεια μετά το πρώτο boot (operator checklist)
+
+1. Pull + sync env/model + rewrite kiosk wrapper:
+   ```bash
+   cd "$HOME/thoma" && git pull --ff-only
+   ./scripts/evox3/03_write_local_env.sh
+   systemctl --user restart evox3-jinhua-api.service
+   ./scripts/evox3/08_autostart_desktop.sh
+   ./scripts/evox3/09_smoke_check.sh
+   ```
+2. Άνοιξε kiosk στο **`:5173`** (όχι `:8000`):
+   ```bash
+   bash -lc 'export DISPLAY=:0 XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}; ~/ai_apps/bin/evox3-jinhua-kiosk.sh'
+   ```
+3. Register → Greek chat smoke → reboot για autostart.
 
 ## Logs
 
@@ -117,6 +141,19 @@ Cause: running bare `alembic upgrade head` on an empty DB. Jinhua expects `init_
 cd "$HOME/thoma" && git pull --ff-only
 "$HOME/thoma/scripts/evox3/06_migrate_and_start_api.sh"
 ```
+
+### `LLM_MODEL` mismatch / chat fails against llama-server
+Cause: `.env` had placeholder `qwen` while `/v1/models` returns the full GGUF path/id. Script `03` now auto-detects. Re-run:
+
+```bash
+cd "$HOME/thoma" && git pull --ff-only
+"$HOME/thoma/scripts/evox3/03_write_local_env.sh"
+systemctl --user restart evox3-jinhua-api.service
+"$HOME/thoma/scripts/evox3/09_smoke_check.sh"
+```
+
+### Kiosk shows API docs instead of UI
+Cause: browser pointed at `:8000`. Kiosk must use `http://127.0.0.1:5173`. Re-run `08` and launch the wrapper above.
 
 ## Εκτός scope αυτού του pass
 

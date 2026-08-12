@@ -40,14 +40,8 @@ for _ in \$(seq 1 120); do
   sleep 1
 done
 
+# Prefer Flatpak Chromium when present (apt chromium is often blocked on EVO-X3).
 BROWSER=""
-for c in chromium-browser chromium google-chrome google-chrome-stable firefox; do
-  if command -v "\$c" >/dev/null 2>&1; then
-    BROWSER="\$c"
-    break
-  fi
-done
-
 FLATPAK_APP=""
 if command -v flatpak >/dev/null 2>&1; then
   if flatpak info io.github.ungoogled_software.ungoogled_chromium >/dev/null 2>&1; then
@@ -55,6 +49,14 @@ if command -v flatpak >/dev/null 2>&1; then
   elif flatpak info org.chromium.Chromium >/dev/null 2>&1; then
     FLATPAK_APP="org.chromium.Chromium"
   fi
+fi
+if [ -z "\$FLATPAK_APP" ]; then
+  for c in chromium-browser chromium google-chrome google-chrome-stable firefox; do
+    if command -v "\$c" >/dev/null 2>&1; then
+      BROWSER="\$c"
+      break
+    fi
+  done
 fi
 
 if [ -z "\$BROWSER" ] && [ -z "\$FLATPAK_APP" ]; then

@@ -4,7 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
 
-log "EVO-X3 LOCAL FULL — running scripts 01..08"
+log "EVO-X3 LOCAL FULL — running scripts 01..09"
 for step in \
   01_stop_legacy_mvp.sh \
   02_ensure_jinhua_clone_and_docker.sh \
@@ -13,7 +13,8 @@ for step in \
   05_start_bge_m3_server.sh \
   06_migrate_and_start_api.sh \
   07_start_frontend_and_kiosk.sh \
-  08_autostart_desktop.sh
+  08_autostart_desktop.sh \
+  09_smoke_check.sh
 do
   log "=== $step ==="
   bash "$SCRIPT_DIR/$step"

@@ -10,7 +10,8 @@ EVOX3_JINHUA_REPO="${EVOX3_JINHUA_REPO:-https://github.com/JinhuaChenBiggest/Inc
 EVOX3_BGE_DIR="${EVOX3_BGE_DIR:-$EVOX3_AI_APPS/bge-m3-server}"
 EVOX3_LLM_BASE_URL="${EVOX3_LLM_BASE_URL:-http://127.0.0.1:11434/v1}"
 EVOX3_EMBED_BASE_URL="${EVOX3_EMBED_BASE_URL:-http://127.0.0.1:8002/v1}"
-EVOX3_LLM_MODEL="${EVOX3_LLM_MODEL:-qwen}"
+# Placeholder aliases — llama-server expects the live GGUF id from /v1/models.
+EVOX3_LLM_MODEL="${EVOX3_LLM_MODEL:-auto}"
 EVOX3_EMBED_MODEL="${EVOX3_EMBED_MODEL:-BAAI/bge-m3}"
 EVOX3_API_HOST="${EVOX3_API_HOST:-127.0.0.1}"
 EVOX3_API_PORT="${EVOX3_API_PORT:-8000}"
@@ -23,6 +24,68 @@ log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
 warn() { printf '[!] %s\n' "$*" >&2; }
 die() { printf '[x] %s\n' "$*" >&2; exit 1; }
+
+is_placeholder_llm_model() {
+  case "${1:-}" in
+    ""|auto|qwen|qwen3|qwen3.6|qwen3.6-27b|qwen3-27b) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Resolve LLM_MODEL: explicit env > existing .env > llama-server /v1/models > warn+auto.
+# Optional arg: path to IncubativeSecondBrain .env
+resolve_llm_model() {
+  local env_path="${1:-$EVOX3_JINHUA_DIR/.env}"
+  local existing="" id="" models_json=""
+
+  if ! is_placeholder_llm_model "${EVOX3_LLM_MODEL:-}"; then
+    printf '%s\n' "$EVOX3_LLM_MODEL"
+    return 0
+  fi
+
+  if [ -f "$env_path" ]; then
+    existing="$(
+      python3 - <<PY
+from pathlib import Path
+p = Path("$env_path")
+for line in p.read_text().splitlines():
+    if line.startswith("LLM_MODEL="):
+        print(line.split("=", 1)[1].strip().strip('"').strip("'"))
+        break
+PY
+    )"
+    if ! is_placeholder_llm_model "$existing"; then
+      printf '%s\n' "$existing"
+      return 0
+    fi
+  fi
+
+  if command -v curl >/dev/null 2>&1; then
+    models_json="$(curl -fsS --max-time 5 "${EVOX3_LLM_BASE_URL}/models" 2>/dev/null || true)"
+    if [ -n "$models_json" ]; then
+      id="$(
+        printf '%s' "$models_json" | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    models = data.get("data") or []
+    print((models[0].get("id") if models else "") or "")
+except Exception:
+    print("")
+'
+      )"
+      if [ -n "$id" ]; then
+        # Must go to stderr — stdout is captured by callers assigning EVOX3_LLM_MODEL.
+        printf '[+] Auto-detected LLM_MODEL from llama-server: %s\n' "$id" >&2
+        printf '%s\n' "$id"
+        return 0
+      fi
+    fi
+  fi
+
+  warn "Could not auto-detect LLM_MODEL from ${EVOX3_LLM_BASE_URL}/models — set EVOX3_LLM_MODEL explicitly"
+  printf '%s\n' "${EVOX3_LLM_MODEL:-auto}"
+}
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"

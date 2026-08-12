@@ -19,6 +19,11 @@ else
   log "Updating existing .env in place"
 fi
 
+# Align LLM_MODEL with live llama-server id (avoids chat failures when id != "qwen").
+EVOX3_LLM_MODEL="$(resolve_llm_model "$ENV_PATH")"
+export EVOX3_LLM_MODEL
+log "Using LLM_MODEL=${EVOX3_LLM_MODEL}"
+
 # Preserve AUTH_SECRET_KEY if already set and non-empty; otherwise generate.
 EXISTING_AUTH="$(python3 - <<PY
 from pathlib import Path
