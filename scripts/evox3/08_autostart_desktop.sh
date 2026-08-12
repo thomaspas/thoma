@@ -136,8 +136,8 @@ DESKTOP_FILE="$AUTOSTART_DIR/evox3-jinhua-kiosk.desktop"
 cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
 Type=Application
-Name=EVO-X3 Jinhua Second Brain Kiosk
-Comment=Fullscreen Second Brain UI on login
+Name=${EVOX3_BRAND_NAME} Kiosk
+Comment=Fullscreen ${EVOX3_BRAND_NAME} UI on login
 Exec=${KIOSK_WRAPPER}
 X-GNOME-Autostart-enabled=true
 Terminal=false
@@ -145,4 +145,4 @@ EOF
 
 ok "Wrote $DESKTOP_FILE"
 ok "Wrote $KIOSK_WRAPPER"
-ok "08_autostart_desktop.sh complete — kiosk starts on desktop login"
+ok "08_autostart_desktop.sh complete — ${EVOX3_BRAND_NAME} kiosk starts on desktop login"

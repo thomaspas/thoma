@@ -23,6 +23,11 @@ EVOX3_PIP_INDEX_FALLBACK="${EVOX3_PIP_INDEX_FALLBACK:-https://mirrors.aliyun.com
 EVOX3_LOCAL_EMAIL="${EVOX3_LOCAL_EMAIL:-ye@evox3.local}"
 EVOX3_LOCAL_PASSWORD="${EVOX3_LOCAL_PASSWORD:-evox3-local-12}"
 EVOX3_LOCAL_DISPLAY_NAME="${EVOX3_LOCAL_DISPLAY_NAME:-Ye}"
+# Product brand on the kiosk UI (IncubativeSecondBrain patch).
+EVOX3_BRAND_NAME="${EVOX3_BRAND_NAME:-ANGELICA}"
+EVOX3_BRAND_TAGLINE="${EVOX3_BRAND_TAGLINE:-Local second brain}"
+EVOX3_BRAND_MARK="${EVOX3_BRAND_MARK:-AN}"
+EVOX3_BRAND_TITLE="${EVOX3_BRAND_TITLE:-${EVOX3_BRAND_NAME} · Local second brain}"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }

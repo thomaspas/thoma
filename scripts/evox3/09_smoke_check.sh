@@ -132,9 +132,24 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+printf '\n=== %s brand ===\n' "$EVOX3_BRAND_NAME"
+BRAND_MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-brand-angelica"
+SIDEBAR_TSX="$EVOX3_JINHUA_DIR/apps/web/src/components/AppSidebar.tsx"
+INDEX_HTML="$EVOX3_JINHUA_DIR/apps/web/index.html"
+if [ -f "$BRAND_MARKER" ] \
+  && grep -q "$EVOX3_BRAND_NAME" "$SIDEBAR_TSX" 2>/dev/null \
+  && grep -q "$EVOX3_BRAND_NAME" "$INDEX_HTML" 2>/dev/null; then
+  ok "${EVOX3_BRAND_NAME} brand present (marker + sidebar + title)"
+  PASS=$((PASS + 1))
+else
+  warn "${EVOX3_BRAND_NAME} brand missing — run ./scripts/evox3/16_brand_angelica.sh"
+  FAIL=$((FAIL + 1))
+fi
+
 printf '\n=== result: %s pass / %s fail ===\n' "$PASS" "$FAIL"
 printf '\nOperator checklist (human / on EVO-X3 desktop):\n'
-printf '  1) Kiosk http://127.0.0.1:%s shows dashboard (NOT Register/Login, NOT :8000)\n' "$EVOX3_WEB_PORT"
+printf '  1) Kiosk http://127.0.0.1:%s shows %s dashboard (NOT Register/Login, NOT :8000)\n' \
+  "$EVOX3_WEB_PORT" "$EVOX3_BRAND_NAME"
 printf '  2) Upload a small .md note\n'
 printf '  3) Ask a Greek question in chat\n'
 printf '  4) Reboot once; confirm systemd units + kiosk autostart\n'

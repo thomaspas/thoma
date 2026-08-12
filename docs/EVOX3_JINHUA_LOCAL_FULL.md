@@ -1,15 +1,15 @@
-# EVO-X3 · LOCAL FULL Jinhua Second Brain
+# EVO-X3 · LOCAL FULL · ANGELICA
 
 ## BLUF
 
-Στήνουμε το [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain) **όπως το stack του Jinhua** (Postgres + Neo4j + MinIO + FastAPI + React), αλλά με:
+Στήνουμε το [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain) **όπως το stack του Jinhua** (Postgres + Neo4j + MinIO + FastAPI + React), branded as **ANGELICA**, με:
 
 | Κομμάτι | Τιμή |
 |--------|------|
 | Chat LLM | Τοπικό `llama-server` `http://127.0.0.1:11434/v1` |
 | Embeddings | Τοπικό `BAAI/bge-m3` `http://127.0.0.1:8002/v1` |
 | Reranker | `none` |
-| UI | `http://127.0.0.1:5173` σε Chromium kiosk + autostart |
+| UI | `http://127.0.0.1:5173` σε Chromium kiosk + autostart (**ANGELICA**) |
 | Κρατάμε | Μοντέλα, Open WebUI `:8080`, SearXNG `:8888` |
 
 Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3**.
@@ -44,6 +44,7 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/07_start_frontend_and_kiosk.sh
 ./scripts/evox3/08_autostart_desktop.sh
 ./scripts/evox3/11_skip_auth_ui.sh          # auto-seed + skip AuthScreen
+./scripts/evox3/16_brand_angelica.sh        # sidebar/title/footer → ANGELICA
 ./scripts/evox3/09_smoke_check.sh
 ./scripts/evox3/10_relaunch_kiosk.sh
 ```
@@ -69,7 +70,11 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 9. **09** — Smoke check (ports + units + LLM_MODEL alignment) + next steps.
 10. **10** — Kill stale browsers + relaunch kiosk on `:5173` (Wayland-aware).
 11. **11** — Auto-seed fixed local user + patch UI to **skip AuthScreen** (no Register/Login).
-12. **12** — Operator finish: git sync PR branch + ensure skip-auth + smoke + kiosk relaunch + write sample Greek `.md`.
+12. **12** — Operator finish: git sync + skip-auth + **ANGELICA brand** + smoke + kiosk + sample Greek `.md`.
+13. **13** — Remote go-live: upload → wait `indexed` → Greek chat.
+14. **14** — Patch local OpenAI LLM client (`/no_think`, timeouts).
+15. **15** — Diagnose stuck ingest; optional sync re-ingest.
+16. **16** — Brand kiosk as **ANGELICA** (title, sidebar logo, Greek footer prompts).
 
 ## Overrides (env)
 
@@ -85,6 +90,10 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 | `EVOX3_LOCAL_EMAIL` | `ye@evox3.local` |
 | `EVOX3_LOCAL_PASSWORD` | `evox3-local-12` |
 | `EVOX3_LOCAL_DISPLAY_NAME` | `Ye` |
+| `EVOX3_BRAND_NAME` | `ANGELICA` |
+| `EVOX3_BRAND_TAGLINE` | `Local second brain` |
+| `EVOX3_BRAND_MARK` | `AN` |
+| `EVOX3_BRAND_TITLE` | `ANGELICA · Local second brain` |
 
 `03_write_local_env.sh` also forces `REVIEW_ENABLED=false` so ingest does not stop at human review on the kiosk.
 
@@ -140,13 +149,15 @@ systemctl --user status evox3-jinhua-docker.service evox3-bge-m3.service evox3-j
 
 ```bash
 ./scripts/evox3/11_skip_auth_ui.sh
+./scripts/evox3/16_brand_angelica.sh
 ./scripts/evox3/10_relaunch_kiosk.sh
 ```
 
 - Δημιουργεί/κάνει login τον fixed local λογαριασμό (`EVOX3_LOCAL_*`).
 - Patch στο `apps/web/src/App.tsx` (+ `evox3AutoAuth.ts`) ώστε να μην εμφανίζεται ποτέ το `AuthScreen`.
 - Kiosk: **Sign out** κρύβεται / είναι no-op (`Kiosk · always signed in`) — αποφεύγει error μετά από logout.
-- Backup upstream: `apps/web/src/App.tsx.evox3-orig`.
+- **16** brands title/sidebar as **ANGELICA** + Greek footer prompts (`*.evox3-brand-orig` backups).
+- Backup upstream skip-auth: `apps/web/src/App.tsx.evox3-orig`.
 - Επαναφορά Register/Login:
   ```bash
   cp ~/ai_apps/IncubativeSecondBrain/apps/web/src/App.tsx.evox3-orig \
@@ -172,17 +183,19 @@ chmod +x scripts/evox3/*.sh
 
 ## Handoff — συνέχεια σε άλλη συνομιλία
 
-**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up. Greek chat smoke **PASS** (`citation_complete`, kiosk user `ye@evox3.local`). Μετά reboot: user units active αλλά **Postgres `:5432` Connection refused** → login HTTP 500. Fix: docker compose boot unit + smoke checks για 5432/7687.
+**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up. Greek chat **PASS**. Docker boot unit + smoke 13/0 after Postgres recovery. Next: apply **ANGELICA** brand via `16_brand_angelica.sh` (sidebar/title/footer).
 
-**Branch:** `main` → https://github.com/thomaspas/thoma
+**Branch:** `cursor/angelica-brand-kiosk-6263` (includes docker-boot fix) → https://github.com/thomaspas/thoma
 
 **Resume paste:**
 ```bash
 cd "$HOME/thoma"
-# if origin/main missing (common after feature-branch-only clone):
-git fetch origin '+refs/heads/main:refs/remotes/origin/main'
-git checkout -B main origin/main
-./scripts/evox3/12_operator_finish.sh
+git fetch origin '+refs/heads/cursor/angelica-brand-kiosk-6263:refs/remotes/origin/cursor/angelica-brand-kiosk-6263'
+git checkout -B cursor/angelica-brand-kiosk-6263 origin/cursor/angelica-brand-kiosk-6263
+./scripts/evox3/16_brand_angelica.sh
+./scripts/evox3/08_autostart_desktop.sh
+./scripts/evox3/10_relaunch_kiosk.sh
+./scripts/evox3/09_smoke_check.sh
 ```
 
 **Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`.

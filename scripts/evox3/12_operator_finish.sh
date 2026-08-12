@@ -43,6 +43,9 @@ fi
 log "=== 11_skip_auth_ui.sh (idempotent) ==="
 bash "$SCRIPT_DIR/11_skip_auth_ui.sh"
 
+log "=== 16_brand_angelica.sh (idempotent) ==="
+bash "$SCRIPT_DIR/16_brand_angelica.sh"
+
 log "=== 09_smoke_check.sh ==="
 bash "$SCRIPT_DIR/09_smoke_check.sh"
 
@@ -50,18 +53,18 @@ log "=== 10_relaunch_kiosk.sh ==="
 bash "$SCRIPT_DIR/10_relaunch_kiosk.sh"
 
 mkdir -p "$(dirname "$SAMPLE_MD")"
-cat >"$SAMPLE_MD" <<'EOF'
-# EVO-X3 Greek smoke note
+cat >"$SAMPLE_MD" <<EOF
+# ${EVOX3_BRAND_NAME} Greek smoke note
 
-Το τοπικό Second Brain τρέχει στο EVO-X3 με LOCAL FULL stack.
-Ο χρήστης kiosk είναι ye@evox3.local.
+Το τοπικό ${EVOX3_BRAND_NAME} τρέχει στο EVO-X3 με LOCAL FULL stack.
+Ο χρήστης kiosk είναι ${EVOX3_LOCAL_EMAIL}.
 Αυτή η σημείωση υπάρχει για δοκιμή ελληνικής συνομιλίας.
 EOF
 ok "Wrote sample note: $SAMPLE_MD"
 
 printf '\n=== Human checklist (on EVO-X3 desktop) ===\n'
-printf '  1) Kiosk shows dashboard/chat at http://127.0.0.1:%s (footer: Kiosk · always signed in)\n' \
-  "$EVOX3_WEB_PORT"
+printf '  1) Kiosk shows %s dashboard/chat at http://127.0.0.1:%s (footer: Kiosk · always signed in)\n' \
+  "$EVOX3_BRAND_NAME" "$EVOX3_WEB_PORT"
 printf '     NOT Register/Login, NOT API JSON on :%s\n' "$EVOX3_API_PORT"
 printf '  2) Upload: %s\n' "$SAMPLE_MD"
 printf '  3) Ask in Greek chat, e.g.: Ποιος είναι ο kiosk χρήστης στο EVO-X3;\n'

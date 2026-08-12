@@ -4,7 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
 
-log "EVO-X3 LOCAL FULL — running scripts 01..11"
+log "EVO-X3 LOCAL FULL — running scripts 01..11 + 16 (brand)"
 for step in \
   01_stop_legacy_mvp.sh \
   02_ensure_jinhua_clone_and_docker.sh \
@@ -15,6 +15,7 @@ for step in \
   07_start_frontend_and_kiosk.sh \
   08_autostart_desktop.sh \
   11_skip_auth_ui.sh \
+  16_brand_angelica.sh \
   09_smoke_check.sh \
   10_relaunch_kiosk.sh
 do
@@ -24,7 +25,7 @@ done
 
 ok "LOCAL FULL pipeline finished"
 printf '\nNext:\n'
-printf '  1) Kiosk should open dashboard (no Register/Login) as %s\n' "$EVOX3_LOCAL_EMAIL"
+printf '  1) Kiosk should open %s dashboard (no Register/Login) as %s\n' "$EVOX3_BRAND_NAME" "$EVOX3_LOCAL_EMAIL"
 printf '  2) Confirm llama-server on :11434 is running\n'
 printf '  3) Ingest a small markdown note and ask in Greek\n'
 printf '  4) Logout/login on the EVO-X3 desktop to verify kiosk autostart\n'
