@@ -13,7 +13,7 @@ EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"
 DEBUG_LOG="${DEBUG_LOG:-/home/thomas1821/Λήψεις/.cursor/debug-f7f922.log}"
-SCRIPT_REV="x-access-token-v2"
+SCRIPT_REV="x-access-token-v3"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
@@ -25,7 +25,24 @@ _dbg() {
   local hid="$1" loc="$2" msg="$3" data="${4:-{}}"
   local line
   mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
-  line="$(python3 -c "import json,time; print(json.dumps({'sessionId':'f7f922','hypothesisId':'${hid}','location':'${loc}','message':'${msg}','data':${data},'timestamp':int(time.time()*1000),'runId':'post-fix'}))" 2>/dev/null || true)"
+  line="$(
+    DBG_HID="$hid" DBG_LOC="$loc" DBG_MSG="$msg" DBG_DATA="$data" python3 <<'PY' 2>/dev/null || true
+import json, os, time
+try:
+    data = json.loads(os.environ.get("DBG_DATA") or "{}")
+except json.JSONDecodeError:
+    data = {"raw": os.environ.get("DBG_DATA", "")}
+print(json.dumps({
+    "sessionId": "f7f922",
+    "hypothesisId": os.environ["DBG_HID"],
+    "location": os.environ["DBG_LOC"],
+    "message": os.environ["DBG_MSG"],
+    "data": data,
+    "timestamp": int(time.time() * 1000),
+    "runId": "post-fix",
+}))
+PY
+  )"
   [ -n "$line" ] || return 0
   printf '%s\n' "$line" >> "$DEBUG_LOG" 2>/dev/null || true
   printf '%s\n' "$line" >> /tmp/angelica-debug-f7f922.log 2>/dev/null || true
@@ -124,8 +141,10 @@ git_push_with_token() {
     return 0
   fi
   push_rc=$?
+  local stderr_tail
+  stderr_tail="$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ')"
   #region agent log
-  _dbg "H3" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"x-access-token\",\"stderr_tail\":\"$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ' | sed 's/"/\\"/g')\"}"
+  _dbg "H3" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"x-access-token\",\"stderr_tail\":\"${stderr_tail//\"/\\\"}\"}"
   #endregion
   if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
     warn "Push hit credential prompt — retrying via gh auth setup-git"
@@ -139,8 +158,9 @@ git_push_with_token() {
     return 0
   fi
   push_rc=$?
+  stderr_tail="$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ')"
   #region agent log
-  _dbg "H7" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"gh-setup-git\",\"stderr_tail\":\"$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ' | sed 's/"/\\"/g')\"}"
+  _dbg "H7" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"gh-setup-git\",\"stderr_tail\":\"${stderr_tail//\"/\\\"}\"}"
   #endregion
   return "$push_rc"
 }
@@ -158,7 +178,7 @@ git_push_branch() {
     if ! git_push_with_token; then
       tail -10 /tmp/git-push.err >&2 || true
       if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
-        die "git push failed — old credential path detected; confirm script shows [x-access-token-v2] and GH_TOKEN is a real PAT"
+        die "git push failed — old credential path detected; confirm script shows [x-access-token-v3] and GH_TOKEN is a real PAT"
       fi
       die "git push failed — check GH_TOKEN repo scope"
     fi
