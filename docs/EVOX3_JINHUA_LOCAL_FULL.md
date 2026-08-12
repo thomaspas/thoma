@@ -146,7 +146,7 @@ chmod +x scripts/evox3/*.sh
 
 ## Handoff — συνέχεια σε άλλη συνομιλία
 
-**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up στο EVO-X3 (llama `:11434`, bge `:8002`, API `:8000`, Vite `:5173`, Flatpak kiosk Wayland). Script `11` skip-auth applied + login `ye@evox3.local` OK. Operator finish script: `12_operator_finish.sh`. Λείπει ανθρώπινη επιβεβαίωση οθόνης + Greek chat + reboot autostart, μετά merge PR #1.
+**Κατάσταση (τελευταίο γνωστό):** LOCAL FULL up στο EVO-X3 (llama `:11434`, bge `:8002`, API `:8000`, Vite `:5173`, Flatpak kiosk Wayland). `12_operator_finish` / `09` smoke **10 pass / 0 fail** confirmed on machine. Skip-auth v2 (no AuthScreen, no Sign out — `Kiosk · always signed in`). Λείπει ανθρώπινη επιβεβαίωση: upload `.md` + Greek chat + reboot autostart, μετά **merge** PR #1 (already ready for review).
 
 **Branch / PR:** `cursor/jinhua-local-full-evox3-02ac` → https://github.com/thomaspas/thoma/pull/1
 

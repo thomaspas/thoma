@@ -142,7 +142,7 @@ if [ -f "$MARKER" ] && [ -f "$AUTO_TS" ] && grep -q 'EVOX3_SKIP_AUTH' "$APP_TSX"
   if [ "$OLD_FP" = "$CRED_FINGERPRINT" ]; then
     ok "Skip-auth patch already applied with same credentials"
   else
-    log "Credentials changed — refreshing evox3AutoAuth.ts"
+    log "Skip-auth patch outdated or credentials changed — refreshing"
     NEED_PATCH=1
   fi
 else
