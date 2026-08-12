@@ -18,6 +18,8 @@
 - MCP server and browser extension workstreams are done
 - `09_smoke_check.sh` last known result: **18 pass / 0 fail**
 - Remote HTML on `:5173` showed ANGELICA and no Login/AuthScreen
+- `auto_close_angelica.sh` validates `GH_TOKEN` via `gh api user` (not `gh auth login --with-token`)
+- `auto_close_angelica.sh` git push fixed to use `x-access-token` HTTPS URL (Bearer header does not work for git push)
 
 ## What is not done yet
 
@@ -32,10 +34,8 @@ Local commits ahead of `origin/cursor/land-angelica-stack-8dd2`:
 
 - `05dc51a` — `Fix kiosk relaunch from SSH for remote verify.`
 - `6885ba3` — `Add auto_close_angelica.sh operator automation script.`
-
-Also present locally but not committed yet:
-
-- `scripts/operator/auto_close_angelica.sh` has newer GH_TOKEN/debug edits after `6885ba3`
+- `bf0c930` — `Save project state handoff + fix GH_TOKEN auth in auto_close`
+- *(pending)* — `fix(operator): git push via x-access-token when GH_TOKEN is set` (this handoff save)
 
 ## Important files
 
@@ -73,12 +73,24 @@ cd ~/thoma
 Expected responsibilities of the script:
 
 - validate `GH_TOKEN`
-- push the local branch to GitHub
+- push the local branch to GitHub (via `x-access-token` URL)
 - bootstrap SSH to EVO-X3 if needed
 - run EVO-X3 verify
 - on success, update chronicle and merge PR #8
 
-### Path B — manual EVO-X3 verify
+### Path B — manual push + script
+
+If push still fails, manual one-liner then re-run script:
+
+```bash
+export GH_TOKEN='ghp_...'
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/thoma
+git push "https://x-access-token:${GH_TOKEN}@github.com/thomaspas/thoma.git" cursor/land-angelica-stack-8dd2
+./scripts/operator/auto_close_angelica.sh
+```
+
+### Path C — manual EVO-X3 verify
 
 If continuing manually on EVO-X3 after the branch is pushed:
 
@@ -102,34 +114,44 @@ tail -40 /tmp/evox3-jinhua-kiosk.log
 ./scripts/evox3/21_remote_verify.sh
 ```
 
-## Current blocker
+## Current blocker (resolved in script, pending operator run)
 
-The only meaningful blocker is the final operator flow:
+**Previous failure (2026-08-12):**
 
-1. push local work from Gaming-7
-2. get `REMOTE VERIFY OK`
-3. update chronicle closeout
-4. merge PR #8
+```
+[+] GitHub token OK (user: thomaspas)
+[*] Pushing 3 commit(s) to origin/cursor/land-angelica-stack-8dd2
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+```
+
+**Root cause:** `GIT_CONFIG http.extraHeader: Authorization: Bearer` works for `gh api` but **not** for `git push` over HTTPS.
+
+**Fix applied:** `git_push_with_token()` pushes via `https://x-access-token:${GH_TOKEN}@github.com/thomaspas/thoma.git`.
+
+**Next operator step:** run `auto_close_angelica.sh` from Gaming-7 with valid `GH_TOKEN`.
 
 ## Copy-paste prompt for a new Cursor chat
 
 ```text
-Continue the `thoma` / ANGELICA project on branch `cursor/land-angelica-stack-8dd2`.
+Continue ANGELICA closeout on thomaspas/thoma, branch cursor/land-angelica-stack-8dd2.
 
-Read:
+Read first:
 - docs/HANDOFF_2026-08-12_PROJECT_STATE_SAVE.md
 - docs/HANDOFF_2026-08-12_REMOTE_VERIFY.md
 - docs/SESSION_CHRONICLE_ANGELICA.md
 
-Current state:
-- EVO-X3 stack healthy: smoke 18/0
-- last remote verify: 5/1 fail, only kiosk :5173
-- PR #8 still open
-- local Gaming-7 commits ahead of origin: 05dc51a and 6885ba3
-- local uncommitted edits also exist in scripts/operator/auto_close_angelica.sh
+State:
+- EVO-X3 stack: smoke 18/0 OK
+- Remote verify last: 5/1 (only kiosk :5173 browser process)
+- PR #8 open
+- Gaming-7: 4 commits ahead of origin (incl. git push fix)
+- GH_TOKEN validates OK; auto_close_angelica.sh should now push via x-access-token
 
-Goal:
-- preserve all current work
-- finish remote verify
-- then close PR #8
+Goal (Gaming-7 only):
+export GH_TOKEN='ghp_...'
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/thoma && ./scripts/operator/auto_close_angelica.sh
+
+Success = REMOTE VERIFY OK (6/0) + PR #8 merged.
+Do NOT resume Warden/NEBULA track in ~/Λήψεις/.
 ```

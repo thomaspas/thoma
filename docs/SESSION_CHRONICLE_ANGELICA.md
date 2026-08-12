@@ -37,9 +37,11 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 - Local commits not pushed yet:
   - `05dc51a` — kiosk SSH fix + handoff docs
   - `6885ba3` — add `scripts/operator/auto_close_angelica.sh`
-- There are also newer **uncommitted** local edits in `scripts/operator/auto_close_angelica.sh` from GH_TOKEN/debug iteration
-- `auto_close_angelica.sh` now validates `GH_TOKEN` with `gh api user` instead of `gh auth login --with-token` when the token is already exported
-- Main operational blocker remains: valid GitHub token run on Gaming-7, then EVO-X3 remote verify
+  - `bf0c930` — GH_TOKEN validation fix (`gh api user`)
+  - *(pending push)* — git push via `x-access-token` URL in `auto_close_angelica.sh`
+- `auto_close_angelica.sh` validates `GH_TOKEN` with `gh api user` instead of `gh auth login --with-token` when the token is already exported
+- Git push blocker resolved: Bearer header replaced with `https://x-access-token:${GH_TOKEN}@github.com/...` push URL
+- Main operational blocker remains: run `auto_close_angelica.sh` on Gaming-7 with valid `GH_TOKEN`, then EVO-X3 remote verify
 
 **Patches (local Gaming-7 clone, pending sync to EVO-X3):**
 

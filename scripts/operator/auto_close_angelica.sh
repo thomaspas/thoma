@@ -12,26 +12,11 @@ EVOX3_SSH="${EVOX3_SSH:-thomas-pashoulas@192.168.1.8}"
 EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"
-DEBUG_LOG="${DEBUG_LOG:-/home/thomas1821/Λήψεις/.cursor/debug-f7f922.log}"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
 warn() { printf '[!] %s\n' "$*" >&2; }
 die() { printf '[x] %s\n' "$*" >&2; exit 1; }
-
-#region agent log
-_dbg() {
-  local hid="$1" loc="$2" msg="$3" data="${4:-{}}"
-  python3 -c "import json,time; open('${DEBUG_LOG}','a').write(json.dumps({'sessionId':'f7f922','hypothesisId':'${hid}','location':'${loc}','message':'${msg}','data':${data},'timestamp':int(time.time()*1000),'runId':'pre-fix'})+'\n')" 2>/dev/null || true
-}
-_on_err() {
-  local ec=$?
-  _dbg "H1" "auto_close_angelica.sh:ERR" "command_failed" "{\"exit\":${ec},\"line\":${LINENO},\"cmd\":\"${BASH_COMMAND//\"/\\\"}\"}"
-  warn "Command failed (exit $ec) at line $LINENO: $BASH_COMMAND"
-  exit "$ec"
-}
-trap _on_err ERR
-#endregion
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Missing command: $1"
@@ -53,53 +38,49 @@ ensure_gh_auth() {
     export GH_TOKEN="$GITHUB_TOKEN"
   fi
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — export a GitHub PAT (scope: repo)"
-  #region agent log
-  _dbg "H1" "ensure_gh_auth" "before_validate" "{\"token_len\":${#GH_TOKEN}}"
-  #endregion
   # gh auth login --with-token FAILS when GH_TOKEN is already exported (exit 1, no stdin read).
-  # Validate the env token directly and wire git HTTPS to use it for push.
   local gh_user
   if ! gh_user="$(gh api user -q .login 2>/tmp/gh-api.err)"; then
-    #region agent log
-    _dbg "H1" "ensure_gh_auth" "token_invalid" "{\"stderr_lines\":$(wc -l </tmp/gh-api.err 2>/dev/null || echo 0)}"
-    #endregion
     warn "GH_TOKEN rejected by GitHub API:"
     tail -5 /tmp/gh-api.err >&2 || true
     die "GH_TOKEN invalid or expired — create PAT at github.com/settings/tokens (scope: repo)"
   fi
-  #region agent log
-  _dbg "H2" "ensure_gh_auth" "token_ok" "{\"user\":\"${gh_user}\"}"
-  #endregion
   ok "GitHub token OK (user: ${gh_user})"
   export GIT_TERMINAL_PROMPT=0
-  export GIT_CONFIG_COUNT=1
-  export GIT_CONFIG_KEY_0=http.extraHeader
-  export GIT_CONFIG_VALUE_0="Authorization: Bearer ${GH_TOKEN}"
+}
+
+git_repo_slug() {
+  cd "$THOMA_ROOT"
+  if gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null; then
+    return 0
+  fi
+  local remote_url
+  remote_url="$(git remote get-url origin)"
+  remote_url="${remote_url%.git}"
+  remote_url="${remote_url#git@github.com:}"
+  remote_url="${remote_url#https://github.com/}"
+  printf '%s' "$remote_url"
+}
+
+git_push_with_token() {
+  [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — cannot push"
+  local slug push_url
+  slug="$(git_repo_slug)"
+  push_url="https://x-access-token:${GH_TOKEN}@github.com/${slug}.git"
+  git push "$push_url" "HEAD:${BRANCH}"
 }
 
 git_push_branch() {
   cd "$THOMA_ROOT"
-  #region agent log
-  _dbg "H4" "git_push_branch" "start" "{\"branch\":\"${BRANCH}\"}"
-  #endregion
   git checkout "$BRANCH"
   local ahead
   ahead="$(git rev-list --count "origin/$BRANCH..HEAD" 2>/dev/null || echo 0)"
-  #region agent log
-  _dbg "H3" "git_push_branch" "ahead_count" "{\"ahead\":${ahead}}"
-  #endregion
   if [ "${ahead:-0}" -gt 0 ]; then
     log "Pushing $ahead commit(s) to origin/$BRANCH"
-    if ! git push origin "$BRANCH" 2>/tmp/git-push.err; then
-      #region agent log
-      _dbg "H3" "git_push_branch" "push_failed" "{}"
-      #endregion
+    if ! git_push_with_token 2>/tmp/git-push.err; then
       tail -10 /tmp/git-push.err >&2 || true
       die "git push failed — check GH_TOKEN repo scope"
     fi
-    #region agent log
-    _dbg "H3" "git_push_branch" "push_ok" "{}"
-    #endregion
   else
     log "Branch already up to date with origin/$BRANCH"
   fi
@@ -222,7 +203,7 @@ Close ANGELICA remote verify: 6/0 OK, bug #8 resolved.
 Add auto_close_angelica.sh operator script; chronicle PR #8 merged.
 EOF
 )"
-    git push origin "$BRANCH"
+    git_push_with_token
   fi
 }
 
@@ -244,14 +225,8 @@ main() {
   ensure_gh_auth
 
   [ -d "$THOMA_ROOT/.git" ] || die "Not a git repo: $THOMA_ROOT"
-  #region agent log
-  _dbg "H4" "main" "before_git_push" "{}"
-  #endregion
 
   git_push_branch
-  #region agent log
-  _dbg "H5" "main" "before_ssh" "{}"
-  #endregion
   ensure_evox3_ssh
 
   set +e
