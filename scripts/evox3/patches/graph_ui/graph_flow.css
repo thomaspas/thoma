@@ -40,6 +40,69 @@
   align-items: baseline;
   gap: 12px;
   min-width: 0;
+  flex-wrap: wrap;
+}
+
+.graph-flow-rel-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.graph-flow-rel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border: 1px solid rgba(120, 160, 240, 0.2);
+  background: rgba(7, 11, 22, 0.65);
+  color: #aab9dc;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+
+.graph-flow-rel-chip i {
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  display: inline-block;
+}
+
+.graph-flow-rel-chip-bridge i {
+  background: #ffc24b;
+  height: 0;
+  border-top: 2px dashed #ffc24b;
+  width: 12px;
+}
+
+@keyframes gfNodeGrow {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gfEdgeFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.react-flow__node.gf-node-enter {
+  animation: gfNodeGrow 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.react-flow__edge.gf-edge-enter path {
+  animation: gfEdgeFade 0.55s ease both;
 }
 
 .graph-flow-title {

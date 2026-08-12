@@ -224,11 +224,14 @@ printf '\n=== React Flow graph UI ===\n'
 GRAPH_UI_MARKER="$EVOX3_JINHUA_DIR/apps/web/.evox3-graph-ui-reactflow"
 GRAPH_UI_WS="$EVOX3_JINHUA_DIR/apps/web/src/features/graph/GraphFlowWorkspace.tsx"
 GRAPH_UI_PKG="$EVOX3_JINHUA_DIR/apps/web/package.json"
+GRAPH_UI_SIDEBAR="$EVOX3_JINHUA_DIR/apps/web/src/components/AppSidebar.tsx"
 if [ -f "$GRAPH_UI_MARKER" ]; then
   if [ -f "$GRAPH_UI_WS" ] \
+    && grep -q 'EVOX3_GRAPH_UI' "$GRAPH_UI_WS" 2>/dev/null \
     && grep -q 'GraphFlowWorkspace' "$EVOX3_JINHUA_DIR/apps/web/src/App.tsx" 2>/dev/null \
-    && grep -q '@xyflow/react' "$GRAPH_UI_PKG" 2>/dev/null; then
-    ok "React Flow graph UI present (marker + workspace + @xyflow)"
+    && grep -q '@xyflow/react' "$GRAPH_UI_PKG" 2>/dev/null \
+    && grep -q '"graph"' "$GRAPH_UI_SIDEBAR" 2>/dev/null; then
+    ok "React Flow graph UI present (marker + workspace + @xyflow + Graph nav)"
     PASS=$((PASS + 1))
   else
     warn "Graph UI marker present but incomplete — re-run ./scripts/evox3/24_graph_ui_reactflow.sh"

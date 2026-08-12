@@ -12,7 +12,7 @@ require_cmd curl
 require_cmd npm
 
 PATCH_DIR="$SCRIPT_DIR/patches/graph_ui"
-PATCH_VER="2"
+PATCH_VER="3"
 WEB_DIR="$EVOX3_JINHUA_DIR/apps/web"
 SRC_DIR="$WEB_DIR/src"
 APP_TSX="$SRC_DIR/App.tsx"

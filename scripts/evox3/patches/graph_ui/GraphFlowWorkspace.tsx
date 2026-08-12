@@ -1,7 +1,7 @@
 /**
  * EVOX3_GRAPH_UI — full-bleed React Flow knowledge graph for ANGELICA kiosk.
  * Installed by scripts/evox3/24_graph_ui_reactflow.sh into apps/web/src/features/graph/.
- * v2: PageRank size, community color, bridge dashed edges (analytics APIs from script 17).
+ * v3: PageRank/community/bridges + rich relation styles + enter/growth animations.
  */
 import {
   useCallback,
@@ -90,6 +90,33 @@ const COMMUNITY_COLORS = [
   "#9ad7c2",
 ];
 
+/** Stroke / weight per relation_type (fallback = RELATED_TO look). */
+const RELATION_STYLES: Record<
+  string,
+  { stroke: string; width: number; dash?: string; label: string }
+> = {
+  related_to: { stroke: "rgba(91, 224, 255, 0.55)", width: 1.5, label: "RELATED_TO" },
+  part_of: { stroke: "rgba(87, 224, 192, 0.75)", width: 2, label: "PART_OF" },
+  works_at: { stroke: "rgba(142, 197, 255, 0.8)", width: 2, label: "WORKS_AT" },
+  located_in: { stroke: "rgba(154, 215, 194, 0.8)", width: 1.8, label: "LOCATED_IN" },
+  mentions: { stroke: "rgba(170, 185, 220, 0.65)", width: 1.4, dash: "4 3", label: "MENTIONS" },
+  causes: { stroke: "rgba(255, 143, 107, 0.85)", width: 2.2, label: "CAUSES" },
+  supports: { stroke: "rgba(198, 242, 122, 0.8)", width: 2, label: "SUPPORTS" },
+  contradicts: { stroke: "rgba(255, 120, 140, 0.85)", width: 2, dash: "5 3", label: "CONTRADICTS" },
+  derived_from: { stroke: "rgba(255, 194, 75, 0.7)", width: 1.8, dash: "3 3", label: "DERIVED_FROM" },
+};
+
+function relationStyle(relationType: string) {
+  const key = (relationType || "related_to").toLowerCase().replace(/\s+/g, "_");
+  return (
+    RELATION_STYLES[key] ?? {
+      stroke: "rgba(91, 224, 255, 0.45)",
+      width: 1.5,
+      label: relationType || "RELATED_TO",
+    }
+  );
+}
+
 function colorForType(entityType: string): string {
   const key = (entityType || "").toLowerCase();
   return TYPE_COLORS[key] ?? TYPE_COLORS.default;
@@ -138,17 +165,23 @@ function layoutNodes(
   const scores = entities.map((e) => pageRankById.get(e.id) ?? 0);
   const maxScore = Math.max(...scores, 1e-9);
 
-  const place = (e: EntityResponse, x: number, y: number): Node<EntityNodeData> => {
+  const place = (e: EntityResponse, x: number, y: number, index: number): Node<EntityNodeData> => {
     const communityId = communityById.has(e.id) ? communityById.get(e.id)! : null;
     const pageRank = pageRankById.get(e.id) ?? 0;
     const accent = colorForCommunity(communityId, e.entity_type);
     const t = pageRank / maxScore;
     const scale = 0.85 + t * 0.55;
+    const delayMs = Math.min(index * 45, 900);
     return {
       id: e.id,
       type: "entity",
       position: { x, y },
-      style: { width: Math.round(148 * scale), minHeight: Math.round(64 * scale) },
+      className: "gf-node-enter",
+      style: {
+        width: Math.round(148 * scale),
+        minHeight: Math.round(64 * scale),
+        animationDelay: `${delayMs}ms`,
+      },
       data: {
         label: e.canonical_name,
         entityType: e.entity_type,
@@ -161,13 +194,13 @@ function layoutNodes(
   };
 
   if (n === 1) {
-    return [place(entities[0], 0, 0)];
+    return [place(entities[0], 0, 0, 0)];
   }
 
   const radius = Math.max(180, n * 36);
   return entities.map((e, i) => {
     const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    return place(e, Math.cos(angle) * radius, Math.sin(angle) * radius);
+    return place(e, Math.cos(angle) * radius, Math.sin(angle) * radius, i);
   });
 }
 
@@ -176,24 +209,31 @@ function bridgeKey(a: string, b: string): string {
 }
 
 function buildEdges(relations: RelationResponse[], bridgePairs: Set<string>): Edge[] {
-  return relations.map((r) => {
+  return relations.map((r, i) => {
     const isBridge = bridgePairs.has(bridgeKey(r.source_entity_id, r.target_entity_id));
+    const rel = relationStyle(r.relation_type);
+    const stroke = isBridge ? "rgba(255, 194, 75, 0.9)" : rel.stroke;
+    const width = isBridge ? Math.max(rel.width, 2.4) : rel.width;
+    const dash = isBridge ? "6 4" : rel.dash;
+    const delayMs = Math.min(120 + i * 35, 1100);
     return {
       id: r.id,
       source: r.source_entity_id,
       target: r.target_entity_id,
-      label: r.relation_type,
+      label: rel.label,
       type: "default",
-      animated: isBridge,
+      className: "gf-edge-enter",
+      animated: isBridge || Boolean(rel.dash),
       style: {
-        stroke: isBridge ? "rgba(255, 194, 75, 0.85)" : "rgba(91, 224, 255, 0.45)",
-        strokeWidth: isBridge ? 2.4 : 1.5,
-        strokeDasharray: isBridge ? "6 4" : undefined,
+        stroke,
+        strokeWidth: width,
+        strokeDasharray: dash,
+        animationDelay: `${delayMs}ms`,
       },
       labelStyle: {
-        fill: "#aab9dc",
+        fill: isBridge ? "#ffc24b" : "#aab9dc",
         fontSize: 11,
-        fontWeight: 500,
+        fontWeight: 600,
       },
       labelBgStyle: { fill: "#0b1326", fillOpacity: 0.9 },
       labelBgPadding: [4, 6] as [number, number],
@@ -201,9 +241,9 @@ function buildEdges(relations: RelationResponse[], bridgePairs: Set<string>): Ed
         type: MarkerType.ArrowClosed,
         width: 16,
         height: 16,
-        color: isBridge ? "rgba(255, 194, 75, 0.9)" : "rgba(91, 224, 255, 0.7)",
+        color: stroke,
       },
-      data: { bridge: isBridge },
+      data: { bridge: isBridge, relationType: r.relation_type },
     };
   });
 }
@@ -293,9 +333,9 @@ function GraphFlowCanvas({ reloadSignal }: Props) {
       setLoaded(true);
       setSelected(null);
       setSelectedMeta(null);
-      requestAnimationFrame(() => {
-        fitView({ padding: 0.22, duration: 280 });
-      });
+      window.setTimeout(() => {
+        fitView({ padding: 0.22, duration: 420 });
+      }, 80);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Load failed");
     } finally {
@@ -336,6 +376,18 @@ function GraphFlowCanvas({ reloadSignal }: Props) {
 
   const empty = loaded && data && data.entities.length === 0;
 
+  const relationLegend = useMemo(() => {
+    if (!data?.relations?.length) return [] as { key: string; label: string; stroke: string }[];
+    const seen = new Map<string, { key: string; label: string; stroke: string }>();
+    for (const r of data.relations) {
+      const key = (r.relation_type || "related_to").toLowerCase().replace(/\s+/g, "_");
+      if (seen.has(key)) continue;
+      const rel = relationStyle(r.relation_type);
+      seen.set(key, { key, label: rel.label, stroke: rel.stroke });
+    }
+    return Array.from(seen.values()).slice(0, 8);
+  }, [data]);
+
   return (
     <section className="graph-flow-workspace" data-evox3="graph-ui">
       <header className="graph-flow-toolbar">
@@ -349,6 +401,20 @@ function GraphFlowCanvas({ reloadSignal }: Props) {
                 : "—"}
           </span>
           {analyticsNote && <span className="graph-flow-analytics muted sm">{analyticsNote}</span>}
+          {relationLegend.length > 0 && (
+            <div className="graph-flow-rel-legend" aria-label="Relation types">
+              {relationLegend.map((r) => (
+                <span key={r.key} className="graph-flow-rel-chip">
+                  <i style={{ background: r.stroke }} />
+                  {r.label}
+                </span>
+              ))}
+              <span className="graph-flow-rel-chip graph-flow-rel-chip-bridge">
+                <i />
+                BRIDGE
+              </span>
+            </div>
+          )}
         </div>
         <div className="graph-flow-toolbar-actions">
           <button
@@ -420,7 +486,7 @@ function GraphFlowCanvas({ reloadSignal }: Props) {
             />
           </ReactFlow>
           <div className="graph-flow-legend muted sm">
-            Size = PageRank · Color = community · Amber dashed = bridge
+            Size = PageRank · Color = community · Edge hue = relation · Amber dashed = bridge
           </div>
         </div>
 
