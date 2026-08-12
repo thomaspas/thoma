@@ -11,3 +11,9 @@ On the EVO-X3 machine:
 chmod +x scripts/evox3/*.sh
 ./scripts/evox3/run_all.sh
 ```
+
+Already installed? Finish / resume:
+
+```bash
+./scripts/evox3/12_operator_finish.sh
+```
