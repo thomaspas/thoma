@@ -48,13 +48,14 @@ fi
 
 if [ "$NEED_PATCH" = "1" ]; then
   for pair in \
-    "$ROUTER_DST:$ROUTER_DST.evox3-graph-orig" \
-    "$SCHEMAS_DST:$SCHEMAS_DST.evox3-graph-orig"; do
-    src="${pair%%:*}"
-    bak="${pair##*:}"
+    "$ROUTER_DST|$ROUTER_DST.evox3-graph-orig" \
+    "$SCHEMAS_DST|$SCHEMAS_DST.evox3-graph-orig"; do
+    src="${pair%%|*}"
+    bak="${pair##*|}"
     if [ ! -f "$bak" ]; then
       cp "$src" "$bak"
-      ok "Backed up $(basename "$src") -> $(basename "$bak")"
+      # Show parent/name — both files are named graph.py
+      ok "Backed up $(basename "$(dirname "$src")")/$(basename "$src") -> $(basename "$bak")"
     fi
   done
 
@@ -106,4 +107,6 @@ printf '    GET /graph/analytics/bridges\n'
 printf '    GET /graph/analytics/shortest-path?source_id=&target_id=\n'
 printf '  Restore: cp %s.evox3-graph-orig over graph.py/schemas; rm %s\n' \
   "apps/api/routers/graph.py" "$ANALYTICS_DST"
+printf '  Demo (no manual TOKEN paste):\n'
+printf '    ./scripts/evox3/17_demo_analytics.sh\n'
 printf '  Smoke: ./scripts/evox3/09_smoke_check.sh\n'

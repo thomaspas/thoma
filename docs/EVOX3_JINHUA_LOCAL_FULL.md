@@ -126,23 +126,14 @@ Opt-in patch — stdlib algorithms on a user-scoped Neo4j export (no GDS / netwo
 ```bash
 ./scripts/evox3/17_graph_analytics.sh
 ./scripts/evox3/09_smoke_check.sh   # expects analytics patch + summary HTTP 200
+./scripts/evox3/17_demo_analytics.sh  # login + hit analytics endpoints (no TOKEN paste)
 ```
 
-Παραδείγματα (μετά login):
+Αν το SSH terminal κολλάει `^[[200~` στο paste (σπάει `export`/`TOKEN=`):
 
 ```bash
-TOKEN="$(curl -fsS -X POST http://127.0.0.1:8000/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"ye@evox3.local","password":"evox3-local-12"}' \
-  | python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')"
-
-curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/summary
-curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/orphans
-curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/pagerank
-curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/communities
-curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/graph/analytics/bridges
-curl -fsS -H "Authorization: Bearer $TOKEN" \
-  'http://127.0.0.1:8000/graph/analytics/shortest-path?source_id=ID1&target_id=ID2'
+printf '\e[?2004l'   # disable bracketed paste for this session
+# prefer the demo script above instead of hand-rolled TOKEN= curls
 ```
 
 Restore upstream graph router/schemas: `*.evox3-graph-orig` + remove `secondbrain/graph/analytics.py` + marker `.evox3-graph-analytics`.
