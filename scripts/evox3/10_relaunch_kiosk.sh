@@ -26,6 +26,10 @@ setup_local_graphical_env
 
 # Kill ANY leftover Second Brain / API-docs browser tabs (previous sessions used :8000).
 log "Stopping stale Chromium/Firefox kiosk processes"
+if command -v flatpak >/dev/null 2>&1; then
+  flatpak kill io.github.ungoogled_software.ungoogled_chromium 2>/dev/null || true
+  flatpak kill org.chromium.Chromium 2>/dev/null || true
+fi
 pkill -f 'io.github.ungoogled_software.ungoogled_chromium' 2>/dev/null || true
 pkill -f 'org.chromium.Chromium' 2>/dev/null || true
 pkill -f 'chromium.*127.0.0.1:8000' 2>/dev/null || true
@@ -33,7 +37,7 @@ pkill -f 'chromium.*127.0.0.1:5173' 2>/dev/null || true
 pkill -f 'chrome.*127.0.0.1:8000' 2>/dev/null || true
 pkill -f 'chrome.*127.0.0.1:5173' 2>/dev/null || true
 pkill -f 'evox3-jinhua-kiosk' 2>/dev/null || true
-sleep 1
+sleep 2
 
 KIOSK_WRAPPER="$HOME/ai_apps/bin/evox3-jinhua-kiosk.sh"
 [ -x "$KIOSK_WRAPPER" ] || die "Missing $KIOSK_WRAPPER"
@@ -44,6 +48,9 @@ if grep -q ":${EVOX3_API_PORT}" "$KIOSK_WRAPPER" && ! grep -q ":${EVOX3_WEB_PORT
 fi
 if ! grep -q ":${EVOX3_WEB_PORT}" "$KIOSK_WRAPPER"; then
   die "Kiosk wrapper missing :${EVOX3_WEB_PORT}"
+fi
+if ! grep -q 'user-data-dir' "$KIOSK_WRAPPER"; then
+  warn "Kiosk wrapper missing --user-data-dir — re-run 08_autostart_desktop.sh"
 fi
 
 log "Launching kiosk wrapper -> $URL"
@@ -72,10 +79,24 @@ if ! kiosk_references_web_port && command -v systemd-run >/dev/null 2>&1; then
   sleep 5
 fi
 
-if ! kiosk_references_web_port && command -v gtk-launch >/dev/null 2>&1 && [ -f "$HOME/.config/autostart/evox3-jinhua-kiosk.desktop" ]; then
-  log "Retry via gtk-launch evox3-jinhua-kiosk (GNOME autostart desktop entry)"
-  env "${ENV_ARGS[@]}" gtk-launch evox3-jinhua-kiosk >>/tmp/evox3-jinhua-kiosk.log 2>&1 &
-  sleep 5
+APPS_DESKTOP="$HOME/.local/share/applications/evox3-jinhua-kiosk.desktop"
+if ! kiosk_references_web_port && command -v gtk-launch >/dev/null 2>&1; then
+  if [ -f "$APPS_DESKTOP" ] || [ -f "$HOME/.config/autostart/evox3-jinhua-kiosk.desktop" ]; then
+    log "Retry via gtk-launch evox3-jinhua-kiosk (applications/ + autostart desktop entry)"
+    env "${ENV_ARGS[@]}" gtk-launch evox3-jinhua-kiosk >>/tmp/evox3-jinhua-kiosk.log 2>&1 &
+    sleep 5
+  fi
+fi
+
+# Last resort: direct flatpak with dedicated profile + explicit URL (visible in /proc).
+if ! kiosk_references_web_port; then
+  LAUNCH_CMD="$(kiosk_launch_cmd "$URL" || true)"
+  if [ -n "${LAUNCH_CMD:-}" ]; then
+    log "Retry direct browser launch with dedicated profile -> $URL"
+    # shellcheck disable=SC2086
+    nohup env "${ENV_ARGS[@]}" bash -c "$LAUNCH_CMD" >>/tmp/evox3-jinhua-kiosk.log 2>&1 &
+    sleep 5
+  fi
 fi
 
 ok "Relaunched. Expect dashboard/chat at $URL (no Register/Login; NOT :${EVOX3_API_PORT})"
@@ -89,6 +110,8 @@ elif ! pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox' >/dev/null 2
   warn "No browser process — retry from SSH: ./scripts/evox3/10_relaunch_kiosk.sh"
   warn "Then: ./scripts/evox3/21_remote_verify.sh"
   warn "Diagnostic: ls -l \"\$XDG_RUNTIME_DIR\"/wayland-* \"\$XDG_RUNTIME_DIR\"/gdm/Xauthority 2>/dev/null; echo DISPLAY=\$DISPLAY"
+else
+  warn "Browser running but :${EVOX3_WEB_PORT} not yet in cmdline — wait_for_kiosk in 21 will poll"
 fi
 printf '\nIf you still see :%s in process args, paste this block back.\n' "$EVOX3_API_PORT"
 printf 'Remote confirm: ./scripts/evox3/21_remote_verify.sh (no screen visit needed)\n'

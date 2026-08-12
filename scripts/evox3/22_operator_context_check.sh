@@ -15,8 +15,10 @@ fi
 _ts() { date +%s%3N 2>/dev/null || python3 -c 'import time; print(int(time.time()*1000))'; }
 _dbg() {
   local msg="$1" hid="$2" extra="${3:-{}}"
-  local line
-  line="$(python3 -c "import json,os; print(json.dumps({'sessionId':'f7f922','hypothesisId':'$hid','location':'22_operator_context_check.sh','message':'$msg','data':$extra,'timestamp':int('${_ts}')}))" 2>/dev/null || echo '{}')"
+  local ts line
+  # Call _ts as a function; '${_ts}' under set -u is an unbound variable.
+  ts="$(_ts)"
+  line="$(python3 -c "import json,os; print(json.dumps({'sessionId':'f7f922','hypothesisId':'$hid','location':'22_operator_context_check.sh','message':'$msg','data':$extra,'timestamp':int('${ts}')}))" 2>/dev/null || echo '{}')"
   printf '%s\n' "$line" >&2
   if [ -n "${THOMA_DEBUG_LOG:-}" ] && [ -w "$(dirname "$THOMA_DEBUG_LOG")" ] 2>/dev/null; then
     printf '%s\n' "$line" >>"$THOMA_DEBUG_LOG"

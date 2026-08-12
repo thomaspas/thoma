@@ -264,20 +264,22 @@ setup_local_graphical_env() {
 }
 
 # Flatpak Chromium: URL as final arg (--app= alone is unreliable).
+# Dedicated --user-data-dir avoids "Opening in existing browser session" (URL absent from cmdline).
 # Prefer Wayland ozone when WAYLAND_DISPLAY is set (EVO-X3 desktop is Wayland).
 kiosk_launch_cmd() {
   local url="$1"
   local c ozone=""
+  local profile="/tmp/evox3-jinhua-kiosk-chromium"
   if [ -n "${WAYLAND_DISPLAY:-}" ]; then
     ozone='--ozone-platform=wayland'
   fi
   if command -v flatpak >/dev/null 2>&1; then
     if flatpak info io.github.ungoogled_software.ungoogled_chromium >/dev/null 2>&1; then
-      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$ozone" "$url"
+      printf 'flatpak run io.github.ungoogled_software.ungoogled_chromium --user-data-dir=%q --new-window --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$profile" "$ozone" "$url"
       return 0
     fi
     if flatpak info org.chromium.Chromium >/dev/null 2>&1; then
-      printf 'flatpak run org.chromium.Chromium --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$ozone" "$url"
+      printf 'flatpak run org.chromium.Chromium --user-data-dir=%q --new-window --kiosk --no-first-run --disable-session-crashed-bubble %s %q' "$profile" "$ozone" "$url"
       return 0
     fi
   fi
@@ -288,7 +290,7 @@ kiosk_launch_cmd() {
   if [ "$c" = "firefox" ]; then
     printf '%q -kiosk %q' "$c" "$url"
   else
-    printf '%q --kiosk --app=%q --no-first-run --disable-session-crashed-bubble %s' "$c" "$url" "$ozone"
+    printf '%q --user-data-dir=%q --new-window --kiosk --app=%q --no-first-run --disable-session-crashed-bubble %s' "$c" "$profile" "$url" "$ozone"
   fi
 }
 

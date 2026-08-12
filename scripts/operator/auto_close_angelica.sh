@@ -151,46 +151,51 @@ REMOTE
 }
 
 verify_ok() {
-  grep -q 'REMOTE VERIFY OK' "$VERIFY_LOG" 2>/dev/null
+  # Strict: must match 21_remote_verify.sh success banner, not smoke-check
+  # hint text like "expect REMOTE VERIFY OK" that is also tee'd into VERIFY_LOG.
+  grep -qF '=== REMOTE VERIFY OK' "$VERIFY_LOG" 2>/dev/null
 }
 
 update_chronicle_closeout() {
   local chronicle="$THOMA_ROOT/docs/SESSION_CHRONICLE_ANGELICA.md"
   [ -f "$chronicle" ] || die "Missing $chronicle"
 
-  python3 <<'PY' "$chronicle"
+  # python3 - reads program from stdin; path is argv[1] (NOT executed as a script).
+  # Without "-", bash would pass the .md path as the script file and Python would
+  # try to parse markdown (SyntaxError on Unicode em-dash).
+  python3 - "$chronicle" <<'PY'
 import re, sys
 path = sys.argv[1]
-text = open(path, encoding='utf-8').read()
+text = open(path, encoding="utf-8").read()
 
-# Session block: mark resolved
+# Session block: mark resolved (ASCII -- in replacement strings)
 text = re.sub(
-    r'\*\*Next:\*\* sync scripts.*',
-    '**Resolved (auto_close):** `21_remote_verify.sh` **6 pass / 0 fail** — `REMOTE VERIFY OK`; bug #8 closed; PR #8 merged.',
+    r"\*\*Next:\*\*.*",
+    "**Resolved (auto_close):** `21_remote_verify.sh` **6 pass / 0 fail** -- `REMOTE VERIFY OK`; bug #8 closed; PR #8 merged.",
     text,
     count=1,
 )
 
 # Runtime evidence bullets
 text = text.replace(
-    '- `21_remote_verify.sh`: **5 pass / 1 fail** — only `browser process missing :5173`',
-    '- `21_remote_verify.sh`: **6 pass / 0 fail** — `REMOTE VERIFY OK` (kiosk `:5173` via SSH relaunch)',
+    "- `21_remote_verify.sh`: **5 pass / 1 fail** — only `browser process missing :5173`",
+    "- `21_remote_verify.sh`: **6 pass / 0 fail** -- `REMOTE VERIFY OK` (kiosk `:5173` via SSH relaunch)",
 )
 text = text.replace(
-    '**Patches (local Gaming-7 clone, pending sync to EVO-X3):**',
-    '**Patches (pushed + verified on EVO-X3):**',
+    "**Patches (local Gaming-7 clone, pending sync to EVO-X3):**",
+    "**Patches (pushed + verified on EVO-X3):**",
 )
 
 # PR table row #8
 text = re.sub(
-    r'\| \[#8\]\(https://github\.com/thomaspas/thoma/pull/8\) \| Remote SSH operator \+ `21_remote_verify` \+ kiosk SSH fixes \| OPEN \|',
-    '| [#8](https://github.com/thomaspas/thoma/pull/8) | Remote SSH operator + `21_remote_verify` + kiosk SSH fixes | MERGED |',
+    r"\| \[#8\]\(https://github\.com/thomaspas/thoma/pull/8\) \| Remote SSH operator \+ `21_remote_verify` \+ kiosk SSH fixes \| OPEN \|",
+    "| [#8](https://github.com/thomaspas/thoma/pull/8) | Remote SSH operator + `21_remote_verify` + kiosk SSH fixes | MERGED |",
     text,
     count=1,
 )
 
-open(path, 'w', encoding='utf-8').write(text)
-print('chronicle updated')
+open(path, "w", encoding="utf-8").write(text)
+print("chronicle updated")
 PY
   ok "Updated $chronicle"
 }
