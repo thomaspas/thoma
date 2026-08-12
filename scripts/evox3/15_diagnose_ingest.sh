@@ -54,6 +54,12 @@ journalctl --user -u evox3-jinhua-api.service -n 80 --no-pager 2>/dev/null || tr
 
 if [ "${EVOX3_FORCE_SYNC_INGEST:-0}" = "1" ]; then
   [ -x "$EVOX3_JINHUA_DIR/.venv/bin/python" ] || die "Missing venv python"
+  ST_NOW="$(curl -sS "${API}/documents/${DOC_ID}" -H "Authorization: Bearer ${TOKEN}" \
+    | python3 -c 'import sys,json; print(json.load(sys.stdin).get("status",""))')"
+  if [ "$ST_NOW" = "parsing" ]; then
+    warn "status=parsing with a free LLM usually means the BackgroundTask died (e.g. API restart)."
+    warn "Forcing synchronous re-ingest in this process…"
+  fi
   log "=== sync ingest_document (foreground, 180s timeout) ==="
   (
     cd "$EVOX3_JINHUA_DIR"
