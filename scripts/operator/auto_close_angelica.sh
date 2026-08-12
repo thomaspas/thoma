@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-shot ANGELICA closeout from Gaming-7: GH_TOKEN push, EVO-X3 verify, chronicle, merge PR #8.
 # Usage:
-#   export GH_TOKEN='ghp_...'
+#   export GH_TOKEN='your_real_pat_from_github_settings_tokens'
 #   export PATH="$HOME/.local/bin:$PATH"
 #   ./scripts/operator/auto_close_angelica.sh
 set -euo pipefail
@@ -13,7 +13,7 @@ EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"
 DEBUG_LOG="${DEBUG_LOG:-/home/thomas1821/Λήψεις/.cursor/debug-f7f922.log}"
-SCRIPT_REV="x-access-token-v1"
+SCRIPT_REV="x-access-token-v2"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
@@ -23,8 +23,12 @@ die() { printf '[x] %s\n' "$*" >&2; exit 1; }
 #region agent log
 _dbg() {
   local hid="$1" loc="$2" msg="$3" data="${4:-{}}"
+  local line
   mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
-  python3 -c "import json,time; open('${DEBUG_LOG}','a').write(json.dumps({'sessionId':'f7f922','hypothesisId':'${hid}','location':'${loc}','message':'${msg}','data':${data},'timestamp':int(time.time()*1000),'runId':'post-fix'})+'\n')" 2>/dev/null || true
+  line="$(python3 -c "import json,time; print(json.dumps({'sessionId':'f7f922','hypothesisId':'${hid}','location':'${loc}','message':'${msg}','data':${data},'timestamp':int(time.time()*1000),'runId':'post-fix'}))" 2>/dev/null || true)"
+  [ -n "$line" ] || return 0
+  printf '%s\n' "$line" >> "$DEBUG_LOG" 2>/dev/null || true
+  printf '%s\n' "$line" >> /tmp/angelica-debug-f7f922.log 2>/dev/null || true
 }
 #endregion
 
@@ -50,13 +54,13 @@ ensure_gh_auth() {
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — export a GitHub PAT (scope: repo)"
   #region agent log
   local looks_placeholder=false
-  if [ "${GH_TOKEN}" = 'ghp_...' ] || [ "${GH_TOKEN}" = 'ghp_ΤΟ_ΠΡΑΓΜΑΤΙΚΟ_ΣΟΥ' ]; then
+  if [ "${GH_TOKEN}" = 'ghp_...' ] || [ "${GH_TOKEN}" = 'ghp_ΤΟ_ΠΡΑΓΜΑΤΙΚΟ_ΣΟΥ' ] || [[ "${GH_TOKEN}" == *'...'* ]] || [ "${#GH_TOKEN}" -lt 20 ]; then
     looks_placeholder=true
   fi
   _dbg "H6" "ensure_gh_auth" "token_check" "{\"token_len\":${#GH_TOKEN},\"looks_placeholder\":${looks_placeholder},\"script_rev\":\"${SCRIPT_REV}\"}"
   #endregion
-  if [ "${GH_TOKEN}" = 'ghp_...' ] || [ "${GH_TOKEN}" = 'ghp_ΤΟ_ΠΡΑΓΜΑΤΙΚΟ_ΣΟΥ' ]; then
-    die "GH_TOKEN is a documentation placeholder — paste your real PAT from github.com/settings/tokens"
+  if [ "$looks_placeholder" = true ]; then
+    die "GH_TOKEN looks invalid or is a docs placeholder — create PAT at github.com/settings/tokens (scope: repo)"
   fi
   # gh auth login --with-token FAILS when GH_TOKEN is already exported (exit 1, no stdin read).
   local gh_user
@@ -85,25 +89,60 @@ git_repo_slug() {
   printf '%s' "$remote_url"
 }
 
+setup_git_via_gh() {
+  local token="$GH_TOKEN"
+  # gh auth login --with-token fails when GH_TOKEN is already exported.
+  unset GH_TOKEN
+  if ! printf '%s\n' "$token" | gh auth login --with-token 2>/tmp/gh-login.err; then
+    export GH_TOKEN="$token"
+    warn "gh auth login --with-token failed:"
+    tail -5 /tmp/gh-login.err >&2 || true
+    return 1
+  fi
+  export GH_TOKEN="$token"
+  gh auth setup-git
+  #region agent log
+  _dbg "H7" "setup_git_via_gh" "ok" "{}"
+  #endregion
+}
+
 git_push_with_token() {
   [ -n "${GH_TOKEN:-}" ] || die "GH_TOKEN not set — cannot push"
-  local slug push_url push_rc cred_helper
+  local slug push_url push_rc cred_helper encoded_token
   slug="$(git_repo_slug)"
-  push_url="https://x-access-token:${GH_TOKEN}@github.com/${slug}.git"
+  encoded_token="$(python3 -c "import urllib.parse,os; print(urllib.parse.quote(os.environ['GH_TOKEN'], safe=''))")"
+  push_url="https://x-access-token:${encoded_token}@github.com/${slug}.git"
   cred_helper="$(git config --get credential.helper 2>/dev/null || true)"
+  log "Authenticated push to github.com/${slug} (branch ${BRANCH})"
   #region agent log
-  _dbg "H1" "git_push_with_token" "before_push" "{\"slug\":\"${slug}\",\"branch\":\"${BRANCH}\",\"token_len\":${#GH_TOKEN},\"cred_helper_set\":$([ -n \"$cred_helper\" ] && echo true || echo false),\"push_host\":\"github.com\",\"script_rev\":\"${SCRIPT_REV}\"}"
+  _dbg "H1" "git_push_with_token" "before_push" "{\"slug\":\"${slug}\",\"branch\":\"${BRANCH}\",\"token_len\":${#GH_TOKEN},\"cred_helper_set\":$( [ -n "$cred_helper" ] && printf true || printf false ),\"script_rev\":\"${SCRIPT_REV}\"}"
   #endregion
-  if ! git -c credential.helper= push "$push_url" "HEAD:${BRANCH}" 2>/tmp/git-push.err; then
-    push_rc=$?
+  if git -c credential.helper= push "$push_url" "HEAD:${BRANCH}" 2>/tmp/git-push.err; then
     #region agent log
-    _dbg "H3" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"stderr_tail\":\"$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ' | sed 's/"/\\"/g')\"}"
+    _dbg "H3" "git_push_with_token" "push_ok" "{\"method\":\"x-access-token\"}"
     #endregion
-    return "$push_rc"
+    return 0
   fi
+  push_rc=$?
   #region agent log
-  _dbg "H3" "git_push_with_token" "push_ok" "{}"
+  _dbg "H3" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"x-access-token\",\"stderr_tail\":\"$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ' | sed 's/"/\\"/g')\"}"
   #endregion
+  if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
+    warn "Push hit credential prompt — retrying via gh auth setup-git"
+  else
+    warn "x-access-token push failed — retrying via gh auth setup-git"
+  fi
+  if setup_git_via_gh && git -c credential.helper= push origin "$BRANCH" 2>/tmp/git-push.err; then
+    #region agent log
+    _dbg "H7" "git_push_with_token" "push_ok" "{\"method\":\"gh-setup-git\"}"
+    #endregion
+    return 0
+  fi
+  push_rc=$?
+  #region agent log
+  _dbg "H7" "git_push_with_token" "push_failed" "{\"exit\":${push_rc},\"method\":\"gh-setup-git\",\"stderr_tail\":\"$(tail -3 /tmp/git-push.err 2>/dev/null | tr '\n' ' ' | sed 's/"/\\"/g')\"}"
+  #endregion
+  return "$push_rc"
 }
 
 git_push_branch() {
@@ -118,6 +157,9 @@ git_push_branch() {
     #endregion
     if ! git_push_with_token; then
       tail -10 /tmp/git-push.err >&2 || true
+      if grep -q 'could not read Username' /tmp/git-push.err 2>/dev/null; then
+        die "git push failed — old credential path detected; confirm script shows [x-access-token-v2] and GH_TOKEN is a real PAT"
+      fi
       die "git push failed — check GH_TOKEN repo scope"
     fi
   else
