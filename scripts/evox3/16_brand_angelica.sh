@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/_lib.sh"
 
 require_cmd python3
 require_cmd systemctl
+require_cmd curl
 
 WEB_DIR="$EVOX3_JINHUA_DIR/apps/web"
 INDEX_HTML="$WEB_DIR/index.html"
