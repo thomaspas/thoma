@@ -224,7 +224,7 @@ setup_local_graphical_env() {
 
   if [ -z "${WAYLAND_DISPLAY:-}" ] && { [ -z "${XAUTHORITY:-}" ] || [ ! -f "${XAUTHORITY}" ]; }; then
     warn "No Wayland socket and no XAUTHORITY — GUI launch from this SSH session will likely fail"
-    warn "Run 10_relaunch_kiosk.sh from a terminal ON the EVO-X3 desktop, or ensure a logged-in graphical session"
+    warn "Retry: ./scripts/evox3/10_relaunch_kiosk.sh then ./scripts/evox3/21_remote_verify.sh"
   fi
 }
 

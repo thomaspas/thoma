@@ -40,10 +40,11 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `19` | Stage ANGELICA Capture browser extension (MV3) |
 | `19_demo` | curl-only capture upload smoke |
 | `20` | Patch FastAPI CORS for `chrome-extension://` origins |
+| `21` | Remote verify (SSH operator — no screen visit) |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 
-Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md).
+Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
 
 App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain)).
 
@@ -97,6 +98,7 @@ git checkout -B main origin/main
 chmod +x scripts/evox3/*.sh
 ./scripts/evox3/12_operator_finish.sh
 ./scripts/evox3/09_smoke_check.sh
+./scripts/evox3/21_remote_verify.sh
 ./scripts/evox3/13_remote_go_live.sh
 ./scripts/evox3/18_demo_mcp.sh
 ./scripts/evox3/19_browser_extension.sh
@@ -119,6 +121,8 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 ## Agent rules for resume
 
 - Greek for explanations; ASCII for scripts/logs
-- No SSH from Cursor Cloud — validate via paste from EVO-X3
+- **Thomas runs only via SSH** from another PC/room (`192.168.1.8`) — never ask him to visit the EVO-X3 screen
+- Use `21_remote_verify.sh` + paste output; optional `13_remote_go_live.sh` for Greek E2E
+- No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH session
 - Flatpak browser only; never kiosk on `:8000`
 - Prefer patches/scripts in `thoma` over forking app source into this repo

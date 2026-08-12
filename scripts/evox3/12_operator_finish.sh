@@ -77,14 +77,10 @@ cat >"$SAMPLE_MD" <<EOF
 EOF
 ok "Wrote sample note: $SAMPLE_MD"
 
-printf '\n=== Human checklist (on EVO-X3 desktop) ===\n'
-printf '  1) Kiosk shows %s dashboard/chat at http://127.0.0.1:%s (footer: Kiosk · always signed in)\n' \
-  "$EVOX3_BRAND_NAME" "$EVOX3_WEB_PORT"
-printf '     NOT Register/Login, NOT API JSON on :%s\n' "$EVOX3_API_PORT"
-printf '  2) Upload: %s\n' "$SAMPLE_MD"
-printf '  3) Ask in Greek chat, e.g.: Ποιος είναι ο kiosk χρήστης στο EVO-X3;\n'
-printf '  4) Reboot once, then after desktop login:\n'
-printf '       systemctl --user is-active evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service\n'
-printf '       %s/scripts/evox3/09_smoke_check.sh\n' "$THOMA_ROOT"
-printf '  5) Done — LOCAL FULL operator checklist complete\n'
-ok "12_operator_finish.sh complete — do steps 1-4 on screen"
+printf '\n=== Remote verification checklist (SSH — no screen visit) ===\n'
+printf '  1) Run: %s/scripts/evox3/21_remote_verify.sh\n' "$THOMA_ROOT"
+printf '  2) Greek chat E2E: %s/scripts/evox3/13_remote_go_live.sh\n' "$THOMA_ROOT"
+printf '  3) Sample note for upload: %s\n' "$SAMPLE_MD"
+printf '  4) Reboot test (from SSH): sudo reboot; then 09 + 21_remote_verify\n'
+printf '  5) Done — paste 21_remote_verify output to Cursor if debugging\n'
+ok "12_operator_finish.sh complete — run 21_remote_verify.sh from SSH"

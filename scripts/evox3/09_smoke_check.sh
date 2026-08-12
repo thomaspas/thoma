@@ -238,13 +238,11 @@ else
 fi
 
 printf '\n=== result: %s pass / %s fail ===\n' "$PASS" "$FAIL"
-printf '\nOperator checklist (human / on EVO-X3 desktop):\n'
-printf '  1) Kiosk http://127.0.0.1:%s shows %s dashboard (NOT Register/Login, NOT :8000)\n' \
-  "$EVOX3_WEB_PORT" "$EVOX3_BRAND_NAME"
-printf '  2) Upload a small .md note\n'
-printf '  3) Ask a Greek question in chat\n'
-printf '  4) Reboot once; confirm systemd units + kiosk autostart\n'
-printf '  5) Done — LOCAL FULL operator checklist complete\n'
+printf '\nOperator checklist (remote SSH — no visit to EVO-X3 needed):\n'
+printf '  1) Run: ./scripts/evox3/21_remote_verify.sh  (expect REMOTE VERIFY OK)\n'
+printf '  2) Upload + Greek chat: ./scripts/evox3/13_remote_go_live.sh\n'
+printf '  3) Reboot test (from SSH): sudo reboot; then ./scripts/evox3/09_smoke_check.sh\n'
+printf '  4) Done — paste 21_remote_verify output to Cursor if debugging\n'
 printf '\nRelaunch kiosk now:\n'
 printf '  ./scripts/evox3/10_relaunch_kiosk.sh\n'
 

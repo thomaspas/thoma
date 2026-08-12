@@ -5,16 +5,17 @@ Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **
 **Status: DONE** on EVO-X3 (smoke 18/0, Greek chat, docker boot, ANGELICA UI, graph analytics, MCP server, browser extension).
 
 - Runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
+- **Remote SSH operator:** [docs/REMOTE_OPERATOR_SSH.md](docs/REMOTE_OPERATOR_SSH.md) (Thomas runs from another PC — no screen visit)
 - Session chronicle (all chats + NEXT roadmap): [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
 - Browser extension: [docs/ANGELICA_BROWSER_EXTENSION.md](docs/ANGELICA_BROWSER_EXTENSION.md)
 - Scripts: [scripts/evox3/](scripts/evox3/)
 - Extension source: [extensions/angelica-capture/](extensions/angelica-capture/)
 
-On the EVO-X3 machine:
+On the EVO-X3 machine (via SSH from another PC):
 
 ```bash
 chmod +x scripts/evox3/*.sh
-./scripts/evox3/run_all.sh
+./scripts/evox3/21_remote_verify.sh
 ```
 
 Already installed? Finish / resume (skip-auth + ANGELICA brand + smoke + kiosk):

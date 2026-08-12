@@ -67,9 +67,11 @@ tail -n 40 /tmp/evox3-jinhua-kiosk.log 2>/dev/null || true
 printf '\nProcesses:\n'
 pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox|evox3-jinhua-kiosk' | head -n 15 || true
 if ! pgrep -af 'ungoogled_chromium|org.chromium|chromium|firefox' >/dev/null 2>&1; then
-  warn "No browser process — if log shows Missing X server, open a local desktop terminal and re-run this script"
+  warn "No browser process — retry from SSH: ./scripts/evox3/10_relaunch_kiosk.sh"
+  warn "Then: ./scripts/evox3/21_remote_verify.sh"
   warn "Diagnostic: ls -l \"\$XDG_RUNTIME_DIR\"/wayland-* \"\$XDG_RUNTIME_DIR\"/gdm/Xauthority 2>/dev/null; echo DISPLAY=\$DISPLAY"
 fi
 printf '\nIf you still see :%s in process args, paste this block back.\n' "$EVOX3_API_PORT"
-printf 'On screen: dashboard/chat (skip-auth). Then upload a .md and ask in Greek.\n'
+printf 'Remote confirm: ./scripts/evox3/21_remote_verify.sh (no screen visit needed)\n'
+printf 'Greek chat: ./scripts/evox3/13_remote_go_live.sh\n'
 ok "10_relaunch_kiosk.sh complete"

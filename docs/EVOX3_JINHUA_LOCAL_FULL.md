@@ -12,7 +12,7 @@
 | UI | `http://127.0.0.1:5173` σε Chromium kiosk + autostart (**ANGELICA**) |
 | Κρατάμε | Μοντέλα, Open WebUI `:8080`, SearXNG `:8888` |
 
-Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3**.
+Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3** μέσω **SSH** από άλλο PC (άλλο δωμάτιο). Δες [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
 
 ## Προϋποθέσεις στο EVO-X3
 
@@ -82,6 +82,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 21. **19** — Stage ANGELICA Capture browser extension (MV3) + optional CORS patch (`20`).
 22. **19_demo** — curl-only upload smoke (simulated extension capture).
 23. **20** — Patch FastAPI CORS for `chrome-extension://` origins (idempotent).
+24. **21** — Remote verify (SSH operator): smoke + HTML brand + kiosk process — no screen visit.
 
 ## Overrides (env)
 
@@ -224,11 +225,18 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/12_operator_finish.sh
 ```
 
-Μετά στην οθόνη:
-1. Confirm kiosk opens **dashboard/chat** (no Register/Login) on **`:5173`**.
-2. Upload `~/ai_apps/evox3-greek-smoke.md` → Greek chat smoke → reboot για autostart.
-3. Μετά reboot: `systemctl --user is-active evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service` + `./scripts/evox3/09_smoke_check.sh`.
-4. Αν login HTTP 500 / `Connection refused` στο `:5432`: Postgres/docker δεν ήρθε πάνω — `./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh` (εγκαθιστά και `evox3-jinhua-docker.service` για τα επόμενα reboot).
+## Remote verification (SSH — άλλο δωμάτιο)
+
+Ο operator τρέχει εντολές από SSH (`thomas-pashoulas@192.168.1.8`) — **όχι** φυσική επίσκεψη στο EVO-X3. Οδηγός: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
+
+```bash
+./scripts/evox3/21_remote_verify.sh
+```
+
+1. Αναμενόμενο: `REMOTE VERIFY OK` + smoke 18/0.
+2. Upload + Greek chat (χωρίς UI): `./scripts/evox3/13_remote_go_live.sh`
+3. Μετά reboot (από SSH): `./scripts/evox3/09_smoke_check.sh` + `21_remote_verify.sh`
+4. Αν login HTTP 500 / `:5432` refused: `./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh`
 
 ## Handoff — κατάσταση
 
@@ -239,23 +247,20 @@ chmod +x scripts/evox3/*.sh
 
 **Branch:** `main` → https://github.com/thomaspas/thoma
 
-**Resume paste (EVO-X3):**
+**Resume paste (EVO-X3 via SSH):**
 ```bash
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/main:refs/remotes/origin/main'
-git checkout -B main origin/main
+git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
+git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
 chmod +x scripts/evox3/*.sh
-./scripts/evox3/12_operator_finish.sh
-./scripts/evox3/09_smoke_check.sh          # expect 18 pass / 0 fail (19 pass if extension built)
+./scripts/evox3/21_remote_verify.sh       # remote OK — no screen visit
 ./scripts/evox3/13_remote_go_live.sh       # upload + Greek chat (SSH)
 ./scripts/evox3/18_demo_mcp.sh             # optional MCP demo
-./scripts/evox3/19_browser_extension.sh    # optional extension
-./scripts/evox3/19_demo_capture.sh         # optional curl capture smoke
 ```
 
-Optional reboot smoke: `sudo reboot` then re-run `09`.
+Optional reboot smoke (from SSH): `sudo reboot` then `./scripts/evox3/21_remote_verify.sh`.
 
-**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· μόνο Flatpak browser· ποτέ kiosk στο `:8000`. Νέα features: διάβασε κεφάλαιο **NEXT** στο chronicle (React Flow → extension done).
+**Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· **Thomas τρέχει μόνο από SSH (άλλο PC/δωμάτιο) — μην ζητάς «πήγαινε στην οθόνη»**· χρησιμοποίησε `21_remote_verify.sh` + paste output· μόνο Flatpak browser· ποτέ kiosk στο `:8000`.
 
 ## Logs
 
@@ -266,20 +271,20 @@ journalctl --user -u evox3-jinhua-web.service -n 100 --no-pager
 tail -n 50 /tmp/evox3-jinhua-kiosk.log
 ```
 
-## Kiosk από SSH (οθόνη EVO-X3)
+## Kiosk από SSH (οθόνη EVO-X3 — remote operator)
 
-Το GUI ανοίγει στην τοπική οθόνη του EVO-X3. Αν τρέχεις από SSH, το script δένει `WAYLAND_DISPLAY` / `XDG_RUNTIME_DIR` / `XAUTHORITY` στο logged-in desktop session:
+Το GUI ανοίγει στην τοπική οθόνη του EVO-X3. Ο operator **δεν** χρειάζεται να πάει στο μηχάνημα — επιβεβαίωση με `./scripts/evox3/21_remote_verify.sh`. Από SSH, το script δένει `WAYLAND_DISPLAY` / `XDG_RUNTIME_DIR` / `XAUTHORITY` στο logged-in desktop session:
 
 ```bash
 ./scripts/evox3/10_relaunch_kiosk.sh
 ```
 
-Προϋπόθεση: κάποιος logged-in στο desktop του EVO-X3.
+Προϋπόθεση: logged-in desktop session στο EVO-X3 (αυτόματο autostart).
 
 Αν δεις `Missing X server or $DISPLAY`:
-1. Επιβεβαίωσε graphical session: `ls /run/user/$(id -u)/wayland-*`
-2. Ξανατρέξε από **τοπικό terminal στην οθόνη** (όχι μόνο SSH), ή
-3. Πάστα diagnostic:
+1. Επιβεβαίωσε graphical session από SSH: `ls /run/user/$(id -u)/wayland-*`
+2. Ξανατρέξε `./scripts/evox3/10_relaunch_kiosk.sh` και `./scripts/evox3/21_remote_verify.sh`
+3. Πάστα diagnostic (μην πας στο μηχάνημα εκτός αν SSH probes αποτύχουν):
    ```bash
    echo "UID=$(id -u) XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
    ls -l /run/user/$(id -u)/wayland-* /run/user/$(id -u)/bus /run/user/$(id -u)/gdm/Xauthority 2>&1 | head

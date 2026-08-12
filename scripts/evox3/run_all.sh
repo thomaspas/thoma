@@ -24,8 +24,7 @@ do
 done
 
 ok "LOCAL FULL pipeline finished"
-printf '\nNext:\n'
-printf '  1) Kiosk should open %s dashboard (no Register/Login) as %s\n' "$EVOX3_BRAND_NAME" "$EVOX3_LOCAL_EMAIL"
-printf '  2) Confirm llama-server on :11434 is running\n'
-printf '  3) Ingest a small markdown note and ask in Greek\n'
-printf '  4) Logout/login on the EVO-X3 desktop to verify kiosk autostart\n'
+printf '\nNext (remote SSH — no screen visit):\n'
+printf '  1) ./scripts/evox3/21_remote_verify.sh\n'
+printf '  2) ./scripts/evox3/13_remote_go_live.sh  (Greek chat E2E)\n'
+printf '  3) Reboot test: sudo reboot; then 09 + 21_remote_verify\n'
