@@ -1,8 +1,10 @@
 # ANGELICA / EVO-X3 — Session Chronicle
 
-Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded the kiosk as **ANGELICA**. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
+Saved handoff of cloud-agent conversations. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics + MCP server + browser extension + React Flow Graph nav (2026-08-12).
+**Status (2026-08-13 βράδυ):** **ANGELICA = knowledge graph only** (Neo4j + React Flow). Επόμενο: **Jarvis**. [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md). Μην τρέχεις `26`.
+
+Jinhua LOCAL FULL + brand + analytics + MCP + extension + React Flow Graph nav remain in history below (DONE 2026-08-12, then retired).
 
 ## Cloud agents (timeline)
 
@@ -16,8 +18,38 @@ Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded
 | 6 | MCP ANGELICA server | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | stdio MCP `18` remember/recall/connect/analyze |
 | 7 | ANGELICA merge + extension | (this wave) | Land stack to `main`; MV3 capture `19` + CORS `20` |
 | 8 | Remote verify kiosk SSH | (local Cursor 2026-08-12) | `21_remote_verify` + PR [#8](https://github.com/thomaspas/thoma/pull/8); kiosk `:5173` from SSH |
+| 9 | Cursor Remote SSH + screen | (prior wave) | Desktop Remote SSH to EVO-X3 + screen preview `:5174` |
+| 11 | ANGELICA = graph only + Jarvis next | (this wave) | Keep Neo4j/React Flow; Jarvis is a separate assistant; guard `26` |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
+
+## Session 2026-08-13 — ANGELICA κρατά μόνο το γράφημα · μετά Jarvis
+
+**Εφικτό:** ναι. ANGELICA = Neo4j `:7687` + Graph UI (`24`) + analytics (`17`). Jarvis = νέο process στο ίδιο EVO-X3, llama `:11434`, διαβάζει το γράφημα. Όχι merge στο kiosk.
+
+**Μην τρέχεις `26`.** Default `EVOX3_KEEP_GRAPH=1` → το script κάνει `die`. Χρειάζεται URL/path του Jarvis για scripts εγκατάστασης.
+
+## Session 2026-08-13 — ANGELICA = GBrain Level 5 (υπερκαλύφθηκε το απόγευμα)
+
+**Decision:** Nate Level 5 is [GBrain](https://github.com/garrytan/gbrain) (Garry Tan), not Jay's live graph app, not Obsidian, not the Jinhua kiosk. Keep the name **ANGELICA** only.
+
+**Keep:** `llama-server` `:11434`, `~/models/`, Open WebUI `:8080`, SearXNG `:8888`.
+
+**Stop (disable, not `rm -rf`):** `evox3-jinhua-docker`, `evox3-bge-m3`, `evox3-jinhua-api`, `evox3-jinhua-web`, kiosk autostart / Chromium `:5173`. Clone archived (rename) so `.env`/uploads survive rollback.
+
+**Do not:** `npm install -g gbrain` (unrelated package). Only `bun install -g github:garrytan/gbrain`. Do not init inside `~/thoma`. Workspace: `~/gbrain-agent`. No Memory Stargraph in first pass. No Claude Code bootstrap interview (Thomas lives in Cursor).
+
+**Operator (EVO-X3):**
+
+```bash
+cd "$HOME/thoma" && git pull --ff-only
+chmod +x scripts/evox3/*.sh
+./scripts/evox3/26_retire_jinhua_kiosk.sh
+./scripts/evox3/27_gbrain_angelica.sh
+./scripts/evox3/28_gbrain_verify.sh
+```
+
+Paste `28` output. Cursor MCP: [`mcp_cursor_gbrain.json.example`](mcp_cursor_gbrain.json.example).
 
 ## Session 2026-08-12 — remote verify kiosk SSH
 
@@ -75,12 +107,15 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `22` | Operator context check (already on EVO-X3? skip nested ssh) |
 | `23` | Sync kiosk/verify patches Gaming-7 → EVO-X3 via scp |
 | `24` | React Flow fullscreen Graph nav (`GraphFlowWorkspace`) |
+| `26` | Retire Jinhua kiosk units + autostart (keep llama/WebUI/SearXNG) |
+| `27` | Install GBrain (Bun + GitHub) + PGLite + ANGELICA identity + `angelica-gbrain.service` |
+| `28` | GBrain verify (`doctor`, version, unit, npm-shadow warning) |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 
-Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Latest handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
+Current runbook: [`ANGELICA_GBRAIN_LEVEL5.md`](ANGELICA_GBRAIN_LEVEL5.md). Machine: [`EVOX3_MACHINE_AND_CHANGES.md`](EVOX3_MACHINE_AND_CHANGES.md). Historical Jinhua: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
 
-App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain)).
+GBrain workspace on EVO-X3: `~/gbrain-agent`. Retired Jinhua clone: `~/ai_apps/IncubativeSecondBrain` (archived by `26`).
 
 ## Bugs fixed (with evidence)
 
@@ -145,22 +180,19 @@ Expect smoke **18 pass / 0 fail** (19 if extension built). Optional: `sudo reboo
 
 ## NEXT
 
-Ordered follow-ups from the upgrade brief (adapt gradually):
+Jinhua-era Graph UI items 1–6 are historical (kiosk retired). Current follow-ups:
 
-1. ~~**Graph analytics** on Neo4j~~ — **DONE** ([PR #6](https://github.com/thomaspas/thoma/pull/6))
-2. ~~**MCP server** for ANGELICA (`remember` / `recall` / `connect` / `analyze`)~~ — **DONE** via `18_mcp_angelica.sh` + `18_demo_mcp.sh` ([PR #7](https://github.com/thomaspas/thoma/pull/7))
-3. ~~**Browser extension** capture~~ — **DONE** via `19_browser_extension.sh` + `extensions/angelica-capture/` + `19_demo_capture.sh`
-4. ~~**React Flow 2D** visual graph (fullscreen Graph nav)~~ — **DONE** via `24_graph_ui_reactflow.sh` + `patches/graph_ui/` (see [`HANDOFF_GRAPH_UI.md`](HANDOFF_GRAPH_UI.md)); Overview 3D left as-is
-5. ~~Analytics-driven node styling (PageRank / communities / bridges)~~ — **DONE** in GraphFlowWorkspace v2 (`24` PATCH_VER=2)
-6. ~~Rich relation types + growth animations~~ — **DONE** in GraphFlowWorkspace v3 (`24` PATCH_VER=3)
-7. Later: Obsidian Canvas export, spaced repetition, dream-sequence maintenance, 3D galaxy
-8. “100% offline Ollama” is low priority here — LOCAL FULL already uses local llama-server + bge-m3
+1. Operator runs `26` + `27` + `28` on EVO-X3; paste `28` output
+2. Cursor MCP from [`mcp_cursor_gbrain.json.example`](mcp_cursor_gbrain.json.example); restart MCP
+3. Optional later: Memory Stargraph (extra UI, not Level 5)
+4. Optional later: point GBrain embeddings at local llama / bge-m3 (first pass is keyless PGLite)
+5. Do not wipe `~/models` or Docker volumes without a separate command
 
 ## Agent rules for resume
 
 - Greek for explanations; ASCII for scripts/logs
 - **Thomas runs only via SSH** from another PC/room (`192.168.1.8`) — never ask him to visit the EVO-X3 screen
-- Use `21_remote_verify.sh` + paste output; optional `13_remote_go_live.sh` for Greek E2E
-- No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH session
-- Flatpak browser only; never kiosk on `:8000`
+- Use `28_gbrain_verify.sh` + paste output (GBrain). Historical Jinhua: `21_remote_verify.sh`
+- No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH / Cursor Remote session
+- Never `npm install -g gbrain`; init only in `~/gbrain-agent`, not `~/thoma`
 - Prefer patches/scripts in `thoma` over forking app source into this repo
