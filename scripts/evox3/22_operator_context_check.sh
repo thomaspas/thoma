@@ -35,10 +35,10 @@ printf 'on_evox3=%s\n' "$ON_EVOX3"
 
 if [ "$ON_EVOX3" -eq 1 ] && [ -z "$SSH_CLIENT_VAL" ]; then
   warn "You are ALREADY on EVO-X3 in a local shell — do NOT ssh to 192.168.1.8."
-  warn "Run ./scripts/evox3/21_remote_verify.sh directly from ~/thoma (no nested ssh)."
-  ok "Correct next step: cd ~/thoma && ./scripts/evox3/21_remote_verify.sh"
+  warn "Run ./scripts/evox3/28_gbrain_verify.sh directly from ~/thoma (no nested ssh)."
+  ok "Correct next step: cd ~/thoma && ./scripts/evox3/28_gbrain_verify.sh"
 elif [ "$ON_EVOX3" -eq 1 ] && [ -n "$SSH_CLIENT_VAL" ]; then
-  ok "SSH session into EVO-X3 from ${SSH_CLIENT_VAL%% *} — run 21_remote_verify.sh here."
+  ok "SSH session into EVO-X3 from ${SSH_CLIENT_VAL%% *} — run 28_gbrain_verify.sh here."
 elif [ -n "$SSH_CLIENT_VAL" ]; then
   ok "Remote SSH session active — good for remote operator workflow."
 else

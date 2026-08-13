@@ -1,68 +1,29 @@
 # thoma
 
-Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **ANGELICA**.
+Operator tooling for **EVO-X3**. Product name **ANGELICA** = [GBrain](https://github.com/garrytan/gbrain) Nate **Level 5** (always-on brain OS). Το όνομα μόνο· όχι Jinhua kiosk.
 
-**Status: DONE** on EVO-X3 (smoke 18/0, Greek chat, docker boot, ANGELICA UI, graph analytics, MCP server, browser extension).
+**Status:** GBrain Level 5 — scripts `26`–`28` στο repo. Τρέξε τα στο Mini PC (SSH / Cursor Remote SSH) και paste το `28`.
 
-- Runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
-- **Remote SSH operator:** [docs/REMOTE_OPERATOR_SSH.md](docs/REMOTE_OPERATOR_SSH.md) (Thomas runs from another PC — no screen visit)
-- Session chronicle (all chats + NEXT roadmap): [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
-- Browser extension: [docs/ANGELICA_BROWSER_EXTENSION.md](docs/ANGELICA_BROWSER_EXTENSION.md)
+- **Μηχάνημα + ιστορικό αλλαγών:** [docs/EVOX3_MACHINE_AND_CHANGES.md](docs/EVOX3_MACHINE_AND_CHANGES.md)
+- **GBrain Level 5 runbook:** [docs/ANGELICA_GBRAIN_LEVEL5.md](docs/ANGELICA_GBRAIN_LEVEL5.md)
+- **Cursor Desktop → EVO-X3:** [docs/CURSOR_REMOTE_EVOX3.md](docs/CURSOR_REMOTE_EVOX3.md)
+- **Remote SSH operator:** [docs/REMOTE_OPERATOR_SSH.md](docs/REMOTE_OPERATOR_SSH.md)
+- Session chronicle: [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
+- Historical Jinhua kiosk runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
 - Scripts: [scripts/evox3/](scripts/evox3/)
-- Extension source: [extensions/angelica-capture/](extensions/angelica-capture/)
 
-On the EVO-X3 machine (via SSH from another PC):
+On the EVO-X3 machine (via SSH from Gaming-7 or Cursor Remote SSH):
 
 ```bash
+cd "$HOME/thoma" && git pull --ff-only
 chmod +x scripts/evox3/*.sh
-./scripts/evox3/21_remote_verify.sh
+./scripts/evox3/26_retire_jinhua_kiosk.sh
+./scripts/evox3/27_gbrain_angelica.sh
+./scripts/evox3/28_gbrain_verify.sh
 ```
 
-Already installed? Finish / resume (skip-auth + ANGELICA brand + smoke + kiosk):
+Paste το output του `28` στο chat. Cursor MCP: [docs/mcp_cursor_gbrain.json.example](docs/mcp_cursor_gbrain.json.example).
 
-```bash
-./scripts/evox3/12_operator_finish.sh
-```
+Κρατάμε: `llama-server` `:11434`, `~/models/`, Open WebUI `:8080`, SearXNG `:8888`.
 
-Final smoke:
-
-```bash
-./scripts/evox3/09_smoke_check.sh
-```
-
-Brand only:
-
-```bash
-./scripts/evox3/16_brand_angelica.sh
-./scripts/evox3/10_relaunch_kiosk.sh
-```
-
-Remote ingest + Greek chat (SSH):
-
-```bash
-./scripts/evox3/13_remote_go_live.sh
-```
-
-Neo4j graph analytics (opt-in):
-
-```bash
-./scripts/evox3/17_graph_analytics.sh
-./scripts/evox3/09_smoke_check.sh
-./scripts/evox3/17_demo_analytics.sh
-```
-
-ANGELICA MCP server (opt-in):
-
-```bash
-./scripts/evox3/18_mcp_angelica.sh
-./scripts/evox3/18_demo_mcp.sh
-```
-
-Browser extension capture (opt-in):
-
-```bash
-./scripts/evox3/19_browser_extension.sh
-./scripts/evox3/19_demo_capture.sh
-```
-
-Cursor config: [docs/mcp_cursor_angelica.json.example](docs/mcp_cursor_angelica.json.example)
+Jinhua kiosk (`:5173` / `:8000` / bge-m3 / docker Postgres) είναι **retired** — μην τρέχεις `run_all.sh` / `12_operator_finish.sh` εκτός rollback.
