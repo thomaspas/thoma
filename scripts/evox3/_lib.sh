@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Shared helpers for EVO-X3 LOCAL FULL Jinhua scripts (ASCII only).
+# Shared helpers for EVO-X3 operator scripts (ASCII only).
+# Jinhua kiosk units are retired (26); GBrain Level 5 is current (27/28).
 set -euo pipefail
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -28,6 +29,13 @@ EVOX3_BRAND_NAME="${EVOX3_BRAND_NAME:-ANGELICA}"
 EVOX3_BRAND_TAGLINE="${EVOX3_BRAND_TAGLINE:-Local second brain}"
 EVOX3_BRAND_MARK="${EVOX3_BRAND_MARK:-AN}"
 EVOX3_BRAND_TITLE="${EVOX3_BRAND_TITLE:-${EVOX3_BRAND_NAME} · Local second brain}"
+# GBrain Level 5 (ANGELICA). Workspace is NOT ~/thoma.
+EVOX3_GBRAIN_HOME="${EVOX3_GBRAIN_HOME:-$HOME/gbrain-agent}"
+EVOX3_GBRAIN_HTTP_PORT="${EVOX3_GBRAIN_HTTP_PORT:-3131}"
+EVOX3_GBRAIN_HTTP_BIND="${EVOX3_GBRAIN_HTTP_BIND:-127.0.0.1}"
+EVOX3_GBRAIN_UNIT="${EVOX3_GBRAIN_UNIT:-angelica-gbrain.service}"
+EVOX3_JINHUA_ARCHIVE="${EVOX3_JINHUA_ARCHIVE:-$EVOX3_AI_APPS/IncubativeSecondBrain.archived}"
+EVOX3_JINHUA_UNITS="${EVOX3_JINHUA_UNITS:-evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service}"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }
@@ -152,6 +160,41 @@ EOF
 user_systemd_dir() {
   ensure_dir "$HOME/.config/systemd/user"
   printf '%s\n' "$HOME/.config/systemd/user"
+}
+
+ensure_bun_on_path() {
+  if [ -d "$HOME/.bun/bin" ]; then
+    case ":$PATH:" in
+      *":$HOME/.bun/bin:"*) ;;
+      *) export PATH="$HOME/.bun/bin:$PATH" ;;
+    esac
+  fi
+}
+
+# Stop + disable a user unit if the unit file exists. Missing unit is OK.
+stop_disable_user_unit() {
+  local unit="$1"
+  local unit_path="$HOME/.config/systemd/user/${unit}"
+  if [ ! -f "$unit_path" ] && ! systemctl --user list-unit-files --plain 2>/dev/null | grep -q "^${unit}"; then
+    ok "Unit not installed: $unit"
+    return 0
+  fi
+  systemctl --user stop "$unit" 2>/dev/null || true
+  systemctl --user disable "$unit" 2>/dev/null || true
+  ok "Stopped and disabled $unit"
+}
+
+# Refuse GBrain workspace inside the thoma operator repo.
+assert_gbrain_home_not_thoma() {
+  local home="${1:-$EVOX3_GBRAIN_HOME}"
+  local base
+  base="$(basename "$home")"
+  if [ "$home" = "$HOME/thoma" ] || [ "$base" = "thoma" ]; then
+    die "GBrain workspace cannot be ~/thoma (got $home). Use ~/gbrain-agent."
+  fi
+  if [ -f "$home/.git/config" ] && grep -q 'thomaspas/thoma' "$home/.git/config" 2>/dev/null; then
+    die "Refusing GBrain init inside a thoma clone ($home)"
+  fi
 }
 
 reload_user_systemd() {

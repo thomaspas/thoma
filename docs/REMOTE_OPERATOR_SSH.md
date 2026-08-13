@@ -6,7 +6,7 @@
 |----------|------|
 | EVO-X3 | `thomas-pashoulas@192.168.1.8` (άλλο δωμάτιο) |
 | Operator PC | Gaming-7 (ή άλλο) — μόνο terminal + paste output |
-| Kiosk | Ανοίγει αυτόματα στον EVO-X3 (`:5173`) — **δεν** χρειάζεται επίσκεψη |
+| ANGELICA | GBrain Level 5 στο EVO-X3 — **δεν** χρειάζεται επίσκεψη οθόνης |
 
 ## Κανόνας για agents
 
@@ -16,19 +16,16 @@
 
 ## Τι σημαίνει «ζωντανό project» (χωρίς οθόνη)
 
-1. **Smoke:** `./scripts/evox3/09_smoke_check.sh` → **18 pass / 0 fail** (ή 10 στο παλιό `main`).
-2. **Remote verify:** `./scripts/evox3/21_remote_verify.sh` → `REMOTE VERIFY OK`.
-3. **Greek E2E (προαιρετικό):** `./scripts/evox3/13_remote_go_live.sh` → `indexed` + chat JSON.
+1. **GBrain verify:** `./scripts/evox3/28_gbrain_verify.sh` → paste output (τρέχον).
+2. Historical Jinhua (retired): `09_smoke_check.sh` / `21_remote_verify.sh` — μην τα περιμένεις green μετά το `26`.
 
 ## Γρήγορη ροή (από Gaming-7)
 
 ```bash
 ssh thomas-pashoulas@192.168.1.8
-cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
-git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
+cd "$HOME/thoma" && git pull --ff-only
 chmod +x scripts/evox3/*.sh
-./scripts/evox3/21_remote_verify.sh
+./scripts/evox3/28_gbrain_verify.sh
 ```
 
 ### Ήδη είσαι στον EVO-X3; (συχνό λάθος)
@@ -36,12 +33,10 @@ chmod +x scripts/evox3/*.sh
 Αν το prompt είναι `thomas-pashoulas@thomas-pashoulas-EVO-X3` **μην** κάνεις `ssh thomas-pashoulas@192.168.1.8` — είναι SSH στον εαυτό σου (nested session). Τρέξε απευθείας:
 
 ```bash
-cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
-git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
+cd "$HOME/thoma" && git pull --ff-only
 chmod +x scripts/evox3/*.sh
 ./scripts/evox3/22_operator_context_check.sh
-./scripts/evox3/21_remote_verify.sh
+./scripts/evox3/28_gbrain_verify.sh
 ```
 
 `ssh-copy-id` από **Gaming-7** → EVO-X3, **όχι** από EVO-X3 → `192.168.1.8` (ίδιο μηχάνημα).

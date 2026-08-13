@@ -1,0 +1,9 @@
+{
+  "_comment": "Cursor MCP (stdio). PATH must include $HOME/.bun/bin. NEVER npm install -g gbrain — that is an unrelated package. Install only: bun install -g github:garrytan/gbrain. After 27_gbrain_angelica.sh, paste this into Cursor MCP settings and restart MCP.",
+  "mcpServers": {
+    "gbrain": {
+      "command": "gbrain",
+      "args": ["serve"]
+    }
+  }
+}
