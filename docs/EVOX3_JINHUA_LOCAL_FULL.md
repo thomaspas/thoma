@@ -12,7 +12,7 @@
 | UI | `http://127.0.0.1:5173` σε Chromium kiosk + autostart (**ANGELICA**) |
 | Κρατάμε | Μοντέλα, Open WebUI `:8080`, SearXNG `:8888` |
 
-Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3** μέσω **SSH** από άλλο PC (άλλο δωμάτιο). Δες [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
+Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3** μέσω **SSH** από άλλο PC (άλλο δωμάτιο). Δες [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Cursor Desktop (ίδιο LAN): [`CURSOR_REMOTE_EVOX3.md`](CURSOR_REMOTE_EVOX3.md).
 
 ## Προϋποθέσεις στο EVO-X3
 
@@ -83,6 +83,10 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 22. **19_demo** — curl-only upload smoke (simulated extension capture).
 23. **20** — Patch FastAPI CORS for `chrome-extension://` origins (idempotent).
 24. **21** — Remote verify (SSH operator): smoke + HTML brand + kiosk process — no screen visit.
+25. **22** — Operator context check (already on EVO-X3? skip nested ssh).
+26. **23** — Sync kiosk/verify patches Gaming-7 → EVO-X3 via scp.
+27. **24** — React Flow fullscreen Graph nav (`GraphFlowWorkspace`).
+28. **25** — Cursor Simple Browser screen preview (`127.0.0.1:5174`) — Desktop Remote SSH only.
 
 ## Overrides (env)
 
@@ -94,6 +98,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 | `EVOX3_LLM_MODEL` | `auto` (probe `:11434/v1/models`) |
 | `EVOX3_API_PORT` | `8000` |
 | `EVOX3_WEB_PORT` | `5173` |
+| `EVOX3_SCREEN_PREVIEW_PORT` | `5174` |
 | `EVOX3_BGE_PORT` | `8002` |
 | `EVOX3_LOCAL_EMAIL` | `ye@evox3.local` |
 | `EVOX3_LOCAL_PASSWORD` | `evox3-local-12` |
@@ -280,6 +285,8 @@ tail -n 50 /tmp/evox3-jinhua-kiosk.log
 ```
 
 Προϋπόθεση: logged-in desktop session στο EVO-X3 (αυτόματο autostart).
+
+Για να **δεις** την οθόνη μέσα στο Cursor Desktop (όχι Cloud): `./scripts/evox3/25_remote_screen_preview.sh` μετά Simple Browser `http://127.0.0.1:5174/` — [`CURSOR_REMOTE_EVOX3.md`](CURSOR_REMOTE_EVOX3.md).
 
 Αν δεις `Missing X server or $DISPLAY`:
 1. Επιβεβαίωσε graphical session από SSH: `ls /run/user/$(id -u)/wayland-*`

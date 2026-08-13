@@ -17,6 +17,8 @@ EVOX3_API_HOST="${EVOX3_API_HOST:-127.0.0.1}"
 EVOX3_API_PORT="${EVOX3_API_PORT:-8000}"
 EVOX3_WEB_PORT="${EVOX3_WEB_PORT:-5173}"
 EVOX3_BGE_PORT="${EVOX3_BGE_PORT:-8002}"
+# Cursor Simple Browser screen preview (127.0.0.1 only; see 25_remote_screen_preview.sh).
+EVOX3_SCREEN_PREVIEW_PORT="${EVOX3_SCREEN_PREVIEW_PORT:-5174}"
 EVOX3_PIP_INDEX="${EVOX3_PIP_INDEX:-https://pypi.tuna.tsinghua.edu.cn/simple}"
 EVOX3_PIP_INDEX_FALLBACK="${EVOX3_PIP_INDEX_FALLBACK:-https://mirrors.aliyun.com/pypi/simple}"
 # Fixed local kiosk account (auto-seed + skip AuthScreen). Local-only.
