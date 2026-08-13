@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Stop/disable the Jinhua kiosk stack. Keep llama-server, Open WebUI, SearXNG.
-# BLOCKED by default (EVOX3_KEEP_GRAPH=1) so Neo4j / Graph UI stay alive.
-# To force full retire: EVOX3_KEEP_GRAPH=0 ./scripts/evox3/26_retire_jinhua_kiosk.sh
+# BLOCKED by default (EVOX3_KEEP_GRAPH=1). Disable-only, not a data wipe.
+# Complete destroy (volumes+clone): EVOX3_WIPE_JINHUA=YES ./scripts/evox3/29_wipe_jinhua.sh
+# To force disable without wipe: EVOX3_KEEP_GRAPH=0 ./scripts/evox3/26_retire_jinhua_kiosk.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"

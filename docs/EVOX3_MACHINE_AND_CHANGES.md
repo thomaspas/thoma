@@ -2,7 +2,7 @@
 
 Πηγή αλήθειας για το επόμενο agent / operator. Runtime είναι το Mini PC· αυτό το repo (`thoma`) έχει μόνο runbooks και idempotent scripts.
 
-**Απόφαση 2026-08-13 (τελευταία):** **ANGELICA = μόνο το γράφημα** (Neo4j + React Flow Graph). Επόμενο project: **Jarvis**. GBrain scripts υπάρχουν αλλά δεν αντικαθιστούν το γράφημα. Δες [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md).
+**Απόφαση 2026-08-13 (τελευταία):** **πλήρες σβήσιμο Jinhua** (`29_wipe_jinhua.sh`). Κρατάμε llama / models / WebUI / SearXNG. Γράφημα Neo4j χάνεται. Δες [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md).
 
 Παλαιότερα την ίδια μέρα: Jinhua kiosk-stack «off» / ANGELICA = GBrain — **υπερκαλύπτεται** όσο θέλουμε το γράφημα. **Μην** τρέχεις `26` (default `EVOX3_KEEP_GRAPH=1`).
 
@@ -26,7 +26,7 @@ Cloud agents **δεν** έχουν LAN SSH. Ο Thomas τρέχει scripts στ�
 ## Πώς δουλεύει το μηχάνημα
 
 - **Desktop:** GNOME / Wayland. User systemd (`systemctl --user`) + linger για services μετά το logout.
-- **Docker:** Jinhua compose κρατά Postgres `:5432` / **Neo4j `:7687`** / MinIO όσο το γράφημα είναι ANGELICA. Μην σταματάς `evox3-jinhua-docker` χωρίς `EVOX3_KEEP_GRAPH=0`.
+- **Docker:** μετά το `29`, Jinhua compose/volumes **δεν** πρέπει να υπάρχουν. Μην ξανακάνεις `docker compose up` στο παλιό clone.
 - **Nested SSH:** αν το prompt είναι `thomas-pashoulas@thomas-pashoulas-EVO-X3`, **μην** κάνεις `ssh 192.168.1.8` (SSH στον εαυτό σου). Τρέξε τα scripts απευθείας από `~/thoma`.
 - **Pi-hole:** δεν ήταν αίτιο για προβλήματα στο `:5173`. Το local HTTP στο loopback ήταν OK· τα kiosk fails ήταν Wayland/DISPLAY/Chromium από SSH.
 - **Reboot (ιστορικό Jinhua):** login HTTP 500 με `Connection refused` στο `:5432` σήμαινε ότι το `evox3-jinhua-docker.service` δεν είχε ανέβει. Το API docs μπορούσε να είναι 200 ενώ η DB ήταν κάτω. **Πλέον** το Jinhua docker unit είναι disable· μην το ξανα-enable εκτός rollback.
@@ -47,27 +47,21 @@ Cloud agents **δεν** έχουν LAN SSH. Ο Thomas τρέχει scripts στ�
 8. Browser extension `19` + CORS `20`.
 9. Remote verify `21` (SSH operator, χωρίς επίσκεψη οθόνης).
 10. Cursor Desktop Remote SSH + screen preview `:5174` (`25`, ξεχωριστό PR αν δεν έχει γίνει merge).
-11. **2026-08-13 πρωί:** σχέδιο GBrain Level 5 (`26`–`28`) — **μην το εφαρμόσεις** αν κρατάς το γράφημα.
-12. **2026-08-13 απόγευμα:** ANGELICA = **μόνο γράφημα**· επόμενο = **Jarvis**. [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md).
+11. **2026-08-13 πρωί:** σχέδιο GBrain Level 5 (`26`–`28`).
+12. **2026-08-13 απόγευμα:** σκέψη «ANGELICA = μόνο γράφημα».
+13. **2026-08-13 νύχτα:** πλήρες wipe Jinhua (`29`) — αλλαγή project. [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md).
 
 ## Rollback (Jinhua)
 
-Το clone **δεν** σβήνεται στο πρώτο πέρασμα. Το `26` κάνει archive/rename του `~/ai_apps/IncubativeSecondBrain` (κρατά `.env` / uploads). Μην κάνεις `rm -rf` στο `~/models` ή σε Docker volumes χωρίς ξεχωριστή εντολή.
-
-Rollback (χειροκίνητα, όχι default):
-
-```bash
-# restore archive name, then re-enable units — only if Thomas asks
-systemctl --user enable --now evox3-jinhua-docker evox3-bge-m3 evox3-jinhua-api evox3-jinhua-web
-```
+Μετά το `29` **δεν** υπάρχει rollback δεδομένων (volumes σβησμένα). Ξαναστήσιμο μόνο με `run_all.sh` από μηδέν — μην το κάνεις εκτός αν το ζητήσει ρητά ο Thomas. `~/models` δεν σβήνεται ποτέ από το `29`.
 
 ## Τρέχουσα operator ροή (EVO-X3 terminal)
 
-Κράτα το γράφημα. **Μην** τρέχεις `26`.
-
 ```bash
-cd "$HOME/thoma" && git pull --ff-only
-systemctl --user is-active evox3-jinhua-docker.service evox3-jinhua-api.service evox3-jinhua-web.service
+cd "$HOME/thoma"
+git fetch origin cursor/jinhua-full-wipe-f924
+git checkout cursor/jinhua-full-wipe-f924
+EVOX3_WIPE_JINHUA=YES ./scripts/evox3/29_wipe_jinhua.sh
 ```
 
-Jarvis: χρειάζεται URL/path — [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md).
+Λεπτομέρειες: [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md).

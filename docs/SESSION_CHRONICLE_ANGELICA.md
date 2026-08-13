@@ -2,7 +2,7 @@
 
 Saved handoff of cloud-agent conversations. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status (2026-08-13 βράδυ):** **ANGELICA = knowledge graph only** (Neo4j + React Flow). Επόμενο: **Jarvis**. [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md). Μην τρέχεις `26`.
+**Status (2026-08-13 νύχτα):** **πλήρες wipe Jinhua** (`29`). [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md). Κρατάμε llama/models/WebUI/SearXNG.
 
 Jinhua LOCAL FULL + brand + analytics + MCP + extension + React Flow Graph nav remain in history below (DONE 2026-08-12, then retired).
 
@@ -19,11 +19,17 @@ Jinhua LOCAL FULL + brand + analytics + MCP + extension + React Flow Graph nav r
 | 7 | ANGELICA merge + extension | (this wave) | Land stack to `main`; MV3 capture `19` + CORS `20` |
 | 8 | Remote verify kiosk SSH | (local Cursor 2026-08-12) | `21_remote_verify` + PR [#8](https://github.com/thomaspas/thoma/pull/8); kiosk `:5173` from SSH |
 | 9 | Cursor Remote SSH + screen | (prior wave) | Desktop Remote SSH to EVO-X3 + screen preview `:5174` |
-| 11 | ANGELICA = graph only + Jarvis next | (this wave) | Keep Neo4j/React Flow; Jarvis is a separate assistant; guard `26` |
+| 12 | Full wipe Jinhua | (this wave) | `29_wipe_jinhua.sh` + inventory doc; keep llama/models |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
 
-## Session 2026-08-13 — ANGELICA κρατά μόνο το γράφημα · μετά Jarvis
+## Session 2026-08-13 — σβήσιμο Jinhua / αλλαγή project
+
+**Απόφαση:** το Jinhua stack φεύγει εντελώς (clone + docker volumes + units + kiosk). Δεν κρατάμε το γράφημα. Επόμενο project σε άδειες θύρες, ίδιο Mini PC / llama.
+
+Operator: `EVOX3_WIPE_JINHUA=YES ./scripts/evox3/29_wipe_jinhua.sh` — [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md).
+
+## Session 2026-08-13 — ANGELICA κρατά μόνο το γράφημα · μετά Jarvis (υπερκαλύφθηκε)
 
 **Εφικτό:** ναι. ANGELICA = Neo4j `:7687` + Graph UI (`24`) + analytics (`17`). Jarvis = νέο process στο ίδιο EVO-X3, llama `:11434`, διαβάζει το γράφημα. Όχι merge στο kiosk.
 

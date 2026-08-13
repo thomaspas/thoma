@@ -1,6 +1,8 @@
 # EVO-X3 · LOCAL FULL · ANGELICA (historical)
 
-> **2026-08-13:** αυτό το runbook είναι **ιστορικό**. ANGELICA = GBrain Level 5. Μην τρέχεις `run_all.sh` / `12` εκτός rollback. Τρέχον: [`ANGELICA_GBRAIN_LEVEL5.md`](ANGELICA_GBRAIN_LEVEL5.md), μηχάνημα: [`EVOX3_MACHINE_AND_CHANGES.md`](EVOX3_MACHINE_AND_CHANGES.md).
+> **2026-08-13 νύχτα:** για **σβήσιμο** του stack μην χρησιμοποιείς αυτό το runbook ως install. Wipe: [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md) / `29_wipe_jinhua.sh`.
+
+> **2026-08-13:** αυτό το runbook είναι **ιστορικό**.
 
 ## BLUF
 
