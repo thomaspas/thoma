@@ -2,7 +2,7 @@
 
 Ο operator (Thomas) τρέχει **όλες** τις εντολές από **άλλο PC** μέσω SSH — όχι δίπλα στον EVO-X3.
 
-**Cursor Desktop live view + Agent στον EVO:** [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md) (Remote SSH παράθυρο, Simple Browser `:5173`, GNOME RDP, `25`/`26`).
+**Cursor Desktop live view + Agent στον EVO:** [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md) (Remote SSH παράθυρο, Simple Browser `:5173`, GNOME RDP, `25`/`26`/`27`).
 
 | Στοιχείο | Τιμή |
 |----------|------|
@@ -22,7 +22,7 @@
 1. **Smoke:** `./scripts/evox3/09_smoke_check.sh` → **18 pass / 0 fail** (ή 10 στο παλιό `main`).
 2. **Remote verify:** `./scripts/evox3/21_remote_verify.sh` → `REMOTE VERIFY OK`.
 3. **Greek E2E (προαιρετικό):** `./scripts/evox3/13_remote_go_live.sh` → `indexed` + chat JSON.
-4. **Live UI στο Cursor:** Remote SSH + Ports `5173` — [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
+4. **Live UI στο Cursor:** Remote SSH + Ports `5173` — [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md). Αν `ERR_CONNECTION_REFUSED`: `./scripts/evox3/27_web_ui_preview.sh`.
 5. **Live monitor GNOME:** `./scripts/evox3/26_gnome_remote_desktop.sh` + Remmina RDP `:3389`.
 6. **Στιγμιότυπο:** `./scripts/evox3/25_kiosk_snapshot.sh` → `/tmp/angelica-kiosk.png`.
 

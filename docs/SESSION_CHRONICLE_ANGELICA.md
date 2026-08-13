@@ -59,6 +59,7 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 - [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md) — Desktop Remote SSH, Agent in SSH window, Simple Browser `:5173`, GNOME RDP
 - `25_kiosk_snapshot.sh` — GNOME screenshot / Shell Screenshot (grim fallback)
 - `26_gnome_remote_desktop.sh` — `grdctl` RDP enable; credentials `~/.config/evox3/grd-rdp.env` (not git)
+- `27_web_ui_preview.sh` — hostname + `:5173` check; wrong-host refused vs start `evox3-jinhua-web`
 
 **On EVO-X3 after pull:**
 
@@ -97,6 +98,7 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `24` | React Flow fullscreen Graph nav (`GraphFlowWorkspace`) |
 | `25` | GNOME kiosk snapshot PNG (`gnome-screenshot` / Shell Screenshot) |
 | `26` | Enable GNOME Remote Desktop RDP (`grdctl`, no TightVNC) |
+| `27` | Diagnose ERR_CONNECTION_REFUSED on `:5173`; start web unit on EVO |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 

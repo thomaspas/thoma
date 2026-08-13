@@ -71,6 +71,7 @@ Kiosk snapshot / GNOME RDP (opt-in, run on EVO-X3):
 ```bash
 ./scripts/evox3/25_kiosk_snapshot.sh
 ./scripts/evox3/26_gnome_remote_desktop.sh
+./scripts/evox3/27_web_ui_preview.sh   # ERR_CONNECTION_REFUSED on :5173
 ```
 
 Cursor config: [docs/mcp_cursor_angelica.json.example](docs/mcp_cursor_angelica.json.example)

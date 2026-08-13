@@ -44,4 +44,6 @@ elif [ -n "$SSH_CLIENT_VAL" ]; then
 else
   warn "Not on EVO-X3 hostname — use: ssh thomas-pashoulas@192.168.1.8"
   warn "Ensure Gaming-7 has ssh-copy-id to EVO-X3 (not EVO-X3 to itself)."
+  warn "Simple Browser http://127.0.0.1:5173 HERE = ERR_CONNECTION_REFUSED (Vite is on EVO)."
+  warn "Fix: Remote-SSH Connect to Host, Ports forward 5173, then ./scripts/evox3/27_web_ui_preview.sh"
 fi

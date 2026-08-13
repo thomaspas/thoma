@@ -11,7 +11,7 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 - [`docs/CURSOR_REMOTE_SSH.md`](docs/CURSOR_REMOTE_SSH.md) — Cursor Desktop Remote SSH + live UI + GNOME RDP
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
 - [`docs/ANGELICA_BROWSER_EXTENSION.md`](docs/ANGELICA_BROWSER_EXTENSION.md) — MV3 capture extension guide
-- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`26` + demos + `run_all.sh` + `bge_m3_server.py`
+- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`27` + demos + `run_all.sh` + `bge_m3_server.py`
 - [`extensions/angelica-capture/`](extensions/angelica-capture/) — ANGELICA Capture browser extension (MV3, no npm build)
 
 **Status:** LOCAL FULL + ANGELICA + graph analytics + MCP + browser extension + React Flow Graph **DONE** on EVO-X3. Operator live view: Cursor Desktop Remote SSH + GNOME RDP (`25`/`26`). Next: chronicle NEXT #7.

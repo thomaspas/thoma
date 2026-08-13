@@ -72,6 +72,24 @@ chmod +x scripts/evox3/*.sh
 
 Αυτό είναι το **ίδιο** ANGELICA με το kiosk (όχι τα pixels του monitor). Το kiosk στο EVO συνεχίζει κανονικά. Ποτέ kiosk στο `:8000`.
 
+### ERR_CONNECTION_REFUSED στο `http://127.0.0.1:5173/`
+
+TCP reject — κανείς δεν ακούει σε **αυτό** το localhost. Όχι CORS / Pi-hole.
+
+Γρήγορος έλεγχος στο **ίδιο** Cursor terminal με το Simple Browser:
+
+```bash
+hostname
+./scripts/evox3/27_web_ui_preview.sh
+```
+
+| hostname | Αιτία | Ενέργεια |
+|----------|--------|----------|
+| όχι `…EVO-X3` (Gaming-7 / cloud `cursor`) | Browser στο λάθος μηχάνημα, χωρίς SSH tunnel | Connect to Host `thomas-pashoulas@192.168.1.8`, άνοιξε `~/thoma`, Ports **Forward 5173**, ξανά Simple Browser σε **εκείνο** το παράθυρο |
+| `…EVO-X3` και script λέει CLOSED | `evox3-jinhua-web` down | το `27` σηκώνει το unit (αλλιώς `07` / `12`) |
+
+Μην αλλάζεις `--host 0.0.0.0`. Μην ανοίγεις `:8000`.
+
 ## 4) Live φυσική οθόνη (GNOME RDP)
 
 Το EVO τρέχει GNOME/Wayland. Δεν στήνουμε TightVNC.

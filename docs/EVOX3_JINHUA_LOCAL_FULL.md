@@ -85,6 +85,7 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 24. **21** — Remote verify (SSH operator): smoke + HTML brand + kiosk process — no screen visit.
 25. **25** — Kiosk snapshot PNG from GNOME session (`gnome-screenshot` / Shell Screenshot).
 26. **26** — Enable GNOME Remote Desktop RDP (`grdctl`) from SSH — live monitor via Remmina. Guide: [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
+27. **27** — Diagnose Simple Browser `ERR_CONNECTION_REFUSED` on `:5173` (wrong host vs down `evox3-jinhua-web`; starts `07` if on EVO).
 
 ## Overrides (env)
 
