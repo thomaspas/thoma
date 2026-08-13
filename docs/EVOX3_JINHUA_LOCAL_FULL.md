@@ -12,7 +12,7 @@
 | UI | `http://127.0.0.1:5173` σε Chromium kiosk + autostart (**ANGELICA**) |
 | Κρατάμε | Μοντέλα, Open WebUI `:8080`, SearXNG `:8888` |
 
-Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3** μέσω **SSH** από άλλο PC (άλλο δωμάτιο). Δες [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
+Αυτό το repo (`thoma`) **δεν τρέχει** το stack στο Cursor Cloud. Περιέχει idempotent scripts· τα τρέχεις στο **EVO-X3** μέσω **SSH** από άλλο PC (άλλο δωμάτιο). Δες [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Live view από Cursor Desktop: [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
 
 ## Προϋποθέσεις στο EVO-X3
 
@@ -83,6 +83,9 @@ Default install path στο μηχάνημα: `~/ai_apps/IncubativeSecondBrain`.
 22. **19_demo** — curl-only upload smoke (simulated extension capture).
 23. **20** — Patch FastAPI CORS for `chrome-extension://` origins (idempotent).
 24. **21** — Remote verify (SSH operator): smoke + HTML brand + kiosk process — no screen visit.
+25. **25** — Kiosk snapshot PNG from GNOME session (`gnome-screenshot` / Shell Screenshot).
+26. **26** — Enable GNOME Remote Desktop RDP (`grdctl`) from SSH — live monitor via Remmina. Guide: [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
+27. **27** — Diagnose Simple Browser `ERR_CONNECTION_REFUSED` on `:5173` (wrong host vs down `evox3-jinhua-web`; starts `07` if on EVO).
 
 ## Overrides (env)
 
@@ -227,7 +230,7 @@ chmod +x scripts/evox3/*.sh
 
 ## Remote verification (SSH — άλλο δωμάτιο)
 
-Ο operator τρέχει εντολές από SSH (`thomas-pashoulas@192.168.1.8`) — **όχι** φυσική επίσκεψη στο EVO-X3. Οδηγός: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
+Ο operator τρέχει εντολές από SSH (`thomas-pashoulas@192.168.1.8`) — **όχι** φυσική επίσκεψη στο EVO-X3. Οδηγός: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Live UI/οθόνη από Cursor Desktop: [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
 
 ```bash
 ./scripts/evox3/21_remote_verify.sh

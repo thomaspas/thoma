@@ -2,7 +2,7 @@
 
 Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded the kiosk as **ANGELICA**. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics + MCP server + browser extension + React Flow Graph nav (2026-08-12).
+**Status:** DONE — LOCAL FULL + ANGELICA + Neo4j graph analytics + MCP server + browser extension + React Flow Graph nav (2026-08-12). Operator live view: Cursor Desktop Remote SSH + GNOME RDP (`25`/`26`, 2026-08-13).
 
 ## Cloud agents (timeline)
 
@@ -16,6 +16,7 @@ Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded
 | 6 | MCP ANGELICA server | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | stdio MCP `18` remember/recall/connect/analyze |
 | 7 | ANGELICA merge + extension | (this wave) | Land stack to `main`; MV3 capture `19` + CORS `20` |
 | 8 | Remote verify kiosk SSH | (local Cursor 2026-08-12) | `21_remote_verify` + PR [#8](https://github.com/thomaspas/thoma/pull/8); kiosk `:5173` from SSH |
+| 9 | Cursor live view + GNOME RDP | (this wave) | Desktop Remote SSH guide + `25` snapshot + `26` GNOME RDP |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
 
@@ -49,6 +50,26 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 
 **Resolved (auto_close):** `21_remote_verify.sh` **6 pass / 0 fail** -- `REMOTE VERIFY OK`; bug #8 closed; PR #8 merged.
 
+## Session 2026-08-13 — Cursor Desktop live view + GNOME RDP
+
+**Operator:** Gaming-7 Cursor Desktop → Remote SSH → EVO-X3 GNOME. Cloud Agent still cannot see LAN.
+
+**Added (`thoma`):**
+
+- [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md) — Desktop Remote SSH, Agent in SSH window, Simple Browser `:5173`, GNOME RDP
+- `25_kiosk_snapshot.sh` — GNOME screenshot / Shell Screenshot (grim fallback)
+- `26_gnome_remote_desktop.sh` — `grdctl` RDP enable; credentials `~/.config/evox3/grd-rdp.env` (not git)
+- `27_web_ui_preview.sh` — hostname + `:5173` check; wrong-host refused vs start `evox3-jinhua-web`
+
+**On EVO-X3 after pull:**
+
+```bash
+cd ~/thoma
+chmod +x scripts/evox3/*.sh
+./scripts/evox3/25_kiosk_snapshot.sh
+./scripts/evox3/26_gnome_remote_desktop.sh
+```
+
 ## What was built (`thoma`)
 
 Scripts under [`scripts/evox3/`](../scripts/evox3/):
@@ -75,10 +96,13 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `22` | Operator context check (already on EVO-X3? skip nested ssh) |
 | `23` | Sync kiosk/verify patches Gaming-7 → EVO-X3 via scp |
 | `24` | React Flow fullscreen Graph nav (`GraphFlowWorkspace`) |
+| `25` | GNOME kiosk snapshot PNG (`gnome-screenshot` / Shell Screenshot) |
+| `26` | Enable GNOME Remote Desktop RDP (`grdctl`, no TightVNC) |
+| `27` | Diagnose ERR_CONNECTION_REFUSED on `:5173`; start web unit on EVO |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 
-Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Latest handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
+Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Cursor Desktop live view: [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md). Latest handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
 
 App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain)).
 
@@ -160,7 +184,8 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 
 - Greek for explanations; ASCII for scripts/logs
 - **Thomas runs only via SSH** from another PC/room (`192.168.1.8`) — never ask him to visit the EVO-X3 screen
-- Use `21_remote_verify.sh` + paste output; optional `13_remote_go_live.sh` for Greek E2E
-- No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH session
+- Use `21_remote_verify.sh` + paste output (cloud); optional `13_remote_go_live.sh` for Greek E2E
+- Live UI/monitor without visiting the room: Cursor Desktop Remote SSH + [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md) (`25` snapshot, `26` GNOME RDP)
+- No SSH from Cursor Cloud — validate via user paste **or** Desktop Remote SSH Agent on Gaming-7
 - Flatpak browser only; never kiosk on `:8000`
 - Prefer patches/scripts in `thoma` over forking app source into this repo
