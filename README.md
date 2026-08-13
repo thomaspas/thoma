@@ -6,6 +6,7 @@ Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **
 
 - Runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
 - **Remote SSH operator:** [docs/REMOTE_OPERATOR_SSH.md](docs/REMOTE_OPERATOR_SSH.md) (Thomas runs from another PC — no screen visit)
+- **Cursor Desktop live view:** [docs/CURSOR_REMOTE_SSH.md](docs/CURSOR_REMOTE_SSH.md) (Remote SSH Agent + Simple Browser `:5173` + GNOME RDP)
 - Session chronicle (all chats + NEXT roadmap): [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
 - Browser extension: [docs/ANGELICA_BROWSER_EXTENSION.md](docs/ANGELICA_BROWSER_EXTENSION.md)
 - Scripts: [scripts/evox3/](scripts/evox3/)
@@ -63,6 +64,13 @@ Browser extension capture (opt-in):
 ```bash
 ./scripts/evox3/19_browser_extension.sh
 ./scripts/evox3/19_demo_capture.sh
+```
+
+Kiosk snapshot / GNOME RDP (opt-in, run on EVO-X3):
+
+```bash
+./scripts/evox3/25_kiosk_snapshot.sh
+./scripts/evox3/26_gnome_remote_desktop.sh
 ```
 
 Cursor config: [docs/mcp_cursor_angelica.json.example](docs/mcp_cursor_angelica.json.example)

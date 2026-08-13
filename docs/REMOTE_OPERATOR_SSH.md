@@ -2,23 +2,29 @@
 
 Ο operator (Thomas) τρέχει **όλες** τις εντολές από **άλλο PC** μέσω SSH — όχι δίπλα στον EVO-X3.
 
+**Cursor Desktop live view + Agent στον EVO:** [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md) (Remote SSH παράθυρο, Simple Browser `:5173`, GNOME RDP, `25`/`26`).
+
 | Στοιχείο | Τιμή |
 |----------|------|
 | EVO-X3 | `thomas-pashoulas@192.168.1.8` (άλλο δωμάτιο) |
-| Operator PC | Gaming-7 (ή άλλο) — μόνο terminal + paste output |
+| Operator PC | Gaming-7 (ή άλλο) — Cursor Desktop ή SSH terminal |
 | Kiosk | Ανοίγει αυτόματα στον EVO-X3 (`:5173`) — **δεν** χρειάζεται επίσκεψη |
 
 ## Κανόνας για agents
 
 - **Μην** ζητάς «πήγαινε στον EVO-X3 / κοίτα την οθόνη / δες το kiosk» ως πρώτο βήμα.
-- **Ναι:** SSH εντολές + paste του script output στο chat.
+- **Ναι:** SSH εντολές + paste του script output στο **cloud** chat.
 - Cloud agent: δεν έχει SSH — ο χρήστης κάνει paste από το EVO-X3 terminal.
+- **Desktop Agent** στο Remote SSH παράθυρο διαβάζει το EVO terminal απευθείας (όχι cloud).
 
 ## Τι σημαίνει «ζωντανό project» (χωρίς οθόνη)
 
 1. **Smoke:** `./scripts/evox3/09_smoke_check.sh` → **18 pass / 0 fail** (ή 10 στο παλιό `main`).
 2. **Remote verify:** `./scripts/evox3/21_remote_verify.sh` → `REMOTE VERIFY OK`.
 3. **Greek E2E (προαιρετικό):** `./scripts/evox3/13_remote_go_live.sh` → `indexed` + chat JSON.
+4. **Live UI στο Cursor:** Remote SSH + Ports `5173` — [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
+5. **Live monitor GNOME:** `./scripts/evox3/26_gnome_remote_desktop.sh` + Remmina RDP `:3389`.
+6. **Στιγμιότυπο:** `./scripts/evox3/25_kiosk_snapshot.sh` → `/tmp/angelica-kiosk.png`.
 
 ## Γρήγορη ροή (από Gaming-7)
 
@@ -71,7 +77,7 @@ EVOX3_REMOTE_VERIFY_CHAT=1 ./scripts/evox3/21_remote_verify.sh
 - `10_relaunch_kiosk.sh` log: `Missing X server or $DISPLAY`
 - `21_remote_verify.sh` fail στα process/HTML checks
 
-Τότε: logged-in desktop session στο EVO-X3 ή VNC (εκτός scope αυτού του repo).
+Τότε: logged-in GNOME session στο EVO-X3. Live monitor από Gaming-7: `./scripts/evox3/26_gnome_remote_desktop.sh` + Remmina RDP (όχι TightVNC). Στιγμιότυπο: `./scripts/evox3/25_kiosk_snapshot.sh`. Οδηγός: [`CURSOR_REMOTE_SSH.md`](CURSOR_REMOTE_SSH.md).
 
 ## Τι ελέγχει το `21_remote_verify.sh`
 

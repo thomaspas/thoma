@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .venv/
 docs/mcp_cursor_angelica.generated.json
+grd-rdp.env
