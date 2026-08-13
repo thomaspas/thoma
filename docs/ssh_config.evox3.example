@@ -1,0 +1,14 @@
+# Gaming-7 (operator PC) ~/.ssh/config snippet for Cursor Remote-SSH.
+# Copy the Host block into ~/.ssh/config, then:
+#   Cursor Command Palette → Remote-SSH: Connect to Host… → evox3
+#
+# ssh-copy-id from Gaming-7 → EVO-X3 only (never EVO-X3 → 192.168.1.8).
+# Default key matches scripts/operator/auto_close_angelica.sh.
+
+Host evox3
+  HostName 192.168.1.8
+  User thomas-pashoulas
+  IdentityFile ~/.ssh/id_ed25519_evox3
+  IdentitiesOnly yes
+  ServerAliveInterval 30
+  ServerAliveCountMax 6

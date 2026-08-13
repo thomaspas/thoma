@@ -16,8 +16,27 @@ Saved handoff of cloud-agent conversations that built **LOCAL FULL** and branded
 | 6 | MCP ANGELICA server | [bc-4aecd946…](https://cursor.com/agents/bc-4aecd946-5ada-4527-8a9b-5903dde1bd38) | stdio MCP `18` remember/recall/connect/analyze |
 | 7 | ANGELICA merge + extension | (this wave) | Land stack to `main`; MV3 capture `19` + CORS `20` |
 | 8 | Remote verify kiosk SSH | (local Cursor 2026-08-12) | `21_remote_verify` + PR [#8](https://github.com/thomaspas/thoma/pull/8); kiosk `:5173` from SSH |
+| 9 | Cursor Remote SSH + screen | (this wave) | Desktop Remote SSH to EVO-X3 + `25_remote_screen_preview` Simple Browser `:5174` |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
+
+## Session 2026-08-13 — Cursor Desktop Remote SSH + screen preview
+
+**Operator setup:** Gaming-7 Cursor Desktop → Remote SSH `evox3` (`thomas-pashoulas@192.168.1.8`). Cloud agents still have no LAN SSH and cannot see the kiosk.
+
+**What landed in `thoma`:**
+
+- [`CURSOR_REMOTE_EVOX3.md`](CURSOR_REMOTE_EVOX3.md) — Connect to Host + Simple Browser
+- [`ssh_config.evox3.example`](ssh_config.evox3.example) — `Host evox3` + `id_ed25519_evox3`
+- `25_remote_screen_preview.sh` — grim / gnome-screenshot / GNOME D-Bus capture, HTTP **127.0.0.1:5174** only
+
+**How Thomas watches the kiosk from Cursor (Desktop-only):**
+
+```bash
+cd "$HOME/thoma"
+./scripts/evox3/25_remote_screen_preview.sh
+# Simple Browser: Show → http://127.0.0.1:5174/
+```
 
 ## Session 2026-08-12 — remote verify kiosk SSH
 
@@ -75,10 +94,11 @@ Scripts under [`scripts/evox3/`](../scripts/evox3/):
 | `22` | Operator context check (already on EVO-X3? skip nested ssh) |
 | `23` | Sync kiosk/verify patches Gaming-7 → EVO-X3 via scp |
 | `24` | React Flow fullscreen Graph nav (`GraphFlowWorkspace`) |
+| `25` | Cursor Simple Browser screen preview (`127.0.0.1:5174`, Desktop Remote SSH) |
 
 Extension source: [`extensions/angelica-capture/`](../extensions/angelica-capture/).
 
-Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Latest handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
+Runbook: [`EVOX3_JINHUA_LOCAL_FULL.md`](EVOX3_JINHUA_LOCAL_FULL.md). Remote SSH: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md). Cursor Desktop: [`CURSOR_REMOTE_EVOX3.md`](CURSOR_REMOTE_EVOX3.md). Latest handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
 
 App clone on EVO-X3: `~/ai_apps/IncubativeSecondBrain` (upstream [IncubativeSecondBrain](https://github.com/JinhuaChenBiggest/IncubativeSecondBrain)).
 
@@ -121,7 +141,7 @@ Working branch: `cursor/land-angelica-stack-8dd2` (PR #8); `main` after land mer
 
 ## Ports / units (quick ref)
 
-- LLM `11434` · embeddings `8002` · API `8000` · UI `5173` · Postgres `5432` · Neo4j `7687`
+- LLM `11434` · embeddings `8002` · API `8000` · UI `5173` · screen preview `5174` · Postgres `5432` · Neo4j `7687`
 - User units: `evox3-jinhua-docker`, `evox3-bge-m3`, `evox3-jinhua-api`, `evox3-jinhua-web`
 - Kiosk account: `ye@evox3.local` (local-only)
 
@@ -162,5 +182,6 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 - **Thomas runs only via SSH** from another PC/room (`192.168.1.8`) — never ask him to visit the EVO-X3 screen
 - Use `21_remote_verify.sh` + paste output; optional `13_remote_go_live.sh` for Greek E2E
 - No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH session
+- Screen in Cursor (`25` + Simple Browser `:5174`) is **Cursor Desktop on the LAN only**
 - Flatpak browser only; never kiosk on `:8000`
 - Prefer patches/scripts in `thoma` over forking app source into this repo
