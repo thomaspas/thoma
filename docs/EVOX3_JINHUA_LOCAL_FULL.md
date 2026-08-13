@@ -1,4 +1,8 @@
-# EVO-X3 · LOCAL FULL · ANGELICA
+# EVO-X3 · LOCAL FULL · ANGELICA (historical)
+
+> **2026-08-13 νύχτα:** για **σβήσιμο** του stack μην χρησιμοποιείς αυτό το runbook ως install. Wipe: [`JINHUA_FULL_WIPE.md`](JINHUA_FULL_WIPE.md) / `29_wipe_jinhua.sh`.
+
+> **2026-08-13:** αυτό το runbook είναι **ιστορικό**.
 
 ## BLUF
 

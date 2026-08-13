@@ -1,0 +1,8 @@
+# Gaming-7 ~/.ssh/config — Host block for EVO-X3.
+# ssh-copy-id from Gaming-7 → EVO-X3 only (never EVO-X3 → 192.168.1.8).
+
+Host evox3
+  HostName 192.168.1.8
+  User thomas-pashoulas
+  IdentityFile ~/.ssh/id_ed25519_evox3
+  IdentitiesOnly yes
