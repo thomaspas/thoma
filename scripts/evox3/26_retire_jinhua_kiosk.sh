@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 # Stop/disable the Jinhua kiosk stack. Keep llama-server, Open WebUI, SearXNG.
-# Does not rm -rf the clone or ~/models. Archives the clone once (rename).
-# Idempotent. Run on EVO-X3.
+# BLOCKED by default (EVOX3_KEEP_GRAPH=1) so Neo4j / Graph UI stay alive.
+# To force full retire: EVOX3_KEEP_GRAPH=0 ./scripts/evox3/26_retire_jinhua_kiosk.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
 
 require_cmd systemctl
+
+if [ "${EVOX3_KEEP_GRAPH}" = "1" ]; then
+  die "EVOX3_KEEP_GRAPH=1 — refusing to retire Jinhua docker/API/web (that stops Neo4j :7687 and the Graph UI). ANGELICA keeps the knowledge graph; Jarvis is a separate project. To wipe the graph anyway: EVOX3_KEEP_GRAPH=0 ./scripts/evox3/26_retire_jinhua_kiosk.sh"
+fi
 
 log "Retiring Jinhua kiosk stack (disable, not wipe)"
 log "Will NOT stop llama-server, Open WebUI, or SearXNG"

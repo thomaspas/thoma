@@ -1,5 +1,7 @@
 # ANGELICA = GBrain Level 5
 
+> **Υπερκαλύφθηκε 2026-08-13 βράδυ:** ANGELICA κρατά το **γράφημα**, όχι GBrain ως προϊόν. Jarvis είναι το επόμενο. Δες [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md). **Μην** τρέχεις `26` ενώ `EVOX3_KEEP_GRAPH=1`.
+
 Nate **Level 5** είναι το [GBrain](https://github.com/garrytan/gbrain) (always-on brain OS, Garry Tan). Το όνομα στο Mini PC είναι **ANGELICA**. Αυτό το repo (`thoma`) έχει μόνο operator scripts· το Cloud Agent **δεν** τρέχει εντολές στο `192.168.1.8`.
 
 Πηγή αλήθειας μηχανήματος: [`EVOX3_MACHINE_AND_CHANGES.md`](EVOX3_MACHINE_AND_CHANGES.md).

@@ -2,53 +2,51 @@
 
 ## Cursor Cloud specific instructions
 
-This repository (`thomaspas/thoma`) holds **EVO-X3** runbooks and idempotent scripts. **ANGELICA** is the product name for [GBrain](https://github.com/garrytan/gbrain) Nate **Level 5** on the Mini PC. It is not the runtime host for Docker/LLM/GBrain services.
+This repository (`thomaspas/thoma`) holds **EVO-X3** runbooks and idempotent scripts. **ANGELICA** is the **knowledge graph** (Neo4j + React Flow) from the Second Brain. **Jarvis** is the next assistant. This repo is not the runtime host.
 
 ### What lives here
 
 - [`docs/EVOX3_MACHINE_AND_CHANGES.md`](docs/EVOX3_MACHINE_AND_CHANGES.md) — **source of truth**: Mini PC hardware, how it works, change history
-- [`docs/ANGELICA_GBRAIN_LEVEL5.md`](docs/ANGELICA_GBRAIN_LEVEL5.md) — GBrain Level 5 operator runbook
+- [`docs/ANGELICA_GRAPH_AND_JARVIS.md`](docs/ANGELICA_GRAPH_AND_JARVIS.md) — **current product split**: graph stays, Jarvis is next
 - [`docs/CURSOR_REMOTE_EVOX3.md`](docs/CURSOR_REMOTE_EVOX3.md) — Cursor Desktop Remote SSH + GBrain MCP
 - [`docs/REMOTE_OPERATOR_SSH.md`](docs/REMOTE_OPERATOR_SSH.md) — SSH-only operator (Thomas runs from another PC/room)
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle
-- [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — **historical** Jinhua kiosk runbook (retired 2026-08-13)
+- [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — Jinhua stack runbook (graph slice still in use)
 - [`scripts/evox3/`](scripts/evox3/) — steps `01`–`28` + demos (`26` retire Jinhua, `27` GBrain, `28` verify)
 - [`extensions/angelica-capture/`](extensions/angelica-capture/) — ANGELICA Capture browser extension (MV3; Jinhua-era)
 
-**Status:** ANGELICA = GBrain Level 5. Jinhua kiosk stack is **off** (disable/archive, not wipe). Keep llama/WebUI/SearXNG.
+**Status:** **ANGELICA = knowledge graph only** (Neo4j + React Flow). Next project: **Jarvis** (separate assistant). Do **not** run `26` (it refuses while `EVOX3_KEEP_GRAPH=1`). See [`docs/ANGELICA_GRAPH_AND_JARVIS.md`](docs/ANGELICA_GRAPH_AND_JARVIS.md).
 
 ### Remote operator (Thomas)
 
 - User runs **all commands via SSH** from another machine/room (`thomas-pashoulas@192.168.1.8` — Gaming-7 PC), or Cursor Desktop Remote SSH (`Host evox3`).
 - **Never** instruct «go to the EVO-X3 / look at the screen / check the kiosk visually» as a primary step.
-- **Always** prefer: `28_gbrain_verify.sh` (current), paste script output. Historical: `21_remote_verify.sh` / `09_smoke_check.sh` for the retired Jinhua stack.
+- **Always** prefer: keep Neo4j/Graph alive; paste `systemctl --user is-active` + Graph HTTP. Do **not** instruct `26` unless Thomas sets `EVOX3_KEEP_GRAPH=0`. Historical GBrain: `28_gbrain_verify.sh`. Historical kiosk: `21_remote_verify.sh`.
 - Remote confirmation is via HTTP/process probes, not physical visit.
 
 ### Cloud agent constraints
 
 - There are **no cloud services** to start in this workspace.
-- Do **not** expect `package.json` / app runtime under `/workspace`. GBrain workspace on EVO-X3 is `~/gbrain-agent` (not `~/thoma`). The retired Jinhua clone was `~/ai_apps/IncubativeSecondBrain` (archived by `26`).
-- Product name is **ANGELICA** (identity files in `~/gbrain-agent`, systemd `angelica-gbrain.service`).
-- Cloud agent has **no SSH** to EVO-X3 — user pastes terminal output from their SSH / Cursor Remote session.
-- **Never** `npm install -g gbrain` (unrelated npm package). Only `bun install -g github:garrytan/gbrain`.
+- Do **not** expect `package.json` / app runtime under `/workspace`. Graph runtime on EVO-X3: `~/ai_apps/IncubativeSecondBrain` + Docker Neo4j. Do not archive that clone.
+- Product name **ANGELICA** = Graph tab / Neo4j, not the full kiosk chat.
+- Cloud agent has **no SSH** to EVO-X3 — user pastes terminal output from Cursor Remote SSH.
+- **Never** `npm install -g gbrain`. Do not run `26` while `EVOX3_KEEP_GRAPH=1`.
 
 ### How the user runs it (on EVO-X3 via SSH)
 
 ```bash
 cd "$HOME/thoma" && git pull --ff-only
 chmod +x scripts/evox3/*.sh
-./scripts/evox3/26_retire_jinhua_kiosk.sh
-./scripts/evox3/27_gbrain_angelica.sh
-./scripts/evox3/28_gbrain_verify.sh
+systemctl --user is-active evox3-jinhua-docker.service evox3-jinhua-api.service evox3-jinhua-web.service
 ```
 
-Ports to keep: `:11434` llama, `:8080` Open WebUI, `:8888` SearXNG. GBrain HTTP admin (always-on unit): `:3131` loopback. Cursor MCP is stdio `gbrain serve`, not that HTTP port.
+Keep Neo4j `:7687`, Graph UI `:5173`, llama `:11434`. Jarvis is not in this repo yet — need the project URL. **Do not** run `26`/`27`/`28` as the default path.
 
 ### Gotchas
 
 - Nested SSH: if already on `thomas-pashoulas-EVO-X3`, do not `ssh 192.168.1.8`.
-- After Jinhua retire, reboot Postgres `:5432` / kiosk `:5173` being down is **expected**. Do not re-enable `evox3-jinhua-*` unless Thomas asks for rollback.
-- Historical: after reboot, Jinhua login HTTP 500 + `Connection refused` on `:5432` meant docker compose was down (`02` / `evox3-jinhua-docker.service`).
+- `26` exits 1 while `EVOX3_KEEP_GRAPH=1` (default) — that protects Neo4j.
+- Historical: after reboot, Jinhua login HTTP 500 + `Connection refused` on `:5432` meant docker compose was down (`02`).
 - SSH bracketed paste (`^[[200~`) breaks hand-rolled `TOKEN=` — use demo scripts.
 - Do not init GBrain inside `~/thoma`. Do not wipe `~/models` or Docker volumes in the first pass.
 - Memory Stargraph and Claude Code `BOOTSTRAP_FOR_AGENTS.md` interview are **out of first pass**. Thomas lives in **Cursor**.

@@ -2,7 +2,9 @@
 
 Πηγή αλήθειας για το επόμενο agent / operator. Runtime είναι το Mini PC· αυτό το repo (`thoma`) έχει μόνο runbooks και idempotent scripts.
 
-**Απόφαση 2026-08-13:** το Jinhua kiosk-stack είναι **off**. **ANGELICA** = [GBrain](https://github.com/garrytan/gbrain) Nate **Level 5** (always-on brain OS). Κρατάμε **μόνο το όνομα**. Δες [`ANGELICA_GBRAIN_LEVEL5.md`](ANGELICA_GBRAIN_LEVEL5.md).
+**Απόφαση 2026-08-13 (τελευταία):** **ANGELICA = μόνο το γράφημα** (Neo4j + React Flow Graph). Επόμενο project: **Jarvis**. GBrain scripts υπάρχουν αλλά δεν αντικαθιστούν το γράφημα. Δες [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md).
+
+Παλαιότερα την ίδια μέρα: Jinhua kiosk-stack «off» / ANGELICA = GBrain — **υπερκαλύπτεται** όσο θέλουμε το γράφημα. **Μην** τρέχεις `26` (default `EVOX3_KEEP_GRAPH=1`).
 
 ## Mini PC (hardware)
 
@@ -24,7 +26,7 @@ Cloud agents **δεν** έχουν LAN SSH. Ο Thomas τρέχει scripts στ�
 ## Πώς δουλεύει το μηχάνημα
 
 - **Desktop:** GNOME / Wayland. User systemd (`systemctl --user`) + linger για services μετά το logout.
-- **Docker:** χρησιμοποιήθηκε για Jinhua Postgres `:5432` / Neo4j `:7687` / MinIO. Μετά το retire (`26`) αυτά τα compose services **δεν** πρέπει να τρέχουν.
+- **Docker:** Jinhua compose κρατά Postgres `:5432` / **Neo4j `:7687`** / MinIO όσο το γράφημα είναι ANGELICA. Μην σταματάς `evox3-jinhua-docker` χωρίς `EVOX3_KEEP_GRAPH=0`.
 - **Nested SSH:** αν το prompt είναι `thomas-pashoulas@thomas-pashoulas-EVO-X3`, **μην** κάνεις `ssh 192.168.1.8` (SSH στον εαυτό σου). Τρέξε τα scripts απευθείας από `~/thoma`.
 - **Pi-hole:** δεν ήταν αίτιο για προβλήματα στο `:5173`. Το local HTTP στο loopback ήταν OK· τα kiosk fails ήταν Wayland/DISPLAY/Chromium από SSH.
 - **Reboot (ιστορικό Jinhua):** login HTTP 500 με `Connection refused` στο `:5432` σήμαινε ότι το `evox3-jinhua-docker.service` δεν είχε ανέβει. Το API docs μπορούσε να είναι 200 ενώ η DB ήταν κάτω. **Πλέον** το Jinhua docker unit είναι disable· μην το ξανα-enable εκτός rollback.
@@ -45,7 +47,8 @@ Cloud agents **δεν** έχουν LAN SSH. Ο Thomas τρέχει scripts στ�
 8. Browser extension `19` + CORS `20`.
 9. Remote verify `21` (SSH operator, χωρίς επίσκεψη οθόνης).
 10. Cursor Desktop Remote SSH + screen preview `:5174` (`25`, ξεχωριστό PR αν δεν έχει γίνει merge).
-11. **2026-08-13:** Jinhua stack **off** (`26`). ANGELICA = GBrain Level 5 (`27`, `28`).
+11. **2026-08-13 πρωί:** σχέδιο GBrain Level 5 (`26`–`28`) — **μην το εφαρμόσεις** αν κρατάς το γράφημα.
+12. **2026-08-13 απόγευμα:** ANGELICA = **μόνο γράφημα**· επόμενο = **Jarvis**. [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md).
 
 ## Rollback (Jinhua)
 
@@ -60,12 +63,11 @@ systemctl --user enable --now evox3-jinhua-docker evox3-bge-m3 evox3-jinhua-api 
 
 ## Τρέχουσα operator ροή (EVO-X3 terminal)
 
+Κράτα το γράφημα. **Μην** τρέχεις `26`.
+
 ```bash
 cd "$HOME/thoma" && git pull --ff-only
-chmod +x scripts/evox3/*.sh
-./scripts/evox3/26_retire_jinhua_kiosk.sh
-./scripts/evox3/27_gbrain_angelica.sh
-./scripts/evox3/28_gbrain_verify.sh
+systemctl --user is-active evox3-jinhua-docker.service evox3-jinhua-api.service evox3-jinhua-web.service
 ```
 
-Paste το output του `28` στο Cloud chat. Cursor MCP: [`mcp_cursor_gbrain.json.example`](mcp_cursor_gbrain.json.example).
+Jarvis: χρειάζεται URL/path — [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md).

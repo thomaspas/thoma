@@ -36,6 +36,8 @@ EVOX3_GBRAIN_HTTP_BIND="${EVOX3_GBRAIN_HTTP_BIND:-127.0.0.1}"
 EVOX3_GBRAIN_UNIT="${EVOX3_GBRAIN_UNIT:-angelica-gbrain.service}"
 EVOX3_JINHUA_ARCHIVE="${EVOX3_JINHUA_ARCHIVE:-$EVOX3_AI_APPS/IncubativeSecondBrain.archived}"
 EVOX3_JINHUA_UNITS="${EVOX3_JINHUA_UNITS:-evox3-jinhua-docker.service evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service}"
+# 1 = keep Neo4j knowledge graph (ANGELICA). 0 = full Jinhua retire (kills :7687).
+EVOX3_KEEP_GRAPH="${EVOX3_KEEP_GRAPH:-1}"
 
 log() { printf '[*] %s\n' "$*"; }
 ok() { printf '[+] %s\n' "$*"; }

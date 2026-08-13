@@ -2,7 +2,7 @@
 
 Saved handoff of cloud-agent conversations. Runtime lives on the EVO-X3 machine; this repo (`thoma`) holds operator scripts and docs only.
 
-**Status (2026-08-13):** ANGELICA = [GBrain](https://github.com/garrytan/gbrain) Nate **Level 5** (όνομα μόνο). Jinhua kiosk stack **off**. Source of truth: [`EVOX3_MACHINE_AND_CHANGES.md`](EVOX3_MACHINE_AND_CHANGES.md). Runbook: [`ANGELICA_GBRAIN_LEVEL5.md`](ANGELICA_GBRAIN_LEVEL5.md).
+**Status (2026-08-13 βράδυ):** **ANGELICA = knowledge graph only** (Neo4j + React Flow). Επόμενο: **Jarvis**. [`ANGELICA_GRAPH_AND_JARVIS.md`](ANGELICA_GRAPH_AND_JARVIS.md). Μην τρέχεις `26`.
 
 Jinhua LOCAL FULL + brand + analytics + MCP + extension + React Flow Graph nav remain in history below (DONE 2026-08-12, then retired).
 
@@ -19,11 +19,17 @@ Jinhua LOCAL FULL + brand + analytics + MCP + extension + React Flow Graph nav r
 | 7 | ANGELICA merge + extension | (this wave) | Land stack to `main`; MV3 capture `19` + CORS `20` |
 | 8 | Remote verify kiosk SSH | (local Cursor 2026-08-12) | `21_remote_verify` + PR [#8](https://github.com/thomaspas/thoma/pull/8); kiosk `:5173` from SSH |
 | 9 | Cursor Remote SSH + screen | (prior wave) | Desktop Remote SSH to EVO-X3 + screen preview `:5174` |
-| 10 | ANGELICA = GBrain Level 5 | [bc-1aa7b9d8…](https://cursor.com/agents/bc-1aa7b9d8-f4ea-437a-82f5-98bd5a50f924) | Retire Jinhua kiosk; GBrain PGLite + `angelica-gbrain.service` |
+| 11 | ANGELICA = graph only + Jarvis next | (this wave) | Keep Neo4j/React Flow; Jarvis is a separate assistant; guard `26` |
 
 Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/bc-57e08ce7-6df1-50dc-a5ce-cb1eab80b0bb)) for environment builds.
 
-## Session 2026-08-13 — ANGELICA = GBrain Level 5
+## Session 2026-08-13 — ANGELICA κρατά μόνο το γράφημα · μετά Jarvis
+
+**Εφικτό:** ναι. ANGELICA = Neo4j `:7687` + Graph UI (`24`) + analytics (`17`). Jarvis = νέο process στο ίδιο EVO-X3, llama `:11434`, διαβάζει το γράφημα. Όχι merge στο kiosk.
+
+**Μην τρέχεις `26`.** Default `EVOX3_KEEP_GRAPH=1` → το script κάνει `die`. Χρειάζεται URL/path του Jarvis για scripts εγκατάστασης.
+
+## Session 2026-08-13 — ANGELICA = GBrain Level 5 (υπερκαλύφθηκε το απόγευμα)
 
 **Decision:** Nate Level 5 is [GBrain](https://github.com/garrytan/gbrain) (Garry Tan), not Jay's live graph app, not Obsidian, not the Jinhua kiosk. Keep the name **ANGELICA** only.
 
