@@ -240,25 +240,27 @@ chmod +x scripts/evox3/*.sh
 
 ## Handoff — κατάσταση
 
-**DONE — LOCAL FULL / ANGELICA / analytics / MCP / browser extension** (2026-08-12).
+**LIVE on EVO-X3** — LOCAL FULL / ANGELICA / analytics / MCP / remote SSH verify (2026-08-12).
 
-Πλήρες χρονικό συνομιλιών + evidence + NEXT roadmap:
-[`docs/SESSION_CHRONICLE_ANGELICA.md`](SESSION_CHRONICLE_ANGELICA.md)
+Verified via SSH: smoke **18/0**, `21_remote_verify` **REMOTE VERIFY OK**, kiosk on `:5173`. PR [#8](https://github.com/thomaspas/thoma/pull/8) **merged** to `main`.
+
+Πλήρες χρονικό: [`docs/SESSION_CHRONICLE_ANGELICA.md`](SESSION_CHRONICLE_ANGELICA.md)
 
 **Branch:** `main` → https://github.com/thomaspas/thoma
 
-**Resume paste (EVO-X3 via SSH):**
+**Resume paste (EVO-X3 via SSH from Gaming-7):**
 ```bash
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
-git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
+git fetch origin '+refs/heads/main:refs/remotes/origin/main'
+git checkout -B main origin/main
 chmod +x scripts/evox3/*.sh
-./scripts/evox3/21_remote_verify.sh       # remote OK — no screen visit
-./scripts/evox3/13_remote_go_live.sh       # upload + Greek chat (SSH)
-./scripts/evox3/18_demo_mcp.sh             # optional MCP demo
+./scripts/evox3/21_remote_verify.sh
+./scripts/evox3/13_remote_go_live.sh   # Greek chat E2E (slow on Qwen 27B)
 ```
 
 Optional reboot smoke (from SSH): `sudo reboot` then `./scripts/evox3/21_remote_verify.sh`.
+
+**Next roadmap:** React Flow 2D (NEXT #4) after Greek E2E paste.
 
 **Κανόνες επόμενου agent:** Ελληνικά για εξηγήσεις· ASCII για scripts/logs· χωρίς SSH από cloud· **Thomas τρέχει μόνο από SSH (άλλο PC/δωμάτιο) — μην ζητάς «πήγαινε στην οθόνη»**· χρησιμοποίησε `21_remote_verify.sh` + paste output· μόνο Flatpak browser· ποτέ kiosk στο `:8000`.
 
