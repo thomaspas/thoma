@@ -2,7 +2,7 @@
 
 ## 0) 10-second status (paste to Cursor first)
 
-From **Gaming-7**:
+Από **Gaming-7** ή ήδη στο **EVO** (ίδιο curl — αν είσαι στο EVO δεν κάνει nested SSH):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_status_dump.sh | bash
