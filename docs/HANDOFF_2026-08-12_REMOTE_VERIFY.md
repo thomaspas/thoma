@@ -15,7 +15,7 @@ cd ~/thoma && ./scripts/operator/auto_close_angelica.sh
 | Role | Host | SSH |
 |------|------|-----|
 | Operator | Gaming-7 (`thomas1821-Z170X-Gaming-7`) | — |
-| Runtime | EVO-X3 (`thomas-pashoulas-EVO-X3`) | `thomas-pashoulas@192.168.1.8` |
+| Runtime | EVO-X3 (`thomas-pashoulas-EVO-X3`) | `thomas-pashoulas@192.168.1.9` (DHCP; was `.8`) |
 
 ## Repo
 
@@ -36,8 +36,8 @@ Pi-hole               → NOT related (all local HTTP OK)
 
 ## Common mistakes
 
-1. **Already on EVO-X3** — do NOT `ssh thomas-pashoulas@192.168.1.8` (nested SSH to self).
-2. **ssh-copy-id** — from Gaming-7 → EVO-X3 only, not EVO-X3 → `192.168.1.8`.
+1. **Already on EVO-X3** — do NOT `ssh` to the LAN IP (nested SSH to self).
+2. **ssh-copy-id** — from Gaming-7 → EVO-X3 only, not EVO-X3 → itself.
 3. **Do not ask** operator to visit the other room / look at the screen — SSH + paste only.
 
 See also: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md), [`SESSION_CHRONICLE_ANGELICA.md`](SESSION_CHRONICLE_ANGELICA.md).
@@ -106,7 +106,7 @@ If kiosk log shows `Missing X server` or `$DISPLAY`: desktop session must be log
 
 Context: docs/HANDOFF_2026-08-12_REMOTE_VERIFY.md + docs/REMOTE_OPERATOR_SSH.md
 Branch: cursor/land-angelica-stack-8dd2 (PR #8)
-Operator: SSH από Gaming-7 στο thomas-pashoulas@192.168.1.8
+Operator: SSH από Gaming-7 στο thomas-pashoulas@192.168.1.9 (DHCP)
 
 Τελευταίο verify: smoke 18/0 OK, 21_remote_verify 5 pass / 1 fail (kiosk :5173).
 Έχω ανοιχτό SSH terminal στον EVO-X3.

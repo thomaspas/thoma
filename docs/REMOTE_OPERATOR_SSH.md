@@ -49,9 +49,8 @@ chmod +x scripts/evox3/*.sh
 Μετά reboot αν Postgres `:5432` CLOSED:
 
 ```bash
-./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh
-systemctl --user start evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service
-./scripts/evox3/21_remote_verify.sh
+./scripts/evox3/25_post_reboot_resume.sh
+# (ή χειροκίνητα: 02 + systemctl --user start bge/api/web + 21_remote_verify)
 ```
 
 ### Ήδη είσαι στον EVO-X3; (συχνό λάθος)

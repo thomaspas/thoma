@@ -159,7 +159,7 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 ## Agent rules for resume
 
 - Greek for explanations; ASCII for scripts/logs
-- **Thomas runs only via SSH** from another PC/room (`192.168.1.8`) — never ask him to visit the EVO-X3 screen
+- **Thomas runs only via SSH** from another PC/room (`192.168.1.9`, DHCP) — never ask him to visit the EVO-X3 screen
 - Use `21_remote_verify.sh` + paste output; optional `13_remote_go_live.sh` for Greek E2E
 - No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH session
 - Flatpak browser only; never kiosk on `:8000`
