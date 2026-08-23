@@ -42,6 +42,7 @@ Smoke checks and ports are documented in the runbook (`:11434` LLM, `:8002` bge-
 ### Gotchas
 
 - After reboot, login HTTP 500 with `Connection refused` on `:5432` means Docker compose (Postgres) did not come up. Run `25_post_reboot_resume.sh` (or `02_ensure_jinhua_clone_and_docker.sh` then start bge/api/web units). API docs can still be 200 while DB is down.
+- If `05` fails with `bge-m3 server did not become healthy` after Docker is up: `./scripts/evox3/26_resume_after_bge.sh` (waits for embeddings, aligns `LLM_MODEL`, continues 06→21).
 - Brand patches live on the EVO-X3 clone (`*.evox3-brand-orig`); re-run `16` after upstream web updates.
 - Browser extension uses a **separate** Chromium profile (Load unpacked), not the kiosk.
 - SSH bracketed paste (`^[[200~`) breaks hand-rolled `TOKEN=` — use `17_demo` / `18_demo` / `13` scripts.
