@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copy remote-verify + kiosk SSH fixes from Gaming-7 clone to EVO-X3 (run ON Gaming-7).
 set -euo pipefail
-EVO="${EVOX3_SSH:-thomas-pashoulas@192.168.1.8}"
+EVO="${EVOX3_SSH:-thomas-pashoulas@192.168.1.9}"
 SRC="${1:-$HOME/thoma}"
 FILES=(
   scripts/evox3/_lib.sh

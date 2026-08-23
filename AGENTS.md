@@ -17,7 +17,7 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 
 ### Remote operator (Thomas)
 
-- User runs **all commands via SSH** from another machine/room (`thomas-pashoulas@192.168.1.8` — Gaming-7 PC).
+- User runs **all commands via SSH** from another machine/room (`thomas-pashoulas@192.168.1.9` — Gaming-7 PC). Wi‑Fi DHCP can change the LAN IP; on EVO run `hostname -I` and override with `EVOX3_SSH=thomas-pashoulas@<ip>` if needed.
 - **Never** instruct «go to the EVO-X3 / look at the screen / check the kiosk visually» as a primary step.
 - **Always** prefer: `21_remote_verify.sh`, `09_smoke_check.sh`, `13_remote_go_live.sh`, paste script output.
 - Kiosk runs on the EVO-X3 display automatically; remote confirmation is via HTTP/process probes, not physical visit.

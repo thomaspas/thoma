@@ -4,7 +4,8 @@
 
 | Στοιχείο | Τιμή |
 |----------|------|
-| EVO-X3 | `thomas-pashoulas@192.168.1.8` (άλλο δωμάτιο) |
+| EVO-X3 | `thomas-pashoulas@192.168.1.9` (Wi‑Fi — DHCP μπορεί να αλλάξει) |
+| Override | `export EVOX3_SSH=thomas-pashoulas@<ip>` |
 | Operator PC | Gaming-7 (ή άλλο) — μόνο terminal + paste output |
 | Kiosk | Ανοίγει αυτόματα στον EVO-X3 (`:5173`) — **δεν** χρειάζεται επίσκεψη |
 
@@ -13,6 +14,20 @@
 - **Μην** ζητάς «πήγαινε στον EVO-X3 / κοίτα την οθόνη / δες το kiosk» ως πρώτο βήμα.
 - **Ναι:** SSH εντολές + paste του script output στο chat.
 - Cloud agent: δεν έχει SSH — ο χρήστης κάνει paste από το EVO-X3 terminal.
+
+## Αν `No route to host` / λάθος IP
+
+Το EVO είναι σε Wi‑Fi (`wlp…`); το LAN IP αλλάζει με DHCP (π.χ. παλιά `.8` → τώρα `.9`).
+
+Από **Gaming-7**:
+
+```bash
+ping -c 2 192.168.1.9
+# αν fail: στο EVO τρέξε hostname -I και χρησιμοποίησε το 192.168.1.x
+ssh thomas-pashoulas@192.168.1.9
+```
+
+Στο **EVO** (οθόνη ή υπάρχον session): `hostname -I` → πρώτο `192.168.1.x`.
 
 ## Τι σημαίνει «ζωντανό project» (χωρίς οθόνη)
 
@@ -23,28 +38,34 @@
 ## Γρήγορη ροή (από Gaming-7)
 
 ```bash
-ssh thomas-pashoulas@192.168.1.8
+ssh "${EVOX3_SSH:-thomas-pashoulas@192.168.1.9}"
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
-git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
+git fetch origin '+refs/heads/main:refs/remotes/origin/main' || true
+git checkout -B main origin/main
 chmod +x scripts/evox3/*.sh
+./scripts/evox3/21_remote_verify.sh
+```
+
+Μετά reboot αν Postgres `:5432` CLOSED:
+
+```bash
+./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh
+systemctl --user start evox3-bge-m3.service evox3-jinhua-api.service evox3-jinhua-web.service
 ./scripts/evox3/21_remote_verify.sh
 ```
 
 ### Ήδη είσαι στον EVO-X3; (συχνό λάθος)
 
-Αν το prompt είναι `thomas-pashoulas@thomas-pashoulas-EVO-X3` **μην** κάνεις `ssh thomas-pashoulas@192.168.1.8` — είναι SSH στον εαυτό σου (nested session). Τρέξε απευθείας:
+Αν το prompt είναι `thomas-pashoulas@thomas-pashoulas-EVO-X3` **μην** κάνεις `ssh` στο LAN IP — είναι SSH στον εαυτό σου (nested session). Τρέξε απευθείας:
 
 ```bash
 cd "$HOME/thoma"
-git fetch origin '+refs/heads/cursor/land-angelica-stack-8dd2:refs/remotes/origin/cursor/land-angelica-stack-8dd2'
-git checkout -B cursor/land-angelica-stack-8dd2 origin/cursor/land-angelica-stack-8dd2
 chmod +x scripts/evox3/*.sh
 ./scripts/evox3/22_operator_context_check.sh
 ./scripts/evox3/21_remote_verify.sh
 ```
 
-`ssh-copy-id` από **Gaming-7** → EVO-X3, **όχι** από EVO-X3 → `192.168.1.8` (ίδιο μηχάνημα).
+`ssh-copy-id` από **Gaming-7** → EVO-X3, **όχι** από EVO-X3 → τον εαυτό του.
 
 Πλήρες chat demo (αργό — Qwen 27B):
 

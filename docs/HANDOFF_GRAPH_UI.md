@@ -28,7 +28,7 @@ export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$PATH" && cd ~/thoma && ./scr
 ## Sync Gaming-7 → EVO
 
 ```bash
-rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/24_graph_ui_reactflow.sh ~/thoma/scripts/evox3/09_smoke_check.sh thomas-pashoulas@192.168.1.8:~/thoma/scripts/evox3/ && rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/patches/graph_ui/ thomas-pashoulas@192.168.1.8:~/thoma/scripts/evox3/patches/graph_ui/
+rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/24_graph_ui_reactflow.sh ~/thoma/scripts/evox3/09_smoke_check.sh thomas-pashoulas@192.168.1.9:~/thoma/scripts/evox3/ && rsync -av -e 'ssh -i ~/.ssh/id_ed25519_evox3 -o IdentitiesOnly=yes' ~/thoma/scripts/evox3/patches/graph_ui/ thomas-pashoulas@192.168.1.9:~/thoma/scripts/evox3/patches/graph_ui/
 ```
 
 ## Constraints
