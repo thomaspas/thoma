@@ -6,6 +6,7 @@ Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **
 
 - Runbook: [docs/EVOX3_JINHUA_LOCAL_FULL.md](docs/EVOX3_JINHUA_LOCAL_FULL.md)
 - **Remote SSH operator:** [docs/REMOTE_OPERATOR_SSH.md](docs/REMOTE_OPERATOR_SSH.md) (Thomas runs from another PC — no screen visit)
+- **Recover NOW:** [docs/OPERATOR_RECOVER_NOW.md](docs/OPERATOR_RECOVER_NOW.md) (wipe / bge timeout / missing units)
 - Session chronicle (all chats + NEXT roadmap): [docs/SESSION_CHRONICLE_ANGELICA.md](docs/SESSION_CHRONICLE_ANGELICA.md)
 - Browser extension: [docs/ANGELICA_BROWSER_EXTENSION.md](docs/ANGELICA_BROWSER_EXTENSION.md)
 - Scripts: [scripts/evox3/](scripts/evox3/)
