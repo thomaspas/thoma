@@ -1,36 +1,28 @@
 # ANGELICA recover NOW (EVO-X3)
 
-**Do this on EVO** after `ssh thomas-pashoulas@192.168.1.9` from Gaming-7.
-
-Symptoms that mean you need this:
-- `Postgres :5432 CLOSED`
-- `Unit evox3-*-service not found`
-- docker compose still `Pulling` and you hit Ctrl+C
+**Do this from Gaming-7** (preferred — tmux on EVO, survives disconnect):
 
 ```bash
-cd ~/thoma
-git remote set-url origin https://github.com/thomaspas/thoma.git
-git fetch origin
-# optional: get latest recovery scripts
-git fetch origin cursor/evox3-ip-dhcp-c1c0:refs/remotes/origin/cursor/evox3-ip-dhcp-c1c0 || true
-git checkout -B cursor/evox3-ip-dhcp-c1c0 origin/cursor/evox3-ip-dhcp-c1c0 2>/dev/null || true
-chmod +x scripts/evox3/*.sh
-
-# LONG — do not Ctrl+C (docker images + pip + HF model)
-./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh
-./scripts/evox3/run_all.sh
-
-# Fresh .env may keep upstream LLM_MODEL=gpt-4o-mini — align to live llama:
-ID=$(curl -fsS http://127.0.0.1:11434/v1/models | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"][0]["id"])')
-sed -i "s|^LLM_MODEL=.*|LLM_MODEL=$ID|" ~/ai_apps/IncubativeSecondBrain/.env
-systemctl --user restart evox3-jinhua-api.service 2>/dev/null || true
-
-./scripts/evox3/21_remote_verify.sh
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_resume_after_bge.sh | bash
 ```
 
-## If `05` died with `bge-m3 server did not become healthy`
+Watch:
 
-One-shot resume (after `git fetch` of this branch):
+```bash
+ssh thomas-pashoulas@192.168.1.9 'tail -f ~/ai_apps/angelica-resume.log'
+```
+
+Paste the end of that log to Cursor when you see:
+
+```text
+REMOTE VERIFY OK — no physical visit needed
+```
+
+---
+
+## Or on EVO after SSH to `.9`
+
+Symptoms: `05` timed out on bge health; API/web units missing; `LLM_MODEL=gpt-4o-mini`.
 
 ```bash
 cd ~/thoma
@@ -41,40 +33,25 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/26_resume_after_bge.sh
 ```
 
-Or manual steps below.
+`26` now: ensures Postgres/.env/venv → installs fixed bge server → waits for `/health` → aligns `LLM_MODEL` → runs `06`–`11`/`16`/`10`/`21`.
 
-## If `05` died with `bge-m3 server did not become healthy`
+---
 
-Model load on CPU can exceed the old 6‑minute wait. Prefer this resume (do not re-run full `run_all`):
+## Full wipe / units not found / docker still pulling
+
+Do **not** Ctrl+C during image pulls.
 
 ```bash
-# Wait for current process OR pull fix + restart
-until curl -fsS http://127.0.0.1:8002/health; do echo waiting; sleep 20; done
-
-# Optional: install fixed server (binds port while model loads)
 cd ~/thoma
 git remote set-url origin https://github.com/thomaspas/thoma.git
 git fetch origin cursor/evox3-ip-dhcp-c1c0
 git checkout -B cursor/evox3-ip-dhcp-c1c0 origin/cursor/evox3-ip-dhcp-c1c0
-cp -f scripts/evox3/bge_m3_server.py ~/ai_apps/bge-m3-server/bge_m3_server.py
-systemctl --user restart evox3-bge-m3.service
-until curl -fsS http://127.0.0.1:8002/health; do sleep 15; done
-
-ID=$(curl -fsS http://127.0.0.1:11434/v1/models | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"][0]["id"])')
-sed -i "s|^LLM_MODEL=.*|LLM_MODEL=$ID|" ~/ai_apps/IncubativeSecondBrain/.env
-./scripts/evox3/06_migrate_and_start_api.sh
-./scripts/evox3/07_start_frontend_and_kiosk.sh
-./scripts/evox3/08_autostart_desktop.sh
-./scripts/evox3/11_skip_auth_ui.sh
-./scripts/evox3/16_brand_angelica.sh
-./scripts/evox3/10_relaunch_kiosk.sh
-./scripts/evox3/21_remote_verify.sh
+chmod +x scripts/evox3/*.sh
+./scripts/evox3/25_post_reboot_resume.sh
 ```
 
-Success line to paste back to Cursor:
+Or from Gaming-7:
 
-```text
-REMOTE VERIFY OK — no physical visit needed
+```bash
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_bootstrap_angelica.sh | bash
 ```
-
-If `02` is still pulling images, leave the terminal open and wait.

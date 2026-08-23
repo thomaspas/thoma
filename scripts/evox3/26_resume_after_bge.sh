@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Resume LOCAL FULL after 05 bge-m3 health timeout (Docker already up).
 # Run on EVO-X3. ASCII only.
+#
+# Also safe when API/web units were never installed (run_all died in 05).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/_lib.sh"
@@ -8,6 +10,27 @@ source "$SCRIPT_DIR/_lib.sh"
 HOST_NOW="$(hostname -s 2>/dev/null || hostname)"
 if ! printf '%s' "$HOST_NOW" | grep -qi 'EVO-X3'; then
   die "Run on EVO-X3 only (hostname=${HOST_NOW})"
+fi
+
+log "=== 26_resume_after_bge: preflight docker / .env / venv ==="
+if [ ! -d "$EVOX3_JINHUA_DIR" ]; then
+  die "Missing $EVOX3_JINHUA_DIR — run ./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh first"
+fi
+
+if ! wait_for_tcp 127.0.0.1 5432 5; then
+  warn "Postgres :5432 closed — ensuring docker compose"
+  bash "$SCRIPT_DIR/02_ensure_jinhua_clone_and_docker.sh"
+  wait_for_tcp 127.0.0.1 5432 120 || die "Postgres :5432 still closed after 02"
+fi
+ok "Postgres :5432 open"
+
+if [ ! -f "$EVOX3_JINHUA_DIR/.env" ]; then
+  warn "Missing .env — running 03"
+  bash "$SCRIPT_DIR/03_write_local_env.sh"
+fi
+if [ ! -x "$EVOX3_JINHUA_DIR/.venv/bin/python" ]; then
+  warn "Missing venv — running 04"
+  bash "$SCRIPT_DIR/04_install_python_deps.sh"
 fi
 
 log "=== 26_resume_after_bge: refresh bge server script ==="
@@ -29,12 +52,13 @@ log "Waiting for bge-m3 /health ok (up to $((WAIT_LOOPS * WAIT_SLEEP))s)"
 READY=0
 for i in $(seq 1 "$WAIT_LOOPS"); do
   code="$(curl -sS -o /tmp/evox3-bge-health.json -w '%{http_code}' --max-time 3 "http://127.0.0.1:${EVOX3_BGE_PORT}/health" 2>/dev/null || echo 000)"
-  if [ "$code" = "200" ]; then
+  if [ "$code" = "200" ] && grep -q '"status"[[:space:]]*:[[:space:]]*"ok"' /tmp/evox3-bge-health.json 2>/dev/null; then
     READY=1
     break
   fi
   if [ $((i % 20)) -eq 0 ]; then
-    log "still waiting (http=${code}, ${i}/${WAIT_LOOPS})"
+    detail="$(head -c 120 /tmp/evox3-bge-health.json 2>/dev/null || true)"
+    log "still waiting (http=${code}, ${i}/${WAIT_LOOPS}) ${detail}"
   fi
   sleep "$WAIT_SLEEP"
 done
