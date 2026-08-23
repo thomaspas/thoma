@@ -1,14 +1,17 @@
 # ANGELICA recover NOW (EVO-X3)
 
-**Do this from Gaming-7** (preferred — tmux on EVO, survives disconnect):
+## 0) 10-second status (paste to Cursor first)
+
+From **Gaming-7**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_status_dump.sh | bash
+```
+
+## 1) Resume after `05` bge timeout (tmux on EVO)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_resume_after_bge.sh | bash
-```
-
-Watch:
-
-```bash
 ssh thomas-pashoulas@192.168.1.9 'tail -f ~/ai_apps/angelica-resume.log'
 ```
 
