@@ -167,6 +167,24 @@ enable_linger_hint() {
   fi
 }
 
+# EVO often has no GitHub deploy key — git@ fails with Permission denied (publickey).
+# Switch origin to HTTPS so fetch/pull work without SSH keys.
+ensure_thoma_https_remote() {
+  local root="${1:-}"
+  local url
+  if [ -z "$root" ] || [ ! -d "$root/.git" ]; then
+    return 0
+  fi
+  url="$(git -C "$root" remote get-url origin 2>/dev/null || true)"
+  case "$url" in
+    git@github.com:*|ssh://git@github.com/*)
+      log "origin uses SSH ($url) — switching to HTTPS (EVO often has no deploy key)"
+      git -C "$root" remote set-url origin "https://github.com/thomaspas/thoma.git"
+      ok "origin -> https://github.com/thomaspas/thoma.git"
+      ;;
+  esac
+}
+
 pip_install() {
   local venv_pip="$1"
   shift
