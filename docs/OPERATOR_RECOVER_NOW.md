@@ -30,6 +30,21 @@ systemctl --user restart evox3-jinhua-api.service 2>/dev/null || true
 
 ## If `05` died with `bge-m3 server did not become healthy`
 
+One-shot resume (after `git fetch` of this branch):
+
+```bash
+cd ~/thoma
+git remote set-url origin https://github.com/thomaspas/thoma.git
+git fetch origin cursor/evox3-ip-dhcp-c1c0
+git checkout -B cursor/evox3-ip-dhcp-c1c0 origin/cursor/evox3-ip-dhcp-c1c0
+chmod +x scripts/evox3/*.sh
+./scripts/evox3/26_resume_after_bge.sh
+```
+
+Or manual steps below.
+
+## If `05` died with `bge-m3 server did not become healthy`
+
 Model load on CPU can exceed the old 6‑minute wait. Prefer this resume (do not re-run full `run_all`):
 
 ```bash
