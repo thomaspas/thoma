@@ -58,14 +58,21 @@ reload_user_systemd
 enable_linger_hint
 systemctl --user enable --now evox3-bge-m3.service
 
-log "Waiting for embeddings health on :${EVOX3_BGE_PORT}"
+# CPU + first HF download of BAAI/bge-m3 often exceeds 6 minutes (05 used to die here).
+WAIT_LOOPS="${EVOX3_BGE_HEALTH_LOOPS:-600}"
+WAIT_SLEEP="${EVOX3_BGE_HEALTH_SLEEP:-3}"
+log "Waiting for embeddings health on :${EVOX3_BGE_PORT} (up to $((WAIT_LOOPS * WAIT_SLEEP))s — model load is slow on CPU)"
 READY=0
-for _ in $(seq 1 180); do
-  if curl -fsS "http://127.0.0.1:${EVOX3_BGE_PORT}/health" >/dev/null 2>&1; then
+for i in $(seq 1 "$WAIT_LOOPS"); do
+  code="$(curl -sS -o /tmp/evox3-bge-health.json -w '%{http_code}' --max-time 3 "http://127.0.0.1:${EVOX3_BGE_PORT}/health" 2>/dev/null || echo 000)"
+  if [ "$code" = "200" ] && grep -q '"status"[[:space:]]*:[[:space:]]*"ok"' /tmp/evox3-bge-health.json 2>/dev/null; then
     READY=1
     break
   fi
-  sleep 2
+  if [ $((i % 20)) -eq 0 ]; then
+    log "still waiting for bge-m3 ready (http=${code}, ${i}/${WAIT_LOOPS}) — journalctl --user -u evox3-bge-m3 -n 5"
+  fi
+  sleep "$WAIT_SLEEP"
 done
 
 if [ "$READY" -ne 1 ]; then
