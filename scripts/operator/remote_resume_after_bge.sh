@@ -31,6 +31,28 @@ log "Probing $EVOX3_SSH ..."
 ssh "${SSH_OPTS[@]}" "$EVOX3_SSH" 'hostname; hostname -I | awk "{print \$1}"' \
   || die "SSH failed — check EVO power / Wi-Fi IP (on EVO: hostname -I)"
 
+log "EVO stack snapshot (before resume)"
+ssh "${SSH_OPTS[@]}" "$EVOX3_SSH" 'bash -s' <<'SNAP'
+set +e
+echo "=== units ==="
+for u in evox3-jinhua-docker evox3-bge-m3 evox3-jinhua-api evox3-jinhua-web; do
+  printf '%s: %s\n' "$u" "$(systemctl --user is-active "$u.service" 2>/dev/null || echo missing)"
+done
+echo "=== http ==="
+for pair in "5432:tcp" "11434:http://127.0.0.1:11434/v1/models" "8002:http://127.0.0.1:8002/health" "8000:http://127.0.0.1:8000/docs" "5173:http://127.0.0.1:5173/"; do
+  port="${pair%%:*}"
+  url="${pair#*:}"
+  if [ "$url" = "tcp" ]; then
+    (echo >/dev/tcp/127.0.0.1/"$port") >/dev/null 2>&1 && echo "tcp:$port OPEN" || echo "tcp:$port CLOSED"
+  else
+    code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 3 "$url" 2>/dev/null || echo 000)
+    echo "$url -> $code"
+  fi
+done
+echo "=== LLM_MODEL (if .env) ==="
+grep -E '^LLM_MODEL=' "$HOME/ai_apps/IncubativeSecondBrain/.env" 2>/dev/null || echo "(no .env)"
+SNAP
+
 log "Starting tmux:$SESSION on EVO (26_resume — bge load can take a long time)"
 ssh "${SSH_OPTS[@]}" "$EVOX3_SSH" 'bash -s' <<'REMOTE'
 set -euo pipefail
@@ -45,6 +67,10 @@ export LANG=en_US.UTF-8
 LOG="$HOME/ai_apps/angelica-resume.log"
 exec > >(tee -a "$LOG") 2>&1
 echo "=== angelica resume-after-bge $(date -Is) ==="
+if [ ! -d "$HOME/thoma/.git" ]; then
+  echo "[*] cloning thoma (HTTPS)"
+  git clone https://github.com/thomaspas/thoma.git "$HOME/thoma"
+fi
 cd "$HOME/thoma"
 git remote set-url origin https://github.com/thomaspas/thoma.git || true
 git fetch origin cursor/evox3-ip-dhcp-c1c0
