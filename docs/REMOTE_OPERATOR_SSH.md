@@ -46,11 +46,24 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/21_remote_verify.sh
 ```
 
-Μετά reboot αν Postgres `:5432` CLOSED:
+Μετά reboot / wipe / missing units (`Unit … not found`):
 
 ```bash
+# Prefer HTTPS if git@github.com Permission denied:
+git remote set-url origin https://github.com/thomaspas/thoma.git
+git fetch origin
+git checkout -B cursor/evox3-ip-dhcp-c1c0 origin/cursor/evox3-ip-dhcp-c1c0 2>/dev/null \
+  || git checkout -B main origin/main
+chmod +x scripts/evox3/*.sh
 ./scripts/evox3/25_post_reboot_resume.sh
-# (ή χειροκίνητα: 02 + systemctl --user start bge/api/web + 21_remote_verify)
+```
+
+Χωρίς το PR branch (μόνο `main`):
+
+```bash
+./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh   # wait — no Ctrl+C during image pull
+./scripts/evox3/run_all.sh                             # creates units 05/06/07 + brand
+./scripts/evox3/21_remote_verify.sh
 ```
 
 ### Ήδη είσαι στον EVO-X3; (συχνό λάθος)

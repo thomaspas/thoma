@@ -19,6 +19,7 @@ fi
 
 cd "$EVOX3_JINHUA_DIR"
 log "Starting docker compose (Postgres + Neo4j + MinIO)"
+log "First run may download large images — do NOT Ctrl+C (wait until complete)"
 docker compose up -d
 docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 
