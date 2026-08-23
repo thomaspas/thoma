@@ -46,7 +46,19 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/21_remote_verify.sh
 ```
 
-Μετά reboot / wipe / missing units (`Unit … not found`):
+After reboot / wipe / missing units (`Unit … not found`):
+
+**From Gaming-7** (starts tmux job on EVO — preferred):
+
+```bash
+# If Gaming-7 thoma is stale, still OK — runner sets HTTPS + fetch on EVO
+cd ~/thoma   # on Gaming-7, after pulling PR or main with remote_bootstrap script
+chmod +x scripts/operator/remote_bootstrap_angelica.sh
+./scripts/operator/remote_bootstrap_angelica.sh
+ssh thomas-pashoulas@192.168.1.9 'tail -f ~/ai_apps/angelica-bootstrap.log'
+```
+
+**Or directly on EVO** (SSH session):
 
 ```bash
 # Prefer HTTPS if git@github.com Permission denied:
@@ -58,7 +70,7 @@ chmod +x scripts/evox3/*.sh
 ./scripts/evox3/25_post_reboot_resume.sh
 ```
 
-Χωρίς το PR branch (μόνο `main`):
+Χωρίς το PR branch (μόνο `main` στο EVO):
 
 ```bash
 ./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh   # wait — no Ctrl+C during image pull
