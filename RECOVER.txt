@@ -1,0 +1,12 @@
+# PASTE THIS INTO A TERMINAL (Gaming-7 or EVO) — then paste output into Cursor
+
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_status_dump.sh | bash
+
+# If API/UI down after that, resume (long — bge may load many minutes):
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_resume_after_bge.sh | bash
+
+# Success line to look for in the resume log:
+# REMOTE VERIFY OK — no physical visit needed
+
+# Details: docs/OPERATOR_RECOVER_NOW.md
+# Remote-SSH: docs/CURSOR_REMOTE_EVOX3.md
