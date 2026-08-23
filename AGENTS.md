@@ -12,7 +12,7 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 - [`docs/OPERATOR_RECOVER_NOW.md`](docs/OPERATOR_RECOVER_NOW.md) — one-page recover card (wipe / bge timeout / missing units)
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
 - [`docs/ANGELICA_BROWSER_EXTENSION.md`](docs/ANGELICA_BROWSER_EXTENSION.md) — MV3 capture extension guide
-- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`26` + demos + `run_all.sh` + `bge_m3_server.py`
+- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`27` + demos + `run_all.sh` + `bge_m3_server.py`
 - [`scripts/operator/`](scripts/operator/) — Gaming-7 SSH wrappers (`remote_bootstrap_angelica.sh`, `remote_resume_after_bge.sh`)
 - [`extensions/angelica-capture/`](extensions/angelica-capture/) — ANGELICA Capture browser extension (MV3, no npm build)
 
