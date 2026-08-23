@@ -11,11 +11,18 @@ Operator tooling for **EVO-X3 LOCAL FULL** — Jinhua Second Brain branded as **
 - Scripts: [scripts/evox3/](scripts/evox3/)
 - Extension source: [extensions/angelica-capture/](extensions/angelica-capture/)
 
-On the EVO-X3 machine (via SSH from another PC):
+On the EVO-X3 machine (via SSH from Gaming-7 — current LAN IP `192.168.1.9`, DHCP may change):
 
 ```bash
+ssh thomas-pashoulas@192.168.1.9
 chmod +x scripts/evox3/*.sh
 ./scripts/evox3/21_remote_verify.sh
+```
+
+After reboot / Postgres `:5432` CLOSED:
+
+```bash
+./scripts/evox3/25_post_reboot_resume.sh
 ```
 
 Already installed? Finish / resume (skip-auth + ANGELICA brand + smoke + kiosk):
