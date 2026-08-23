@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/_lib.sh"
 
 log "=== 25_post_reboot_resume: docker infra ==="
 bash "$SCRIPT_DIR/02_ensure_jinhua_clone_and_docker.sh"
+enable_linger_hint
 
 start_or_install_unit() {
   local unit="$1"

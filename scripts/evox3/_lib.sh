@@ -137,9 +137,11 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=${EVOX3_JINHUA_DIR}
+# Docker daemon may lag user session start after reboot — wait before compose.
+ExecStartPre=/bin/bash -c 'for i in $$(seq 1 60); do docker info >/dev/null 2>&1 && exit 0; sleep 1; done; echo "docker daemon not ready" >&2; exit 1'
 ExecStart=/usr/bin/docker compose up -d
 ExecStop=/usr/bin/docker compose stop
-TimeoutStartSec=180
+TimeoutStartSec=240
 
 [Install]
 WantedBy=default.target
@@ -147,6 +149,7 @@ EOF
   reload_user_systemd
   systemctl --user enable --now evox3-jinhua-docker.service
   ok "Enabled evox3-jinhua-docker.service (compose on boot/login)"
+  enable_linger_hint
 }
 
 user_systemd_dir() {
