@@ -28,6 +28,34 @@ systemctl --user restart evox3-jinhua-api.service 2>/dev/null || true
 ./scripts/evox3/21_remote_verify.sh
 ```
 
+## If `05` died with `bge-m3 server did not become healthy`
+
+Model load on CPU can exceed the old 6‑minute wait. Prefer this resume (do not re-run full `run_all`):
+
+```bash
+# Wait for current process OR pull fix + restart
+until curl -fsS http://127.0.0.1:8002/health; do echo waiting; sleep 20; done
+
+# Optional: install fixed server (binds port while model loads)
+cd ~/thoma
+git remote set-url origin https://github.com/thomaspas/thoma.git
+git fetch origin cursor/evox3-ip-dhcp-c1c0
+git checkout -B cursor/evox3-ip-dhcp-c1c0 origin/cursor/evox3-ip-dhcp-c1c0
+cp -f scripts/evox3/bge_m3_server.py ~/ai_apps/bge-m3-server/bge_m3_server.py
+systemctl --user restart evox3-bge-m3.service
+until curl -fsS http://127.0.0.1:8002/health; do sleep 15; done
+
+ID=$(curl -fsS http://127.0.0.1:11434/v1/models | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"][0]["id"])')
+sed -i "s|^LLM_MODEL=.*|LLM_MODEL=$ID|" ~/ai_apps/IncubativeSecondBrain/.env
+./scripts/evox3/06_migrate_and_start_api.sh
+./scripts/evox3/07_start_frontend_and_kiosk.sh
+./scripts/evox3/08_autostart_desktop.sh
+./scripts/evox3/11_skip_auth_ui.sh
+./scripts/evox3/16_brand_angelica.sh
+./scripts/evox3/10_relaunch_kiosk.sh
+./scripts/evox3/21_remote_verify.sh
+```
+
 Success line to paste back to Cursor:
 
 ```text
