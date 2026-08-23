@@ -16,8 +16,10 @@ if [ ! -x "$EVOX3_BGE_DIR/.venv/bin/python" ]; then
   python3 -m venv "$EVOX3_BGE_DIR/.venv"
 fi
 
-log "Installing sentence-transformers + fastapi stack (HF model downloads on first start)"
+log "Installing sentence-transformers + fastapi stack (can take many minutes — pip torch)"
+log "After that, first service start downloads HF model: ${EVOX3_EMBED_MODEL:-BAAI/bge-m3}"
 pip_install "$EVOX3_BGE_DIR/.venv/bin/pip" --upgrade pip setuptools wheel
+log "pip installing torch + sentence-transformers (large) ..."
 pip_install "$EVOX3_BGE_DIR/.venv/bin/pip" \
   "sentence-transformers>=3.0.0" \
   "fastapi>=0.110" \
@@ -25,6 +27,7 @@ pip_install "$EVOX3_BGE_DIR/.venv/bin/pip" \
   "pydantic>=2.0" \
   "torch" \
   "huggingface_hub"
+ok "pip deps installed — next: enable unit (HF model ${EVOX3_EMBED_MODEL} on first /health)"
 
 UNIT_DIR="$(user_systemd_dir)"
 UNIT_PATH="$UNIT_DIR/evox3-bge-m3.service"
