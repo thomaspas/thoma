@@ -37,11 +37,13 @@ die() { printf '[x] %s\n' "$*" >&2; exit 1; }
 is_placeholder_llm_model() {
   case "${1:-}" in
     ""|auto|qwen|qwen3|qwen3.6|qwen3.6-27b|qwen3-27b) return 0 ;;
+    # Upstream .env.example cloud names — never use these against local llama-server.
+    gpt-4o-mini|gpt-4o|gpt-4|gpt-3.5-turbo|gpt-3.5*|o1*|o3*|claude*) return 0 ;;
     *) return 1 ;;
   esac
 }
 
-# Resolve LLM_MODEL: explicit env > existing .env > llama-server /v1/models > warn+auto.
+# Resolve LLM_MODEL: explicit env > live llama /v1/models > existing .env > warn+auto.
 # Optional arg: path to IncubativeSecondBrain .env
 resolve_llm_model() {
   local env_path="${1:-$EVOX3_JINHUA_DIR/.env}"
@@ -52,23 +54,7 @@ resolve_llm_model() {
     return 0
   fi
 
-  if [ -f "$env_path" ]; then
-    existing="$(
-      python3 - <<PY
-from pathlib import Path
-p = Path("$env_path")
-for line in p.read_text().splitlines():
-    if line.startswith("LLM_MODEL="):
-        print(line.split("=", 1)[1].strip().strip('"').strip("'"))
-        break
-PY
-    )"
-    if ! is_placeholder_llm_model "$existing"; then
-      printf '%s\n' "$existing"
-      return 0
-    fi
-  fi
-
+  # Prefer live local server over upstream .env.example placeholders (e.g. gpt-4o-mini).
   if command -v curl >/dev/null 2>&1; then
     models_json="$(curl -fsS --max-time 5 "${EVOX3_LLM_BASE_URL}/models" 2>/dev/null || true)"
     if [ -n "$models_json" ]; then
@@ -89,6 +75,23 @@ except Exception:
         printf '%s\n' "$id"
         return 0
       fi
+    fi
+  fi
+
+  if [ -f "$env_path" ]; then
+    existing="$(
+      python3 - <<PY
+from pathlib import Path
+p = Path("$env_path")
+for line in p.read_text().splitlines():
+    if line.startswith("LLM_MODEL="):
+        print(line.split("=", 1)[1].strip().strip('"').strip("'"))
+        break
+PY
+    )"
+    if ! is_placeholder_llm_model "$existing"; then
+      printf '%s\n' "$existing"
+      return 0
     fi
   fi
 
