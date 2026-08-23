@@ -8,6 +8,8 @@
 curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_status_dump.sh | bash
 ```
 
+**Καλύτερο UX:** Cursor Desktop → Remote-SSH → `evox3` (βλ. [`CURSOR_REMOTE_EVOX3.md`](CURSOR_REMOTE_EVOX3.md)) — το terminal είναι ήδη το EVO.
+
 ## 1) Resume after `05` bge timeout (tmux on EVO)
 
 ```bash

@@ -8,6 +8,7 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 
 - [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — operator runbook
 - [`docs/REMOTE_OPERATOR_SSH.md`](docs/REMOTE_OPERATOR_SSH.md) — **SSH-only operator** (Thomas runs from another PC/room)
+- [`docs/CURSOR_REMOTE_EVOX3.md`](docs/CURSOR_REMOTE_EVOX3.md) — Cursor Desktop Remote-SSH to EVO (cloud has no LAN)
 - [`docs/OPERATOR_RECOVER_NOW.md`](docs/OPERATOR_RECOVER_NOW.md) — one-page recover card (wipe / bge timeout / missing units)
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
 - [`docs/ANGELICA_BROWSER_EXTENSION.md`](docs/ANGELICA_BROWSER_EXTENSION.md) — MV3 capture extension guide
