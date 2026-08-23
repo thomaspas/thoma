@@ -19,6 +19,12 @@ chmod +x scripts/evox3/*.sh
 # LONG — do not Ctrl+C (docker images + pip + HF model)
 ./scripts/evox3/02_ensure_jinhua_clone_and_docker.sh
 ./scripts/evox3/run_all.sh
+
+# Fresh .env may keep upstream LLM_MODEL=gpt-4o-mini — align to live llama:
+ID=$(curl -fsS http://127.0.0.1:11434/v1/models | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"][0]["id"])')
+sed -i "s|^LLM_MODEL=.*|LLM_MODEL=$ID|" ~/ai_apps/IncubativeSecondBrain/.env
+systemctl --user restart evox3-jinhua-api.service 2>/dev/null || true
+
 ./scripts/evox3/21_remote_verify.sh
 ```
 
