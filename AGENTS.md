@@ -8,9 +8,11 @@ This repository (`thomaspas/thoma`) holds **EVO-X3 LOCAL FULL** runbooks and ide
 
 - [`docs/EVOX3_JINHUA_LOCAL_FULL.md`](docs/EVOX3_JINHUA_LOCAL_FULL.md) — operator runbook
 - [`docs/REMOTE_OPERATOR_SSH.md`](docs/REMOTE_OPERATOR_SSH.md) — **SSH-only operator** (Thomas runs from another PC/room)
+- [`docs/OPERATOR_RECOVER_NOW.md`](docs/OPERATOR_RECOVER_NOW.md) — one-page recover card (wipe / bge timeout / missing units)
 - [`docs/SESSION_CHRONICLE_ANGELICA.md`](docs/SESSION_CHRONICLE_ANGELICA.md) — saved conversation chronicle (DONE LOCAL FULL / ANGELICA + NEXT roadmap)
 - [`docs/ANGELICA_BROWSER_EXTENSION.md`](docs/ANGELICA_BROWSER_EXTENSION.md) — MV3 capture extension guide
-- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`25` + demos + `run_all.sh` + `bge_m3_server.py`
+- [`scripts/evox3/`](scripts/evox3/) — steps `01`–`26` + demos + `run_all.sh` + `bge_m3_server.py`
+- [`scripts/operator/`](scripts/operator/) — Gaming-7 SSH wrappers (`remote_bootstrap_angelica.sh`, `remote_resume_after_bge.sh`)
 - [`extensions/angelica-capture/`](extensions/angelica-capture/) — ANGELICA Capture browser extension (MV3, no npm build)
 
 **Status:** LOCAL FULL + ANGELICA + graph analytics + MCP + browser extension **DONE** on EVO-X3. Next wave: **React Flow 2D graph** (chronicle NEXT #4).
@@ -42,7 +44,7 @@ Smoke checks and ports are documented in the runbook (`:11434` LLM, `:8002` bge-
 ### Gotchas
 
 - After reboot, login HTTP 500 with `Connection refused` on `:5432` means Docker compose (Postgres) did not come up. Run `25_post_reboot_resume.sh` (or `02_ensure_jinhua_clone_and_docker.sh` then start bge/api/web units). API docs can still be 200 while DB is down.
-- If `05` fails with `bge-m3 server did not become healthy` after Docker is up: `./scripts/evox3/26_resume_after_bge.sh` (waits for embeddings, aligns `LLM_MODEL`, continues 06→21).
+- If `05` fails with `bge-m3 server did not become healthy` after Docker is up: on EVO `./scripts/evox3/26_resume_after_bge.sh`, or from Gaming-7 `curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_resume_after_bge.sh | bash` then `tail -f ~/ai_apps/angelica-resume.log` on EVO via SSH.
 - Brand patches live on the EVO-X3 clone (`*.evox3-brand-orig`); re-run `16` after upstream web updates.
 - Browser extension uses a **separate** Chromium profile (Load unpacked), not the kiosk.
 - SSH bracketed paste (`^[[200~`) breaks hand-rolled `TOKEN=` — use `17_demo` / `18_demo` / `13` scripts.

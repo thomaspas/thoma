@@ -52,9 +52,7 @@ After reboot / wipe / missing units (`Unit … not found`):
 
 ```bash
 # If Gaming-7 thoma is stale, still OK — runner sets HTTPS + fetch on EVO
-cd ~/thoma   # on Gaming-7, after pulling PR or main with remote_bootstrap script
-chmod +x scripts/operator/remote_bootstrap_angelica.sh
-./scripts/operator/remote_bootstrap_angelica.sh
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_bootstrap_angelica.sh | bash
 ssh thomas-pashoulas@192.168.1.9 'tail -f ~/ai_apps/angelica-bootstrap.log'
 ```
 
@@ -69,6 +67,17 @@ git checkout -B cursor/evox3-ip-dhcp-c1c0 origin/cursor/evox3-ip-dhcp-c1c0 2>/de
 chmod +x scripts/evox3/*.sh
 ./scripts/evox3/25_post_reboot_resume.sh
 ```
+
+### After `05` bge-m3 health timeout (Docker already up)
+
+Do **not** re-run full `run_all`. Prefer:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/thomaspas/thoma/cursor/evox3-ip-dhcp-c1c0/scripts/operator/remote_resume_after_bge.sh | bash
+ssh thomas-pashoulas@192.168.1.9 'tail -f ~/ai_apps/angelica-resume.log'
+```
+
+One-page card: [`OPERATOR_RECOVER_NOW.md`](OPERATOR_RECOVER_NOW.md).
 
 Χωρίς το PR branch (μόνο `main` στο EVO):
 
