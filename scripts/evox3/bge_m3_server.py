@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import logging
 import os
+import threading
 import time
 import uuid
 from typing import Any
@@ -17,8 +19,12 @@ HOST = os.environ.get("EVOX3_BGE_HOST", "127.0.0.1")
 PORT = int(os.environ.get("EVOX3_BGE_PORT", "8002"))
 DEVICE = os.environ.get("EVOX3_BGE_DEVICE", "cpu")
 
-app = FastAPI(title="EVO-X3 bge-m3 embeddings", version="1.0.0")
+log = logging.getLogger("bge_m3")
 _model = None
+_ready = False
+_load_error: str | None = None
+
+app = FastAPI(title="EVO-X3 bge-m3 embeddings", version="1.1.0")
 
 
 def get_model():
@@ -26,8 +32,22 @@ def get_model():
     if _model is None:
         from sentence_transformers import SentenceTransformer
 
+        log.info("Loading SentenceTransformer(%s) on %s — may take several minutes", MODEL_ID, DEVICE)
+        t0 = time.time()
         _model = SentenceTransformer(MODEL_ID, device=DEVICE)
+        log.info("Model ready in %.1fs", time.time() - t0)
     return _model
+
+
+def _load_model_bg() -> None:
+    global _ready, _load_error
+    try:
+        get_model()
+        _ready = True
+        _load_error = None
+    except Exception as exc:  # noqa: BLE001
+        _load_error = str(exc)
+        log.exception("Model load failed")
 
 
 class EmbeddingRequest(BaseModel):
@@ -45,6 +65,11 @@ class ModelCard(BaseModel):
 
 @app.get("/health")
 def health() -> dict[str, str]:
+    if _load_error:
+        raise HTTPException(status_code=503, detail=f"model_load_failed: {_load_error}")
+    if not _ready:
+        # 503 so curl -f fails until model is actually usable.
+        raise HTTPException(status_code=503, detail="model_loading")
     return {"status": "ok", "model": MODEL_ID}
 
 
@@ -55,6 +80,10 @@ def list_models() -> dict[str, Any]:
 
 @app.post("/v1/embeddings")
 def create_embeddings(req: EmbeddingRequest) -> dict[str, Any]:
+    if _load_error:
+        raise HTTPException(status_code=503, detail=f"model_load_failed: {_load_error}")
+    if not _ready:
+        raise HTTPException(status_code=503, detail="model_loading")
     if isinstance(req.input, str):
         texts = [req.input]
     elif isinstance(req.input, list):
@@ -92,8 +121,10 @@ def create_embeddings(req: EmbeddingRequest) -> dict[str, Any]:
 
 
 def main() -> None:
-    # Eager load so systemd health checks fail fast if HF download is still needed.
-    get_model()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    # Bind :8002 immediately; load HF model in background so 05 can poll /health
+    # instead of seeing connection-refused for 6–20 minutes.
+    threading.Thread(target=_load_model_bg, name="bge-load", daemon=True).start()
     uvicorn.run(app, host=HOST, port=PORT, log_level="info")
 
 

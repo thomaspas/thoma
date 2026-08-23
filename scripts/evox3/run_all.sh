@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/_lib.sh"
 
 log "EVO-X3 LOCAL FULL — running scripts 01..11 + 16 (brand)"
+log "This can take a long time (docker pull + pip + HF model). Do NOT Ctrl+C."
 for step in \
   01_stop_legacy_mvp.sh \
   02_ensure_jinhua_clone_and_docker.sh \

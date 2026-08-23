@@ -227,7 +227,7 @@ chmod +x scripts/evox3/*.sh
 
 ## Remote verification (SSH — άλλο δωμάτιο)
 
-Ο operator τρέχει εντολές από SSH (`thomas-pashoulas@192.168.1.8`) — **όχι** φυσική επίσκεψη στο EVO-X3. Οδηγός: [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md).
+Ο operator τρέχει εντολές από SSH (`thomas-pashoulas@192.168.1.9`, DHCP may change — see [`REMOTE_OPERATOR_SSH.md`](REMOTE_OPERATOR_SSH.md)) — **όχι** φυσική επίσκεψη στο EVO-X3.
 
 ```bash
 ./scripts/evox3/21_remote_verify.sh

@@ -37,11 +37,13 @@ die() { printf '[x] %s\n' "$*" >&2; exit 1; }
 is_placeholder_llm_model() {
   case "${1:-}" in
     ""|auto|qwen|qwen3|qwen3.6|qwen3.6-27b|qwen3-27b) return 0 ;;
+    # Upstream .env.example cloud names — never use these against local llama-server.
+    gpt-4o-mini|gpt-4o|gpt-4|gpt-3.5-turbo|gpt-3.5*|o1*|o3*|claude*) return 0 ;;
     *) return 1 ;;
   esac
 }
 
-# Resolve LLM_MODEL: explicit env > existing .env > llama-server /v1/models > warn+auto.
+# Resolve LLM_MODEL: explicit env > live llama /v1/models > existing .env > warn+auto.
 # Optional arg: path to IncubativeSecondBrain .env
 resolve_llm_model() {
   local env_path="${1:-$EVOX3_JINHUA_DIR/.env}"
@@ -52,23 +54,7 @@ resolve_llm_model() {
     return 0
   fi
 
-  if [ -f "$env_path" ]; then
-    existing="$(
-      python3 - <<PY
-from pathlib import Path
-p = Path("$env_path")
-for line in p.read_text().splitlines():
-    if line.startswith("LLM_MODEL="):
-        print(line.split("=", 1)[1].strip().strip('"').strip("'"))
-        break
-PY
-    )"
-    if ! is_placeholder_llm_model "$existing"; then
-      printf '%s\n' "$existing"
-      return 0
-    fi
-  fi
-
+  # Prefer live local server over upstream .env.example placeholders (e.g. gpt-4o-mini).
   if command -v curl >/dev/null 2>&1; then
     models_json="$(curl -fsS --max-time 5 "${EVOX3_LLM_BASE_URL}/models" 2>/dev/null || true)"
     if [ -n "$models_json" ]; then
@@ -89,6 +75,23 @@ except Exception:
         printf '%s\n' "$id"
         return 0
       fi
+    fi
+  fi
+
+  if [ -f "$env_path" ]; then
+    existing="$(
+      python3 - <<PY
+from pathlib import Path
+p = Path("$env_path")
+for line in p.read_text().splitlines():
+    if line.startswith("LLM_MODEL="):
+        print(line.split("=", 1)[1].strip().strip('"').strip("'"))
+        break
+PY
+    )"
+    if ! is_placeholder_llm_model "$existing"; then
+      printf '%s\n' "$existing"
+      return 0
     fi
   fi
 
@@ -137,9 +140,11 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=${EVOX3_JINHUA_DIR}
+# Docker daemon may lag user session start after reboot — wait before compose.
+ExecStartPre=/bin/bash -c 'for i in $$(seq 1 60); do docker info >/dev/null 2>&1 && exit 0; sleep 1; done; echo "docker daemon not ready" >&2; exit 1'
 ExecStart=/usr/bin/docker compose up -d
 ExecStop=/usr/bin/docker compose stop
-TimeoutStartSec=180
+TimeoutStartSec=240
 
 [Install]
 WantedBy=default.target
@@ -147,6 +152,7 @@ EOF
   reload_user_systemd
   systemctl --user enable --now evox3-jinhua-docker.service
   ok "Enabled evox3-jinhua-docker.service (compose on boot/login)"
+  enable_linger_hint
 }
 
 user_systemd_dir() {
@@ -162,6 +168,24 @@ enable_linger_hint() {
   if ! loginctl show-user "$USER" -p Linger 2>/dev/null | grep -q 'Linger=yes'; then
     warn "User linger is off. For services after logout, run: sudo loginctl enable-linger $USER"
   fi
+}
+
+# EVO often has no GitHub deploy key — git@ fails with Permission denied (publickey).
+# Switch origin to HTTPS so fetch/pull work without SSH keys.
+ensure_thoma_https_remote() {
+  local root="${1:-}"
+  local url
+  if [ -z "$root" ] || [ ! -d "$root/.git" ]; then
+    return 0
+  fi
+  url="$(git -C "$root" remote get-url origin 2>/dev/null || true)"
+  case "$url" in
+    git@github.com:*|ssh://git@github.com/*)
+      log "origin uses SSH ($url) — switching to HTTPS (EVO often has no deploy key)"
+      git -C "$root" remote set-url origin "https://github.com/thomaspas/thoma.git"
+      ok "origin -> https://github.com/thomaspas/thoma.git"
+      ;;
+  esac
 }
 
 pip_install() {

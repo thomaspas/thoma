@@ -24,7 +24,7 @@ check_fail() {
 }
 
 printf '\n=== EVO-X3 REMOTE VERIFY (SSH operator) ===\n'
-printf 'build=2026-08-12-kiosk-v3 (deep /proc scan + gnome env import)\n'
+printf 'build=2026-08-23-post-reboot-v1 (docker wait + refuse off-box)\n'
 printf 'Operator runs from another machine — no screen visit required.\n\n'
 
 #region agent log
@@ -33,11 +33,20 @@ if [ -x "$SCRIPT_DIR/22_operator_context_check.sh" ]; then
 fi
 #endregion
 
+# Refuse Gaming-7 / off-box localhost smoke (false 16-fail). Override: EVOX3_ALLOW_OFFBOX=1
+HOST_NOW="$(hostname -s 2>/dev/null || hostname)"
+if ! printf '%s' "$HOST_NOW" | grep -qi 'EVO-X3'; then
+  if [ "${EVOX3_ALLOW_OFFBOX:-0}" != "1" ]; then
+    die "Not on EVO-X3 (hostname=${HOST_NOW}). SSH first: ssh ${EVOX3_SSH:-thomas-pashoulas@192.168.1.9} — then re-run 21. (EVOX3_ALLOW_OFFBOX=1 to override)"
+  fi
+  warn "EVOX3_ALLOW_OFFBOX=1 — continuing off-box (results may be meaningless)"
+fi
+
 printf '=== 1) smoke baseline (09) ===\n'
 if bash "$SCRIPT_DIR/09_smoke_check.sh"; then
   check_ok "09_smoke_check.sh passed"
 else
-  check_fail "09_smoke_check.sh failed — fix stack before remote HTML/process checks"
+  check_fail "09_smoke_check.sh failed — fix stack: ./scripts/evox3/25_post_reboot_resume.sh (or 02 + start units)"
 fi
 
 printf '\n=== 2) web HTML brand (:5173) ===\n'

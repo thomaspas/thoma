@@ -7,7 +7,7 @@
 - Repo: [thomaspas/thoma](https://github.com/thomaspas/thoma)
 - Branch to continue: `cursor/land-angelica-stack-8dd2`
 - Active PR: [#8](https://github.com/thomaspas/thoma/pull/8)
-- Runtime machine: EVO-X3 (`thomas-pashoulas@192.168.1.8`)
+- Runtime machine: EVO-X3 (`thomas-pashoulas@192.168.1.9`, Wi‑Fi DHCP — was `.8`)
 - Operator machine: Gaming-7 (`thomas1821-Z170X-Gaming-7`)
 
 ## What is done
@@ -57,7 +57,7 @@ Local commits ahead of `origin/cursor/land-angelica-stack-8dd2`:
 ## Key lessons / mistakes to avoid
 
 1. Do not run operator automation on EVO-X3 when the script exists only on Gaming-7.
-2. Do not run `ssh thomas-pashoulas@192.168.1.8` from inside EVO-X3 (nested SSH to self).
+2. Do not run `ssh` to the EVO LAN IP from inside EVO-X3 (nested SSH to self).
 3. Do not mix this project with `~/Λήψεις/ΑΝΑΦΟΡΑ_ΠΛΗΡΗΣ.md` or the Warden/NEBULA track.
 4. Do not paste shell prompts back into the terminal as commands.
 5. Do not paste the actual GitHub token into chat.

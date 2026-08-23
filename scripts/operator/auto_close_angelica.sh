@@ -8,7 +8,7 @@ set -euo pipefail
 
 THOMA_ROOT="${THOMA_ROOT:-$HOME/thoma}"
 BRANCH="${EVOX3_THOMA_BRANCH:-cursor/land-angelica-stack-8dd2}"
-EVOX3_SSH="${EVOX3_SSH:-thomas-pashoulas@192.168.1.8}"
+EVOX3_SSH="${EVOX3_SSH:-thomas-pashoulas@192.168.1.9}"
 EVOX3_SSH_KEY="${EVOX3_SSH_KEY:-$HOME/.ssh/id_ed25519_evox3}"
 PR_NUMBER="${ANGELICA_PR_NUMBER:-8}"
 VERIFY_LOG="${VERIFY_LOG:-/tmp/angelica-remote-verify.log}"

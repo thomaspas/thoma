@@ -23,7 +23,7 @@ Also: Fresh-agent build smoke test ([bc-57e08ce7…](https://cursor.com/agents/b
 
 **Branch:** `cursor/land-angelica-stack-8dd2` · [PR #8](https://github.com/thomaspas/thoma/pull/8)
 
-**Operator setup:** Gaming-7 (`thomas1821-Z170X-Gaming-7`) → SSH → EVO-X3 (`thomas-pashoulas@192.168.1.8`). Handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
+**Operator setup:** Gaming-7 (`thomas1821-Z170X-Gaming-7`) → SSH → EVO-X3 (`thomas-pashoulas@192.168.1.9`, was `.8` — Wi‑Fi DHCP). Handoff: [`HANDOFF_2026-08-12_REMOTE_VERIFY.md`](HANDOFF_2026-08-12_REMOTE_VERIFY.md).
 
 **Runtime evidence (EVO-X3, user paste):**
 
@@ -159,7 +159,7 @@ Ordered follow-ups from the upgrade brief (adapt gradually):
 ## Agent rules for resume
 
 - Greek for explanations; ASCII for scripts/logs
-- **Thomas runs only via SSH** from another PC/room (`192.168.1.8`) — never ask him to visit the EVO-X3 screen
+- **Thomas runs only via SSH** from another PC/room (`192.168.1.9`, DHCP) — never ask him to visit the EVO-X3 screen
 - Use `21_remote_verify.sh` + paste output; optional `13_remote_go_live.sh` for Greek E2E
 - No SSH from Cursor Cloud — validate via user paste from EVO-X3 SSH session
 - Flatpak browser only; never kiosk on `:8000`

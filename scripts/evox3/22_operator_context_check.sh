@@ -6,6 +6,8 @@ source "$SCRIPT_DIR/_lib.sh"
 
 HOST="$(hostname -s 2>/dev/null || hostname)"
 SSH_CLIENT_VAL="${SSH_CLIENT:-}"
+# Wi-Fi DHCP can change LAN IP (.8 -> .9, etc.). Override: EVOX3_SSH=user@host
+EVOX3_SSH_DEFAULT="${EVOX3_SSH:-thomas-pashoulas@192.168.1.9}"
 ON_EVOX3=0
 if printf '%s' "$HOST" | grep -qi 'EVO-X3'; then
   ON_EVOX3=1
@@ -34,7 +36,7 @@ printf 'ssh_client=%s\n' "${SSH_CLIENT_VAL:-<none — local shell>}"
 printf 'on_evox3=%s\n' "$ON_EVOX3"
 
 if [ "$ON_EVOX3" -eq 1 ] && [ -z "$SSH_CLIENT_VAL" ]; then
-  warn "You are ALREADY on EVO-X3 in a local shell — do NOT ssh to 192.168.1.8."
+  warn "You are ALREADY on EVO-X3 in a local shell — do NOT ssh to ${EVOX3_SSH_DEFAULT#*@}."
   warn "Run ./scripts/evox3/21_remote_verify.sh directly from ~/thoma (no nested ssh)."
   ok "Correct next step: cd ~/thoma && ./scripts/evox3/21_remote_verify.sh"
 elif [ "$ON_EVOX3" -eq 1 ] && [ -n "$SSH_CLIENT_VAL" ]; then
@@ -42,6 +44,7 @@ elif [ "$ON_EVOX3" -eq 1 ] && [ -n "$SSH_CLIENT_VAL" ]; then
 elif [ -n "$SSH_CLIENT_VAL" ]; then
   ok "Remote SSH session active — good for remote operator workflow."
 else
-  warn "Not on EVO-X3 hostname — use: ssh thomas-pashoulas@192.168.1.8"
+  warn "Not on EVO-X3 hostname — use: ssh ${EVOX3_SSH_DEFAULT}"
+  warn "If No route to host: on EVO run hostname -I (DHCP may have changed LAN IP)."
   warn "Ensure Gaming-7 has ssh-copy-id to EVO-X3 (not EVO-X3 to itself)."
 fi
